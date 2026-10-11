@@ -11,6 +11,8 @@ export type ErrorCode =
   | 'bad-response'
   | 'unsupported-engine'
   | 'invalid-request'
+  | 'not-found'
+  | 'storage-error'
   | 'internal-error';
 
 export class AppError extends Error {
