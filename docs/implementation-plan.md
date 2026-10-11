@@ -111,13 +111,13 @@ Unified text insertion strategy: `focus` first, then `execCommand('insertText')`
 
 ### 4.2 Message Protocol
 
-All messages are defined in `src/messaging/protocol.ts` as a discriminated union and sent through a single typed `send()` wrapper. Once the extension context is invalidated, the content script stops sending messages, detecting this via WXT's `ctx.isInvalid` / `ctx.onInvalidated`, and stops its observers.
+All messages are defined in `src/messaging/protocol.ts` as typed request/response maps and sent through typed wrappers (`sendToBackground`, `sendToTab`, `registerHandlers`). Failures cross contexts as an `AppError` with a machine-readable `ErrorCode`; only UI code maps codes to i18n text, so the background never produces localized strings. Once the extension context is invalidated, the content script stops sending messages, detecting this via WXT's `ctx.isInvalid` / `ctx.onInvalidated`, and stops its observers.
 
 | Direction | Message | Purpose |
 |---|---|---|
 | content → bg | `translate {text, targetLang}` | Translate a piece of text |
 | content → bg | `selectReplyTarget {thread}` | A reply button on the page was clicked: write the reply target to `session` and open the side panel |
-| sidepanel → bg | `generateReply {thread, personaId, intent, mode}` | Generate a reply |
+| sidepanel → bg | `generate {mode, thread, persona, intent, operatorLanguage}` | Generate a reply or post; the side panel sends the full persona so the background does not read persona storage |
 | sidepanel → bg | `translate` | Translate the draft |
 | sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page |
 | sidepanel → content | `insertText {text}` | Fill the reply box |
@@ -132,7 +132,7 @@ Risk: `chrome.sidePanel.open()` must be called within a user gesture. Whether th
 | `sync` | `activePersonaId` | Current persona |
 | `sync` | `settings` | Translation engine, AI engine, models, target language, auto-translate, AI fallback, font size, etc.; no secrets |
 | `sync` | `adBlock` | `{ reddit: false, x: false, facebook: false }` |
-| `local` | `apiKeys` | `{ openai, deepseek, gemini, anthropic }`, **stored on this device only** |
+| `local` | `apiKeys` | `{ openai, deepseek, gemini, claude }`, **stored on this device only** |
 | `session` | `googleFreeCooldownAt` | Start of the Google free translation cooldown |
 | `session` | `replyTarget:<tabId>` | Reply target selected on the page |
 
