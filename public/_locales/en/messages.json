@@ -1,0 +1,20 @@
+{
+  "extName": {
+    "message": "Social Reply Assistant"
+  },
+  "extDescription": {
+    "message": "Translate posts and draft operator-reviewed replies on Reddit, X, and Facebook."
+  },
+  "sidepanelTitle": {
+    "message": "Reply Assistant"
+  },
+  "sidepanelPlaceholder": {
+    "message": "Open a post on Reddit, X, or Facebook to get started."
+  },
+  "optionsTitle": {
+    "message": "Settings"
+  },
+  "optionsPlaceholder": {
+    "message": "Persona profiles, API keys, and platform settings will appear here."
+  }
+}
