@@ -8,7 +8,8 @@ import { AppError, type ErrorCode } from '@/src/providers/types';
 /** Messages handled by the background service worker. */
 export interface BackgroundMessages {
   /** Translate text. targetLanguage defaults to the resolved operator language. */
-  translate: { request: { text: string; targetLanguage?: string }; response: { text: string } };
+  /** `truncated` = the source exceeded the engine's length cap; the UI appends a localized notice. */
+  translate: { request: { text: string; targetLanguage?: string }; response: { text: string; truncated: boolean } };
   generate: { request: GenerationRequest; response: GenerationResult };
   /** A reply button on the page was clicked: remember the target for this tab and open the side panel. */
   selectReplyTarget: { request: { thread: ThreadContext }; response: { sidePanelOpened: boolean } };

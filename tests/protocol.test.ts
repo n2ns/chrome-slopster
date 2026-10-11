@@ -8,9 +8,9 @@ describe('messaging protocol', () => {
 
   it('round-trips a typed request and response', async () => {
     registerHandlers<BackgroundMessages>({
-      translate: async ({ text, targetLanguage }) => ({ text: `${text}->${targetLanguage}` }),
+      translate: async ({ text, targetLanguage }) => ({ text: `${text}->${targetLanguage}`, truncated: false }),
     });
-    await expect(sendToBackground('translate', { text: 'hi', targetLanguage: 'zh-CN' })).resolves.toEqual({ text: 'hi->zh-CN' });
+    await expect(sendToBackground('translate', { text: 'hi', targetLanguage: 'zh-CN' })).resolves.toEqual({ text: 'hi->zh-CN', truncated: false });
   });
 
   it('rethrows handler AppErrors with code and status on the sender side', async () => {
