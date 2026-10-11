@@ -1,0 +1,20 @@
+{
+  "extName": {
+    "message": "社交回帖助手"
+  },
+  "extDescription": {
+    "message": "在 Reddit、X 和 Facebook 上翻译帖子，并起草经人工审核的回复。"
+  },
+  "sidepanelTitle": {
+    "message": "回帖助手"
+  },
+  "sidepanelPlaceholder": {
+    "message": "打开 Reddit、X 或 Facebook 上的帖子即可开始。"
+  },
+  "optionsTitle": {
+    "message": "设置"
+  },
+  "optionsPlaceholder": {
+    "message": "人设档案、API Key 和平台设置将显示在这里。"
+  }
+}
