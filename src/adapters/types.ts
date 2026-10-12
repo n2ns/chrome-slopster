@@ -39,6 +39,12 @@ export interface PlatformAdapter {
   findComposer(target?: HTMLElement): HTMLElement | null;
   /** Write text into the composer. Must never send. Async because rich editors apply input asynchronously. */
   insertText(composer: HTMLElement, text: string): Promise<InsertResult>;
+  /**
+   * Identity of the conversation the page shows (e.g. post or status ID), or
+   * null when it shows none. A selected reply target is dropped when this
+   * changes. Overlay routes over a conversation (X's reply dialog) keep its key.
+   */
+  pageKey(doc: Document): string | null;
   /** Ad nodes; only called when the platform's ad-block toggle is on. */
   findAds(root: ParentNode): HTMLElement[];
   constraints: { maxReplyLength?: number };

@@ -234,6 +234,25 @@ describe('side panel reply flow', () => {
     expect(generateRequests.map((request) => request.thread.url)).toEqual([post.url, other.url]);
   });
 
+  it("ignores a stored target while the tab shows a site other than the target's platform", async () => {
+    await replyTargetItem(TAB_ID).setValue(post);
+    vi.spyOn(fakeBrowser.tabs, 'query').mockImplementation((async () => [{ id: TAB_ID, url: undefined }]) as never);
+    await render();
+    expect(container.querySelector('.target-summary')).toBeNull();
+  });
+
+  it('drops the previous page thread preview when the tab URL changes', async () => {
+    useGenerate(parsedResult);
+    contentReplies.getThreadContext = () => ({ thread: post });
+    await render();
+    await click('generate');
+    expect(container.querySelector('.target-summary')).not.toBeNull();
+    vi.spyOn(fakeBrowser.tabs, 'query').mockImplementation((async () => [{ id: TAB_ID, url: 'https://www.reddit.com/r/selfhosted/comments/other/' }]) as never);
+    await act(async () => void (await fakeBrowser.tabs.onUpdated.trigger(TAB_ID, { url: 'https://www.reddit.com/r/selfhosted/comments/other/' }, { id: TAB_ID } as Browser.tabs.Tab)));
+    await settle();
+    expect(container.querySelector('.target-summary')).toBeNull();
+  });
+
   it('labels a comment target as a comment even when the post has no body', async () => {
     await replyTargetItem(TAB_ID).setValue({ ...comment, parentChain: [] });
     await render();
@@ -271,6 +290,7 @@ describe('side panel reply flow', () => {
 
   it('counts characters against X limit', async () => {
     await replyTargetItem(TAB_ID).setValue({ ...post, platform: 'x', community: undefined, title: undefined });
+    vi.spyOn(fakeBrowser.tabs, 'query').mockImplementation((async () => [{ id: TAB_ID, url: 'https://x.com/someone/status/1' }]) as never);
     useGenerate(parsedResult);
     await render();
     await click('generate');

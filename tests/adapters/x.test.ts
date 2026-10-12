@@ -63,7 +63,36 @@ describe('x adapter on a status page', () => {
 
 describe('x adapter with a reply dialog open', () => {
   // X moves to /compose/post while its reply dialog is open; the conversation stays behind it.
-  beforeEach(() => load('/compose/post', 'status.html', 'reply-dialog.html'));
+  beforeEach(() => {
+    load(STATUS_PATH, 'status.html', 'reply-dialog.html');
+    expect(xAdapter.pageKey(document)).toBe('2109314061410120106');
+    window.history.replaceState(null, '', '/compose/post');
+  });
+
+  it('keeps the status page key while the dialog route is open', () => {
+    expect(xAdapter.pageKey(document)).toBe('2109314061410120106');
+  });
+
+  it('still offers replies as targets when X has unmounted the focal tweet', () => {
+    tweets()[0]!.closest('[data-testid="cellInnerDiv"]')!.remove();
+    const targets = xAdapter.findReplyTargets(document);
+    expect(targets.length).toBeGreaterThan(0);
+    expect(xAdapter.findComposer(tweets()[0]!)?.closest('[role="dialog"]')).not.toBeNull();
+  });
+
+  it('does not match a dialog to another tweet by the same author with identical (or no) text', () => {
+    const dialogTweet = document.querySelector('[role="dialog"] article')!;
+    const other = tweets()[2]!;
+    // Same author and same (empty) text as the dialog's tweet, but a different tweet (posted at another time).
+    const handle = (tweet: Element) => tweet.querySelector('[data-testid="User-Name"]')!.textContent!.match(/@\w+/)![0];
+    const name = other.querySelector('[data-testid="User-Name"]')!;
+    name.innerHTML = name.innerHTML.replaceAll(handle(other), handle(dialogTweet));
+    expect(handle(other)).toBe(handle(dialogTweet));
+    other.querySelector('[data-testid="tweetText"]')?.remove();
+    dialogTweet.querySelector('[data-testid="tweetText"]')?.remove();
+    expect(xAdapter.findComposer(other)).toBeNull();
+    expect(xAdapter.findComposer(tweets()[1]!)?.closest('[role="dialog"]')).not.toBeNull();
+  });
 
   it('still offers the conversation as reply targets', () => {
     expect(xAdapter.findReplyTargets(document)).toHaveLength(tweets().length);
@@ -85,6 +114,13 @@ describe('x adapter with a reply dialog open', () => {
 });
 
 describe('x adapter elsewhere', () => {
+  it('has no page key off status pages', () => {
+    load('/home');
+    expect(xAdapter.pageKey(document)).toBeNull();
+    window.history.replaceState(null, '', '/compose/post');
+    expect(xAdapter.pageKey(document)).toBeNull();
+  });
+
   it('offers no reply targets on a timeline, where no tweet is focal', () => {
     load('/home', 'status.html');
     // Timelines (home, profiles, search) render every tweet with tabindex="0" (checked 2026-10-12).
@@ -102,7 +138,8 @@ describe('x adapter elsewhere', () => {
     load('/home');
     document.body.innerHTML = `
       <div data-testid="cellInnerDiv"><article data-testid="tweet"><span>Ad</span><div data-testid="tweetText">Buy</div></article></div>
-      <div data-testid="cellInnerDiv"><article data-testid="tweet"><div data-testid="tweetText">Adidas is an Ad word</div></article></div>`;
+      <div data-testid="cellInnerDiv"><article data-testid="tweet"><div data-testid="tweetText"><a>#SuperBowl</a><span> Ad</span></div></article></div>
+      <div data-testid="cellInnerDiv"><article data-testid="tweet"><div data-testid="User-Name"><span>Ad</span><span>@ad</span></div><div data-testid="tweetText">hi</div></article></div>`;
     const ads = xAdapter.findAds(document);
     expect(ads).toHaveLength(1);
     expect(ads[0]!.getAttribute('data-testid')).toBe('cellInnerDiv');
