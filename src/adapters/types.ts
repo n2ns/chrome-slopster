@@ -5,7 +5,10 @@ import type { PlatformId } from '@/src/storage/types';
 
 /** The post or comment being replied to, plus surrounding context. */
 export interface ThreadContext {
+  /** What the reply answers: the post itself or one comment under it. */
+  kind: 'post' | 'comment';
   platform: PlatformId;
+  /** Permalink of the post or comment; identifies the reply target on the page. */
   url: string;
   /** r/xxx or Facebook group name; empty for X. */
   community?: string;

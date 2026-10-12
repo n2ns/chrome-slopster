@@ -14,10 +14,12 @@ import { createToolbar, type Toolbar } from './toolbar';
 const SCAN_DELAY_MS = 250;
 const AD_ATTRIBUTE = 'data-sra-hidden-ad';
 
-/** Innermost reply target that contains `unit`. */
-function ownerTarget(unit: HTMLElement, targets: HTMLElement[]): HTMLElement | undefined {
-  const containing = targets.filter((target) => target.contains(unit));
-  return containing.find((candidate) => containing.every((other) => other === candidate || other.contains(candidate)));
+/** Innermost reply target that contains `unit`: walk up from the unit, O(depth). */
+function ownerTarget(unit: HTMLElement, targets: Set<HTMLElement>): HTMLElement | undefined {
+  for (let node = unit.parentElement; node; node = node.parentElement) {
+    if (targets.has(node)) return node;
+  }
+  return undefined;
 }
 
 export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptContext): void {
@@ -25,7 +27,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   const toolbars = new WeakMap<HTMLElement, Toolbar>();
   const translated = new WeakSet<HTMLElement>();
   const replyButtons = new Map<HTMLElement, HTMLButtonElement>();
-  let lastTarget: HTMLElement | null = null;
+  const observed = new Set<HTMLElement>();
   let autoTranslate = false;
   let blockAds = false;
   let scanTimer: number | undefined;
@@ -61,7 +63,6 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
 
   async function selectTarget(target: HTMLElement, toolbar: Toolbar): Promise<void> {
     if (!ctx.isValid) return;
-    lastTarget = target;
     for (const [owner, button] of replyButtons) button.setAttribute('aria-pressed', String(owner === target));
     toolbar.setNote('');
     try {
@@ -77,6 +78,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       if (!entry.isIntersecting || !autoTranslate) continue;
       const unit = entry.target as HTMLElement;
       visibility.unobserve(unit);
+      observed.delete(unit);
       const toolbar = toolbars.get(unit);
       if (toolbar && !translated.has(unit)) void translateUnit(unit, toolbar);
     }
@@ -93,7 +95,15 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   function scan(): void {
     scanTimer = undefined;
     if (!ctx.isValid) return;
-    const targets = adapter.findReplyTargets(doc);
+    // Forget nodes the page removed (SPA navigation, collapsed threads).
+    for (const [target, button] of replyButtons) if (!target.isConnected || !button.isConnected) replyButtons.delete(target);
+    for (const unit of observed) {
+      if (!unit.isConnected) {
+        visibility.unobserve(unit);
+        observed.delete(unit);
+      }
+    }
+    const targets = new Set(adapter.findReplyTargets(doc));
     const placed = new Set<HTMLElement>();
     // The last unit owned by a target gets its reply button (e.g. the post body rather than its title).
     const units = adapter.findTranslatableUnits(doc);
@@ -113,6 +123,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
         });
         toolbars.set(unit, created);
         visibility.observe(unit);
+        observed.add(unit);
       }
       placed.add(unit);
     }
@@ -142,9 +153,10 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       const [first] = adapter.findReplyTargets(doc);
       return { thread: first ? adapter.extractThread(first) : null };
     },
-    insertText: async ({ text }) => {
-      const target = lastTarget?.isConnected ? lastTarget : undefined;
-      const composer = adapter.findComposer(target);
+    insertText: async ({ text, thread }) => {
+      // Resolve the target from the thread the draft was written for, so it can never land in another post's or comment's box.
+      const target = adapter.findReplyTargets(doc).find((candidate) => adapter.extractThread(candidate).url === thread.url);
+      const composer = target ? adapter.findComposer(target) : null;
       return composer ? adapter.insertText(composer, text) : { ok: false, reason: 'not-found' };
     },
   });

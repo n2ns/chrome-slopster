@@ -43,6 +43,7 @@ describe('reddit adapter on a post page', () => {
   it('extracts the post context', () => {
     const thread = redditAdapter.extractThread(document.querySelector<HTMLElement>('shreddit-post')!);
     expect(thread).toMatchObject({
+      kind: 'post',
       platform: 'reddit',
       url: `${location.origin}/r/selfhosted/comments/1x3m5xo/why_selfhost/`,
       community: 'r/selfhosted',
@@ -56,6 +57,7 @@ describe('reddit adapter on a post page', () => {
 
   it('extracts a nested comment with its ancestors (nearest first) and the post body last', () => {
     const thread = redditAdapter.extractThread(comment('t1_pfcdi8b'));
+    expect(thread.kind).toBe('comment');
     expect(thread.author).toBe('Elgon2003');
     expect(thread.title).toBe('Why Selfhost?');
     expect(thread.body).toMatch(/subscriptions/);

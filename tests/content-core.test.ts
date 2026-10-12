@@ -109,16 +109,31 @@ describe('content core on a Reddit post page', () => {
     expect(toolbarButton(host, 'reply')!.getAttribute('aria-pressed')).toBe('true');
 
     const insert = vi.spyOn(redditAdapter, 'insertText').mockResolvedValue({ ok: true });
-    const tabId = 1;
-    await expect(sendToTab(tabId, 'insertText', { text: 'hello' })).resolves.toEqual({ ok: true });
+    const thread = redditAdapter.extractThread(target);
+    await expect(sendToTab(1, 'insertText', { text: 'hello', thread })).resolves.toEqual({ ok: true });
     expect(insert.mock.calls[0]![0].closest('shreddit-comment')).toBe(target);
   });
 
-  it('reports not-found when the selected comment has no open reply box', async () => {
+  it("fills a post draft into the main composer even after a comment with an open reply box was selected", async () => {
     registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }) });
-    toolbarButton(ownToolbar(comment('t1_pfcb65f')), 'reply')!.click();
+    toolbarButton(ownToolbar(comment('t1_pfccwzm')), 'reply')!.click();
     await flush();
-    await expect(sendToTab(1, 'insertText', { text: 'hello' })).resolves.toEqual({ ok: false, reason: 'not-found' });
+    const insert = vi.spyOn(redditAdapter, 'insertText').mockResolvedValue({ ok: true });
+    const { thread } = await sendToTab(1, 'getThreadContext', {});
+    await expect(sendToTab(1, 'insertText', { text: 'hello', thread: thread! })).resolves.toEqual({ ok: true });
+    const composer = insert.mock.calls[0]![0];
+    expect(composer.closest('shreddit-comment')).toBeNull();
+    expect(composer.closest('comment-body-header')).not.toBeNull();
+  });
+
+  it('reports not-found when the draft belongs to a thread that is not on this page', async () => {
+    const thread = { ...redditAdapter.extractThread(comment('t1_pfccwzm')), url: 'https://www.reddit.com/r/other/comments/zzz/comment/q/' };
+    await expect(sendToTab(1, 'insertText', { text: 'hello', thread })).resolves.toEqual({ ok: false, reason: 'not-found' });
+  });
+
+  it('reports not-found when the selected comment has no open reply box', async () => {
+    const thread = redditAdapter.extractThread(comment('t1_pfcb65f'));
+    await expect(sendToTab(1, 'insertText', { text: 'hello', thread })).resolves.toEqual({ ok: false, reason: 'not-found' });
   });
 
   it('answers getThreadContext with the post', async () => {

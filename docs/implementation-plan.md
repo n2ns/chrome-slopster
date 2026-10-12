@@ -74,6 +74,7 @@ Each platform has its own content script entry point. WXT bundles the shared `co
 type PlatformId = 'reddit' | 'x' | 'facebook';
 
 interface ThreadContext {
+  kind: 'post' | 'comment';
   platform: PlatformId;
   url: string;
   community?: string;        // r/xxx or Facebook group name; empty for X
@@ -120,7 +121,7 @@ All messages are defined in `src/messaging/protocol.ts` as typed request/respons
 | sidepanel → bg | `generate {mode, thread, persona, intent, operatorLanguage}` | Generate a reply or post; the side panel sends the full persona so the background does not read persona storage |
 | sidepanel → bg | `translate` | Translate the draft |
 | sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page |
-| sidepanel → content | `insertText {text}` | Fill the reply box |
+| sidepanel → content | `insertText {text, thread}` | Fill the reply box of the target the draft was generated for (matched by `thread.url`); not-found when it is not on the page |
 
 Risk: `chrome.sidePanel.open()` must be called within a user gesture. Whether the gesture still counts after a click in the content script is relayed to the background via a message must be tested in Phase 2. If it does not, fall back to: write only the reply target, show a hint on the extension icon, and let the operator click the icon to open the side panel.
 
@@ -183,7 +184,7 @@ Parsing must be lenient about field types ("boolean" fields may be strings, text
 ```
 permissions: storage, sidePanel
 host_permissions:
-  https://www.reddit.com/*, https://reddit.com/*, https://*.reddit.com/*
+  https://www.reddit.com/*, https://reddit.com/*
   https://x.com/*, https://twitter.com/*
   https://www.facebook.com/*
   https://translate.googleapis.com/*

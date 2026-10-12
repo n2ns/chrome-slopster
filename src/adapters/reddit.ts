@@ -48,6 +48,7 @@ function topLevelComments(doc: Document): string[] {
 function postContext(post: Element): ThreadContext {
   const doc = post.ownerDocument;
   return {
+    kind: 'post',
     platform: 'reddit',
     url: absoluteUrl(doc, post.getAttribute('permalink')),
     community: post.getAttribute('subreddit-prefixed-name') ?? undefined,
@@ -75,6 +76,7 @@ function commentContext(comment: Element): ThreadContext {
     .filter(Boolean)
     .slice(0, MAX_COMMENTS);
   return {
+    kind: 'comment',
     platform: 'reddit',
     url: absoluteUrl(doc, comment.getAttribute('permalink')),
     community: post?.getAttribute('subreddit-prefixed-name') ?? undefined,
