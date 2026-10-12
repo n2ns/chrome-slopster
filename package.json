@@ -8,7 +8,7 @@
     "dev": "wxt",
     "build": "wxt build",
     "zip": "wxt zip",
-    "compile": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "compile": "wxt prepare && tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run compile && npm run lint && npm test && npm run build",

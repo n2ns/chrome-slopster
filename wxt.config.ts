@@ -8,6 +8,13 @@ export default defineConfig({
     description: '__MSG_extDescription__',
     default_locale: 'en',
     permissions: ['storage', 'sidePanel'],
+    host_permissions: [
+      'https://translate.googleapis.com/*',
+      'https://api.openai.com/*',
+      'https://api.deepseek.com/*',
+      'https://generativelanguage.googleapis.com/*',
+      'https://api.anthropic.com/*',
+    ],
     action: {
       default_title: '__MSG_extName__',
     },
