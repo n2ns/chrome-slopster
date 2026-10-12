@@ -330,6 +330,19 @@ export const facebookAdapter: PlatformAdapter = {
     return lastPageKey;
   },
 
+  // New-post support lands with Phase 5's adapter work.
+  postTarget() {
+    return null;
+  },
+
+  findPostComposer() {
+    return null;
+  },
+
+  async insertPost() {
+    return { ok: false, reason: 'not-found' };
+  },
+
   findAds(root) {
     // Sponsored posts link to Facebook's ad explanation. Not yet observed on a real page.
     return [...root.querySelectorAll<HTMLElement>(ARTICLE)].filter((article) => isPost(article) && !!article.querySelector('a[href*="/ads/about"]'));

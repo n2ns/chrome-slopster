@@ -22,6 +22,17 @@ export interface ThreadContext {
   comments: string[];
 }
 
+/** The form for a new post: the body editor, plus a title field where the platform has one (Reddit). */
+export interface PostComposer {
+  body: HTMLElement;
+  title?: HTMLElement;
+}
+
+export interface PostDraft {
+  title?: string;
+  body: string;
+}
+
 export type InsertResult = { ok: true } | { ok: false; reason: 'not-found' | 'rejected' };
 
 export interface PlatformAdapter {
@@ -45,6 +56,16 @@ export interface PlatformAdapter {
    * changes. Overlay routes over a conversation (X's reply dialog) keep its key.
    */
   pageKey(doc: Document): string | null;
+  /**
+   * Where a new post would be published, while the platform's new-post form is
+   * open (Reddit submit page, X composer, Facebook "Create post" dialog); null
+   * otherwise. kind is 'post', body is empty, url identifies the page.
+   */
+  postTarget(doc: Document): ThreadContext | null;
+  /** The open new-post form, or null. */
+  findPostComposer(doc: Document): PostComposer | null;
+  /** Fill the new-post form. Must never publish. */
+  insertPost(composer: PostComposer, draft: PostDraft): Promise<InsertResult>;
   /** Ad nodes; only called when the platform's ad-block toggle is on. */
   findAds(root: ParentNode): HTMLElement[];
   constraints: { maxReplyLength?: number };

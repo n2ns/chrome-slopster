@@ -155,6 +155,19 @@ export const xAdapter: PlatformAdapter = {
     return statusId(doc);
   },
 
+  // New-post support lands with Phase 5's adapter work.
+  postTarget() {
+    return null;
+  },
+
+  findPostComposer() {
+    return null;
+  },
+
+  async insertPost() {
+    return { ok: false, reason: 'not-found' };
+  },
+
   findAds(root) {
     // Promoted tweets carry a standalone "Ad" label outside the author name and tweet text; hide the whole timeline cell.
     const isLabel = (span: Element) =>
