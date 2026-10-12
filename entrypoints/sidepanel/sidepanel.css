@@ -1,0 +1,17 @@
+main.sidepanel {
+  padding: 12px;
+}
+
+main.sidepanel h1 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+main.sidepanel section {
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+main.sidepanel label:first-child {
+  margin-top: 0;
+}

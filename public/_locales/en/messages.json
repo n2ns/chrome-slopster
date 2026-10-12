@@ -8,13 +8,205 @@
   "sidepanelTitle": {
     "message": "Reply Assistant"
   },
-  "sidepanelPlaceholder": {
-    "message": "Open a post on Reddit, X, or Facebook to get started."
-  },
   "optionsTitle": {
     "message": "Settings"
   },
-  "optionsPlaceholder": {
-    "message": "Persona profiles, API keys, and platform settings will appear here."
+  "loading": {
+    "message": "Loading…"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "saved": {
+    "message": "Saved."
+  },
+  "engineGoogleFree": {
+    "message": "Google Translate (free)"
+  },
+  "engineOpenai": {
+    "message": "OpenAI"
+  },
+  "engineDeepseek": {
+    "message": "DeepSeek"
+  },
+  "engineGemini": {
+    "message": "Gemini"
+  },
+  "engineClaude": {
+    "message": "Claude"
+  },
+  "languageBrowserDefault": {
+    "message": "Browser language"
+  },
+  "languageFollowPost": {
+    "message": "Same as the post"
+  },
+  "personasHeading": {
+    "message": "Personas"
+  },
+  "personasIntro": {
+    "message": "A persona is the voice you reply in. It holds no product or promotion data."
+  },
+  "personaNew": {
+    "message": "New persona"
+  },
+  "personaActiveBadge": {
+    "message": "Active"
+  },
+  "personaName": {
+    "message": "Name"
+  },
+  "personaIdentity": {
+    "message": "Identity and background"
+  },
+  "personaIdentityHint": {
+    "message": "Who you are. Drafts use it to guide wording and never invent experience beyond it."
+  },
+  "personaTone": {
+    "message": "Tone"
+  },
+  "personaReplyLanguage": {
+    "message": "Reply language"
+  },
+  "personaBannedWords": {
+    "message": "Banned words"
+  },
+  "personaCustomRules": {
+    "message": "Custom rules"
+  },
+  "onePerLineHint": {
+    "message": "One per line."
+  },
+  "personaAntiAiVoice": {
+    "message": "Avoid an AI-sounding tone"
+  },
+  "personaSetActive": {
+    "message": "Set as active"
+  },
+  "personaDelete": {
+    "message": "Delete"
+  },
+  "personaDeleteConfirm": {
+    "message": "Delete the persona \"$1\"? This cannot be undone."
+  },
+  "defaultPersonaName": {
+    "message": "Default"
+  },
+  "defaultPersonaTone": {
+    "message": "Friendly, concise, and helpful."
+  },
+  "apiKeysHeading": {
+    "message": "API keys"
+  },
+  "apiKeysNote": {
+    "message": "Keys are stored on this device only and never sync to your other devices."
+  },
+  "enginesHeading": {
+    "message": "Engines and models"
+  },
+  "translationEngine": {
+    "message": "Translation engine"
+  },
+  "aiEngine": {
+    "message": "AI engine"
+  },
+  "modelFor": {
+    "message": "$1 model"
+  },
+  "operatorLanguage": {
+    "message": "Your language"
+  },
+  "operatorLanguageHint": {
+    "message": "Pages are translated into this language, and reply drafts include a review copy in it."
+  },
+  "autoTranslate": {
+    "message": "Translate posts automatically"
+  },
+  "aiFallback": {
+    "message": "Use the AI engine when Google translation fails"
+  },
+  "fontSize": {
+    "message": "Font size"
+  },
+  "fontSizeSmall": {
+    "message": "Small"
+  },
+  "fontSizeMedium": {
+    "message": "Medium"
+  },
+  "fontSizeLarge": {
+    "message": "Large"
+  },
+  "adBlockHeading": {
+    "message": "Ad blocking"
+  },
+  "adBlockReddit": {
+    "message": "Hide ads on Reddit"
+  },
+  "adBlockX": {
+    "message": "Hide ads on X"
+  },
+  "adBlockFacebook": {
+    "message": "Hide ads on Facebook"
+  },
+  "sidepanelPersona": {
+    "message": "Persona"
+  },
+  "intentLabel": {
+    "message": "What do you want to say?"
+  },
+  "intentPlaceholder": {
+    "message": "Optional: the point you want this reply to make."
+  },
+  "generate": {
+    "message": "Generate"
+  },
+  "generateUnavailableHint": {
+    "message": "Reply drafting becomes available once you open a post on Reddit, X, or Facebook."
+  },
+  "translateHeading": {
+    "message": "Translate text"
+  },
+  "translateInputPlaceholder": {
+    "message": "Paste text to translate into your language."
+  },
+  "translateButton": {
+    "message": "Translate"
+  },
+  "translating": {
+    "message": "Translating…"
+  },
+  "translationTruncated": {
+    "message": "(The text was too long; only the beginning was translated.)"
+  },
+  "errorMissingApiKey": {
+    "message": "No API key is set for the selected engine. Add one in Settings."
+  },
+  "errorRateLimited": {
+    "message": "Too many requests. Wait a moment and try again."
+  },
+  "errorHttp": {
+    "message": "The service returned an error. Check the API key and model, then try again."
+  },
+  "errorNetwork": {
+    "message": "Network error. Check your connection and try again."
+  },
+  "errorBadResponse": {
+    "message": "The service returned an unexpected response."
+  },
+  "errorUnsupportedEngine": {
+    "message": "The selected engine does not support this action."
+  },
+  "errorInvalidRequest": {
+    "message": "The request is invalid."
+  },
+  "errorNotFound": {
+    "message": "This item was changed or deleted in another window. The list has been refreshed."
+  },
+  "errorStorage": {
+    "message": "Could not read or save data in Chrome storage. Sync storage may be full, or saves are too frequent; try again shortly."
+  },
+  "errorGeneric": {
+    "message": "Something went wrong. Please try again."
   }
 }
