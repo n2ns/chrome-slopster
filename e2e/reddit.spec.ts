@@ -39,6 +39,18 @@ test('selecting a comment stores it as the reply target for the tab', async ({ c
     .toBe('Beautiful_Ad_4813');
 });
 
+test('navigating to another post clears the reply target for the tab', async ({ context, background }) => {
+  const page = await context.newPage();
+  await page.goto(POST_URL);
+  await page.locator(`${COMMENT} [data-sra-toolbar] [data-action="reply"]`).first().click();
+  const storedTargets = () =>
+    background.evaluate(async () => Object.keys(await chrome.storage.session.get(null)).filter((name) => name.startsWith('replyTarget:')).length);
+  await expect.poll(storedTargets).toBe(1);
+  // Reddit navigates between posts with the History API.
+  await page.evaluate(() => history.pushState(null, '', '/r/selfhosted/comments/other/another_post/'));
+  await expect.poll(storedTargets).toBe(0);
+});
+
 test('hides ads while the Reddit toggle is on', async ({ context, background }) => {
   await background.evaluate(() => chrome.storage.sync.set({ adBlock: { reddit: true, x: false, facebook: false } }));
   const page = await context.newPage();

@@ -146,12 +146,12 @@ function ReplyFlow({ tabId, persona, intent, operatorLanguage }: FlowProps) {
   }
 
   async function fill() {
-    if (tabId === undefined) return;
+    if (tabId === undefined || !result) return;
     setBusy('fill');
     setError(undefined);
     setNotice(undefined);
     try {
-      const inserted = await sendToTab(tabId, 'insertText', { text: draft });
+      const inserted = await sendToTab(tabId, 'insertText', { text: draft, thread: result.thread });
       setNotice(inserted.ok ? { key: 'replyFilled', ok: true } : { key: FILL_FAILURE_KEYS[inserted.reason], ok: false });
     } catch (failure) {
       setError(failure);
@@ -210,7 +210,7 @@ function firstLine(text: string): string {
 }
 
 function TargetPreview({ thread, onClear }: { thread: ThreadContext; onClear: () => void }) {
-  const isComment = thread.parentChain.length > 0;
+  const isComment = thread.kind === 'comment';
   // For a comment, the comment itself says more than the post title.
   const summary = firstLine(isComment ? thread.body : thread.title || thread.body);
   const meta = [t(PLATFORM_KEYS[thread.platform]), thread.community].filter(Boolean).join(' · ');

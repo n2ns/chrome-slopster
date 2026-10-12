@@ -19,7 +19,8 @@ export interface BackgroundMessages {
 export interface ContentMessages {
   /** The main post on the current page, or null when the page is not a post. */
   getThreadContext: { request: Record<string, never>; response: { thread: ThreadContext | null } };
-  insertText: { request: { text: string }; response: InsertResult };
+  /** Fill the composer that belongs to `thread` (the target the draft was generated for); not-found when it is not on the page. */
+  insertText: { request: { text: string; thread: ThreadContext }; response: InsertResult };
 }
 
 type MessageMap = BackgroundMessages | ContentMessages;

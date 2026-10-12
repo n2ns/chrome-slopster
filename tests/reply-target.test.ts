@@ -6,6 +6,7 @@ import { registerHandlers, sendToBackground, type BackgroundMessages } from '@/s
 import { replyTargetItem } from '@/src/storage/items';
 
 const thread: ThreadContext = {
+  kind: 'post',
   platform: 'reddit',
   url: 'https://www.reddit.com/r/test/comments/abc/post/',
   community: 'r/test',

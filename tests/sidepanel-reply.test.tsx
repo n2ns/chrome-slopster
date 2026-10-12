@@ -18,6 +18,7 @@ import { installLocksPolyfill } from './helpers/browser';
 const TAB_ID = 7;
 
 const post: ThreadContext = {
+  kind: 'post',
   platform: 'reddit',
   url: 'https://www.reddit.com/r/test/comments/abc/post/',
   community: 'r/test',
@@ -27,7 +28,7 @@ const post: ThreadContext = {
   comments: [],
 };
 
-const comment: ThreadContext = { ...post, body: 'First comment line\nsecond line', parentChain: ['Post body'] };
+const comment: ThreadContext = { ...post, kind: 'comment', url: 'https://www.reddit.com/r/selfhosted/comments/abc/comment/c1/', body: 'First comment line\nsecond line', parentChain: ['Post body'] };
 
 const parsedResult: GenerationResult = {
   raw: '{}',
@@ -36,7 +37,7 @@ const parsedResult: GenerationResult = {
 
 let root: Root;
 let container: HTMLElement;
-let contentReplies: { getThreadContext?: () => unknown; insertText?: (text: string) => InsertResult };
+let contentReplies: { getThreadContext?: () => unknown; insertText?: (text: string, thread: ThreadContext) => InsertResult };
 let sentToTab: { tabId: number; type: string; payload: unknown }[];
 let generateRequests: GenerationRequest[];
 
@@ -96,7 +97,8 @@ describe('side panel reply flow', () => {
         return { ok: true, data: contentReplies.getThreadContext() };
       }
       if (message.type === 'insertText' && contentReplies.insertText) {
-        return { ok: true, data: contentReplies.insertText((message.payload as { text: string }).text) };
+        const payload = message.payload as { text: string; thread: ThreadContext };
+        return { ok: true, data: contentReplies.insertText(payload.text, payload.thread) };
       }
       throw new Error('Could not establish connection. Receiving end does not exist.');
     }) as never);
@@ -192,6 +194,28 @@ describe('side panel reply flow', () => {
     expect(verdict.classList.contains('warning')).toBe(true);
     expect(verdict.textContent).toContain('replyVerdictNo');
     expect(verdict.textContent).toContain('Off topic');
+  });
+
+  it('fills into the thread the draft was generated for, even after another target is selected', async () => {
+    await replyTargetItem(TAB_ID).setValue(comment);
+    useGenerate(parsedResult);
+    const fills: ThreadContext[] = [];
+    contentReplies.insertText = (_text, thread) => {
+      fills.push(thread);
+      return { ok: true };
+    };
+    await render();
+    await click('generate');
+    await act(async () => void (await replyTargetItem(TAB_ID).setValue(post)));
+    await settle();
+    await click('replyFill');
+    expect(fills.map((thread) => thread.url)).toEqual([comment.url]);
+  });
+
+  it('labels a comment target as a comment even when the post has no body', async () => {
+    await replyTargetItem(TAB_ID).setValue({ ...comment, parentChain: [] });
+    await render();
+    expect(container.textContent).toContain('replyTargetComment');
   });
 
   it('fills the edited reply and reports a failed insert', async () => {

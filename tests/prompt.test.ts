@@ -23,6 +23,7 @@ const persona: Persona = {
 
 function thread(platform: PlatformId, patch: Partial<ThreadContext> = {}): ThreadContext {
   return {
+    kind: 'post',
     platform,
     url: 'https://example.com/post/1',
     community: platform === 'x' ? undefined : 'r/selfhosted',
