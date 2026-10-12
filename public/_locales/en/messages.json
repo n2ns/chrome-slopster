@@ -286,5 +286,26 @@
   },
   "personasResetConfirm": {
     "message": "The saved personas cannot be read. Replace them with a fresh default persona? This cannot be undone."
+  },
+  "contentTranslate": {
+    "message": "Translate"
+  },
+  "contentTranslating": {
+    "message": "Translating…"
+  },
+  "contentHideTranslation": {
+    "message": "Hide translation"
+  },
+  "contentShowTranslation": {
+    "message": "Show translation"
+  },
+  "contentDraftReply": {
+    "message": "Draft reply"
+  },
+  "contentReplySelected": {
+    "message": "Selected. Continue in the side panel."
+  },
+  "contentOpenSidePanel": {
+    "message": "Selected. Click the extension icon to open the side panel."
   }
 }

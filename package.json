@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run compile && npm run lint && npm test && npm run build",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "test:e2e": "wxt build && playwright test"
   },
   "dependencies": {
     "react": "^19.3.0",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

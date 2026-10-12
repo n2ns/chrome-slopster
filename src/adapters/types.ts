@@ -34,8 +34,8 @@ export interface PlatformAdapter {
   extractThread(target: HTMLElement): ThreadContext;
   /** Current composer: the focused one first, then a visible one. */
   findComposer(target?: HTMLElement): HTMLElement | null;
-  /** Write text into the composer. Must never send. */
-  insertText(composer: HTMLElement, text: string): InsertResult;
+  /** Write text into the composer. Must never send. Async because rich editors apply input asynchronously. */
+  insertText(composer: HTMLElement, text: string): Promise<InsertResult>;
   /** Ad nodes; only called when the platform's ad-block toggle is on. */
   findAds(root: ParentNode): HTMLElement[];
   constraints: { maxReplyLength?: number };
