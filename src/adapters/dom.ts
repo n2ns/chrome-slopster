@@ -94,3 +94,22 @@ export async function insertIntoRichEditor(editor: HTMLElement, rawText: string,
   }
   return { ok: false, reason: 'rejected' };
 }
+
+/**
+ * Replace the value of a plain text field (e.g. Reddit's title textarea).
+ * execCommand keeps the page's input listeners and undo stack working; direct
+ * assignment through the native setter is the fallback for frameworks that
+ * ignore it.
+ */
+export function fillTextField(field: HTMLTextAreaElement | HTMLInputElement, text: string): InsertResult {
+  field.focus();
+  field.select();
+  const doc = field.ownerDocument;
+  if (typeof doc.execCommand === 'function') doc.execCommand('insertText', false, text);
+  if (field.value !== text) {
+    const prototype = field instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, 'value')?.set?.call(field, text);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  return field.value === text ? { ok: true } : { ok: false, reason: 'rejected' };
+}

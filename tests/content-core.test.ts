@@ -186,6 +186,12 @@ describe('content core on a Reddit post page', () => {
     await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
   });
 
+  it('reports no new-post target on a post page, and refuses to fill a post there', async () => {
+    await expect(sendToTab(1, 'getPostTarget', {})).resolves.toEqual({ target: null });
+    const target = { kind: 'post' as const, platform: 'reddit' as const, url: `${location.origin}/r/selfhosted/submit/`, body: '', parentChain: [], comments: [] };
+    await expect(sendToTab(1, 'insertPost', { title: 'T', body: 'B', target })).resolves.toEqual({ ok: false, reason: 'not-found' });
+  });
+
   it('answers getThreadContext with the post', async () => {
     const { thread } = await sendToTab(1, 'getThreadContext', {});
     expect(thread).toMatchObject({ platform: 'reddit', title: 'Why Selfhost?' });

@@ -171,6 +171,13 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       const [first] = adapter.findReplyTargets(doc);
       return { thread: first ? adapter.extractThread(first) : null };
     },
+    getPostTarget: async () => ({ target: adapter.postTarget(doc) }),
+    insertPost: async ({ title, body, target }) => {
+      // The form must still be open on the page the draft was generated for.
+      const composer = adapter.findPostComposer(doc);
+      if (!composer || adapter.postTarget(doc)?.url !== target.url) return { ok: false, reason: 'not-found' };
+      return adapter.insertPost(composer, { title, body });
+    },
     insertText: async ({ text, thread }) => {
       // Resolve the target from the thread the draft was written for, so it can never land in another post's or comment's box.
       const target = adapter.findReplyTargets(doc).find((candidate) => adapter.extractThread(candidate).url === thread.url);

@@ -2,7 +2,7 @@
 // on generated class names. Fixtures: tests/fixtures/x.
 
 import { insertIntoRichEditor, isVisible } from './dom';
-import type { PlatformAdapter, ThreadContext } from './types';
+import type { PlatformAdapter, PostComposer, ThreadContext } from './types';
 
 const TWEET = 'article[data-testid="tweet"]';
 const TEXT = '[data-testid="tweetText"]';
@@ -108,6 +108,21 @@ function dialogComposerFor(target: HTMLElement): HTMLElement | null {
   return null;
 }
 
+/**
+ * The composer for a new post: X's compose dialog when it quotes no tweet, or
+ * the inline "What's happening" box on a timeline. On a status page the inline
+ * box replies to the focal tweet, so it is not a new-post form.
+ */
+function postComposer(doc: Document): PostComposer | null {
+  for (const dialog of doc.querySelectorAll('[role="dialog"]')) {
+    const editor = dialog.querySelector<HTMLElement>(EDITOR);
+    if (editor && isVisible(editor) && !dialog.querySelector(TWEET)) return { body: editor };
+  }
+  if (statusId(doc)) return null;
+  const inline = [...doc.querySelectorAll<HTMLElement>(EDITOR)].find((editor) => !editor.closest('[role="dialog"]') && isVisible(editor));
+  return inline ? { body: inline } : null;
+}
+
 export const xAdapter: PlatformAdapter = {
   id: 'x',
   matches: ['https://x.com/*', 'https://twitter.com/*'],
@@ -155,17 +170,17 @@ export const xAdapter: PlatformAdapter = {
     return statusId(doc);
   },
 
-  // New-post support lands with Phase 5's adapter work.
-  postTarget() {
-    return null;
+  postTarget(doc) {
+    if (!postComposer(doc)) return null;
+    return { kind: 'post', platform: 'x', url: `${doc.location?.origin ?? ''}${doc.location?.pathname ?? ''}`, body: '', parentChain: [], comments: [] };
   },
 
-  findPostComposer() {
-    return null;
+  findPostComposer(doc) {
+    return postComposer(doc);
   },
 
-  async insertPost() {
-    return { ok: false, reason: 'not-found' };
+  insertPost(composer, draft) {
+    return insertIntoRichEditor(composer.body, draft.body);
   },
 
   findAds(root) {

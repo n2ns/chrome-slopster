@@ -3,7 +3,7 @@
 // markers on posts. Fixtures: tests/fixtures/facebook.
 
 import { insertIntoRichEditor, isVisible } from './dom';
-import type { PlatformAdapter, ThreadContext } from './types';
+import type { PlatformAdapter, PostComposer, ThreadContext } from './types';
 
 const ARTICLE = '[role="article"]';
 const MESSAGE = '[data-ad-rendering-role="story_message"]';
@@ -247,6 +247,21 @@ function addressedByName(editor: Element, comment: Element, thread: Element[]): 
   return label.includes(name) || collapse(editor.textContent).startsWith(name);
 }
 
+/** The "Create post" dialog: a dialog with a text box and no post or comment in it. */
+function postComposer(doc: Document): PostComposer | null {
+  for (const dialog of [...doc.querySelectorAll('[role="dialog"]')].reverse()) {
+    if (dialog.querySelector(ARTICLE)) continue;
+    const editor = [...dialog.querySelectorAll<HTMLElement>(EDITOR)].find(isVisible);
+    if (editor) return { body: editor };
+  }
+  return null;
+}
+
+/** The group or page being posted to, from the document title ("(3) Name | Facebook"). */
+function communityName(doc: Document): string | undefined {
+  return collapse(doc.title.replace(/^\(\d+\)\s*/, '').replace(/\s*\|\s*Facebook\s*$/, '')) || undefined;
+}
+
 export const facebookAdapter: PlatformAdapter = {
   id: 'facebook',
   matches: ['https://www.facebook.com/*'],
@@ -330,17 +345,26 @@ export const facebookAdapter: PlatformAdapter = {
     return lastPageKey;
   },
 
-  // New-post support lands with Phase 5's adapter work.
-  postTarget() {
-    return null;
+  postTarget(doc) {
+    if (!postComposer(doc)) return null;
+    return {
+      kind: 'post',
+      platform: 'facebook',
+      url: `${doc.location?.origin ?? ''}${doc.location?.pathname ?? ''}`,
+      community: communityName(doc),
+      body: '',
+      parentChain: [],
+      comments: [],
+    };
   },
 
-  findPostComposer() {
-    return null;
+  findPostComposer(doc) {
+    return postComposer(doc);
   },
 
-  async insertPost() {
-    return { ok: false, reason: 'not-found' };
+  insertPost(composer, draft) {
+    // Unlike comment boxes, Enter in the Create post editor adds a line; publishing needs the Post button.
+    return insertIntoRichEditor(composer.body, draft.body);
   },
 
   findAds(root) {

@@ -1,8 +1,8 @@
 // Reddit (new "shreddit" UI). Selectors rely on Reddit's custom elements and
 // slot names, never on utility class names. Fixtures: tests/fixtures/reddit.
 
-import { blockText, insertIntoRichEditor, isVisible } from './dom';
-import type { PlatformAdapter, ThreadContext } from './types';
+import { blockText, fillTextField, insertIntoRichEditor, isVisible } from './dom';
+import type { PlatformAdapter, PostComposer, ThreadContext } from './types';
 
 const UNIT_SELECTOR = 'shreddit-post [slot="title"], shreddit-post [slot="text-body"], shreddit-comment [slot="comment"]';
 const EDITOR_SELECTOR = '[contenteditable="true"][role="textbox"]';
@@ -88,6 +88,14 @@ function commentContext(comment: Element): ThreadContext {
   };
 }
 
+/** The submit page's form: Lexical body editor and the title textarea inside <post-composer-title>'s shadow root. */
+function postComposer(doc: Document): PostComposer | null {
+  const form = doc.querySelector('r-post-composer-form');
+  const body = form?.querySelector<HTMLElement>('shreddit-composer[name="body"] [contenteditable="true"][role="textbox"]');
+  const title = form?.querySelector('post-composer-title')?.shadowRoot?.querySelector<HTMLTextAreaElement>('textarea[name="title"]');
+  return body && isVisible(body) ? { body, title: title ?? undefined } : null;
+}
+
 export const redditAdapter: PlatformAdapter = {
   id: 'reddit',
   matches: ['https://www.reddit.com/*', 'https://reddit.com/*'],
@@ -134,17 +142,30 @@ export const redditAdapter: PlatformAdapter = {
     return postId(doc);
   },
 
-  // New-post support lands with Phase 5's adapter work.
-  postTarget() {
-    return null;
+  postTarget(doc) {
+    if (!postComposer(doc)) return null;
+    const subreddit = /^\/r\/([^/]+)\/submit/.exec(doc.location?.pathname ?? '')?.[1];
+    return {
+      kind: 'post',
+      platform: 'reddit',
+      url: `${doc.location?.origin ?? ''}${doc.location?.pathname ?? ''}`,
+      community: subreddit ? `r/${subreddit}` : undefined,
+      body: '',
+      parentChain: [],
+      comments: [],
+    };
   },
 
-  findPostComposer() {
-    return null;
+  findPostComposer(doc) {
+    return postComposer(doc);
   },
 
-  async insertPost() {
-    return { ok: false, reason: 'not-found' };
+  async insertPost(composer, draft) {
+    // Reddit requires a title; never fill a body under a missing or rejected title.
+    if (!composer.title || !draft.title) return { ok: false, reason: 'rejected' };
+    const title = fillTextField(composer.title as HTMLTextAreaElement, draft.title);
+    if (!title.ok) return title;
+    return insertIntoRichEditor(composer.body, draft.body);
   },
 
   findAds(root) {
