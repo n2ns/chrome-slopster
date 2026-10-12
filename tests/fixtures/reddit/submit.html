@@ -1,0 +1,161 @@
+<!-- https://www.reddit.com/r/selfhosted/submit captured 2026-10-12 (logged in), sanitized. post-composer-title keeps its textarea in an open shadow root, which serialization drops; tests attach it. -->
+<r-post-composer-form enctype="application/json" action="/svc/shreddit/graphql" id="post-submit-form" method="post" validation-trigger="change" is-post-guidance-enabled="" body-required="" modern-composer="" is-automation-links-enabled="" is-post-flair-client-validation-enabled="" use-gql-community-disable-reason="" flexible-attachments-enabled="" allowed-post-types="[&quot;TEXT&quot;,&quot;IMAGE&quot;,&quot;GALLERY&quot;,&quot;LINK&quot;,&quot;POLL&quot;]" actioned="">
+      <div>
+        <div>
+          <community-picker id="post-submit-community-picker" selected-community-prefixed-name="r/selfhosted" selected-community-id="t5_32hch" desktop="">
+      <div slot="trigger-icon"><span rpl="" avatar="" data-no-rtl-mirror="">
+    <span rpl="">
+  </span></span></div>
+    </community-picker>
+          <div>
+      <drafts-button draft-count="0"></drafts-button>
+      <drafts-modal draft-count="0" prefixed-name="u/OkMarionberry714" post-drafts="{&quot;edges&quot;:[]}" scheduled-posts="" draft-id="" base-url="https://www.redditstatic.com/shreddit/">
+      </drafts-modal>
+    </div>
+        </div>
+        <div>
+          <r-form-validation-message field-name="subredditName" show-if-field-not-dirty=""></r-form-validation-message>
+        </div>
+      </div>
+      <input type="hidden" name="subredditId" value="t5_32hch">
+      <input type="hidden" name="subredditName" value="selfhosted">
+      <input type="hidden" name="prefixedName" value="r/selfhosted">
+      <input type="hidden" name="recaptchaToken">
+      <input type="hidden" name="type" value="TEXT" data-persistent="" id="post-composer_type">
+      <section>
+        <r-post-tags-section modern-composer=""></r-post-tags-section>
+        <faceplate-form-section name="type" pattern="TEXT|VIDEO|IMAGE|GALLERY|LINK|CROSSPOST|AMA">
+          <fieldset>
+            <div id="post-composer__title">
+      <post-composer-title name="title" value="" maxlength="300" aria-disabled="false" faceplate-validity="invalid" suppress-focus-ring=""></post-composer-title>
+      <div>
+        <r-form-validation-message field-name="title"></r-form-validation-message>
+      </div>
+    </div>
+    <r-post-flairs-modal name="flair" id="post-flair-modal" prefixed-name="r/selfhosted" flairs-required="" flairs-allowed="" spoiler-tag-allowed="" modern-composer="" aria-disabled="false">
+            <data data-id="9ff35d5e-3c27-11ec-b3ab-6ad200246780" data-background-color="#00FFBF" data-text="Wednesday Exceptions" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="TEXT"></data>
+            <data data-id="82508a80-05bc-11eb-ae09-0effb713859f" data-background-color="transparent" data-text="Need Help" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="TEXT"></data>
+            <data data-id="7a2c90d0-4655-11ec-b067-9e334eed55f0" data-background-color="#000000" data-text="Release (No AI)" data-text-color="LIGHT" data-max-emojis="10" data-is-editable="false" data-allowable-content="TEXT"></data>
+            <data data-id="269a5bd8-1e22-11f1-a075-daf24701f13f" data-background-color="#000000" data-text="Release (AI)" data-text-color="LIGHT" data-max-emojis="10" data-is-editable="false" data-allowable-content="TEXT"></data>
+            <data data-id="609d835c-e58b-11f0-89de-b6526af661b1" data-background-color="#FFFFFF" data-text="Meta Post" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="TEXT"></data>
+            <data data-id="cb71ccc0-7e67-11e9-841a-0e67038620c2" data-text="Media Serving" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="f7d475f2-7e6b-11e9-9d01-0e36b1616012" data-text="Docker Management" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="684a1552-7e68-11e9-a4b1-0e84949b6a4e" data-text="Software Development" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="8bac67fc-7e68-11e9-afdb-0e9d14028e18" data-text="Self Help" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="13cfcd28-7e68-11e9-8ad0-0edb644073ce" data-text="Automation" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="73cd8238-7e68-11e9-a3b5-0eb4a9a3f2d6" data-text="Webserver" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="c7fc47c4-7e6b-11e9-b04d-0e70893a61b4" data-text="Product Announcement" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="c5723bd4-ecdc-11ec-95c9-6aa3965088a7" data-text="Guide" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="7bd7a438-6721-11f0-acb9-8e5e42f975ff" data-text="Monitoring Tools" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="587d404a-7e68-11e9-bd12-0eb480af1d48" data-text="Personal Dashboard" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="bc5f6346-7e67-11e9-a0fe-0e631119683e" data-text="Cloud Storage" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="7e5c2d58-7e68-11e9-9418-0e844b9a0afc" data-text="VPN" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="5e46c26c-7e68-11e9-8d4e-0e3bbb559e74" data-text="Proxy" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="f0c1d430-7e6b-11e9-9779-0e688895811a" data-text="DNS Tools" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="0ac01dca-53ce-11ed-9fce-c6cd629e2d85" data-text="Business Tools" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="78dcb492-7e68-11e9-b4e7-0e296f55dc70" data-text="Wiki's" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="0a45032a-0de1-11ed-997f-0a924a5694f9" data-text="Remote Access" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="0690f484-7e68-11e9-80db-0eb480af1d48" data-text="Email Management" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="7b9b9156-5ccb-11eb-9ab6-0e4839ba7cc3" data-text="Solved" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="e422e4c0-7e67-11e9-abac-0e2180cd4a4e" data-text="Game Server" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="32410c4a-7e68-11e9-ac95-0e1f2292890c" data-text="Finance Management" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="d37b1912-7e67-11e9-93c2-0ec7a61a727c" data-text="GIT Management" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="0d52d76a-7e68-11e9-977c-0eabae61418e" data-text="Chat System" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="38c528e4-7e68-11e9-baff-0ec5f304b28c" data-text="Text Storage" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="4474b0e2-7e68-11e9-96f8-0e01fac4c7aa" data-text="Photo Tools" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="2037fc84-7e68-11e9-a512-0ec2fc8fba1e" data-text="Calendar and Contacts" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="4f0c023a-7e68-11e9-b238-0e0cc4b970bc" data-text="Password Managers" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="0d8b10d6-7e6c-11e9-8137-0ec5f304b28c" data-text="Search Engine" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="2bb5b326-7e68-11e9-82d4-0e5b93af5dd4" data-text="Internet of Things" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="fd71269e-7e67-11e9-8d1a-0e844b9a0afc" data-text="Blogging Platform" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+            <data data-id="f5688f50-7e67-11e9-8fb9-0ee40327e406" data-text="Phone System" data-text-color="DARK" data-max-emojis="10" data-is-editable="false" data-allowable-content="ALL"></data>
+    </r-post-flairs-modal>
+    <r-form-validation-message field-name="flair" show-if-field-not-dirty=""></r-form-validation-message>
+    <r-post-flair-edit-modal subredditname="selfhosted">
+      <div slot="editor" contenteditable="true" role="textbox" tabindex="1" data-lexical-editor="true" dir="ltr"><p><br></p></div>
+    </r-post-flair-edit-modal>
+          </fieldset>
+        </faceplate-form-section>
+          <faceplate-form-section name="type" pattern="IMAGE|VIDEO">
+            <fieldset disabled="">
+              <r-post-media-input name="image" allow-images="" allow-gallery="" is-desktop="" allow-add-to-body="" skip-copy-paste-handling="" autoplay="" skip-disabled-callback-validation="" data-persistent="" id="post-composer_media" aria-disabled="false" faceplate-validity="valid"></r-post-media-input>
+            </fieldset>
+          </faceplate-form-section>
+          <faceplate-form-section name="type" pattern="LINK">
+            <fieldset disabled="">
+    <div id="post-composer_link-shell">
+      <div id="post-composer_link-header">
+        <span>
+          添加链接
+        </span>
+    <button rpl="" type="button" actioned="">
+      <span>
+      <span></span>
+    </span>
+    <faceplate-screen-reader-content>取消链接表单</faceplate-screen-reader-content>
+    </button>
+      </div>
+      <div data-persistent="" id="post-composer_link">
+        <r-post-url-input-wrapper>
+          <faceplate-textarea-input required="" appearance="bordered" helper-text-placeholder=" " helper-text-message=" " size="collapsed" type="url" name="link" aria-disabled="true" helper-text-aria-live="polite" faceplate-validity="invalid">
+            <span slot="label">
+              链接 URL
+            </span>
+          </faceplate-textarea-input>
+        </r-post-url-input-wrapper>
+      </div>
+      <post-composer-link-embed data-persistent="" id="post-composer_link-embed">
+    <faceplate-partial name="LinkEmbedPreview_rRXt3M" loading="programmatic"></faceplate-partial>
+      </post-composer-link-embed>
+      <div id="post-composer_link-validation">
+        <r-form-validation-message field-name="link"></r-form-validation-message>
+      </div>
+    </div>
+            </fieldset>
+          </faceplate-form-section>
+                <faceplate-form-section name="type" pattern="TEXT|IMAGE|VIDEO|LINK|CROSSPOST|AMA">
+                  <fieldset>
+        <shreddit-composer name="body" mode="richText" event-source="post_composer" placeholder="正文文本*" size="large" id="post-composer_bodytext" aria-required="true" aria-disabled="false">
+          <span slot="placeholder-html">正文文本<span>*</span></span>
+          <div slot="rte" aria-label="帖子正文字段" name="body" contenteditable="true" role="textbox" tabindex="1" aria-placeholder="正文文本*" data-lexical-editor="true" dir="ltr"><p><br></p></div>
+    <data slot="rte" value="config" data-key="actionBar" data-show-left-action-bar="false" data-show-right-action-bar="false"></data>
+    <data slot="rte" value="config" data-key="images" data-allow-creation="true" data-allow-static-images="true" data-allow-animated-images="true" data-max-image-count="20"></data>
+    <data slot="rte" value="config" data-key="videos" data-allow-creation="false" data-max-video-count="5" data-player-ui="desktop" data-skip-video-size-and-dimension-validation="false" data-allow-extended-video-duration="false"></data>
+    <data slot="rte" value="config" data-key="media" data-allow-captions="true"></data>
+    <data slot="rte" value="config" data-key="composer" data-no-linebreak-on-meta-enter="true" data-is-mobile="false" data-event-source="post_composer" data-enable-multipart-upload="true" data-selection-scroll-top-offset="56">
+    </data>
+    <data slot="rte" value="config" data-key="emoji" data-enabled="true"></data>
+          <data slot="rte" value="config" data-key="formattingBar" data-portal-selector="#post-composer-toolbar-portal" data-toolbar-additions-position="start" data-disable-on-blur="true"></data>
+        </shreddit-composer>
+        <div>
+          <r-form-validation-message field-name="body"></r-form-validation-message>
+        </div>
+                  </fieldset>
+                </faceplate-form-section>
+    <post-scheduling-form-input name="schedule" aria-disabled="false"></post-scheduling-form-input>
+        <faceplate-form-section name="type" pattern="TEXT|VIDEO|IMAGE|GALLERY|LINK|CROSSPOST|AMA">
+          <div data-testid="post-composer-action-row-container">
+                <div>
+                  <div id="post-composer-toolbar-portal"><rte-toolbar role="toolbar" aria-orientation="horizontal" part="toolbar-top" dir="ltr" aria-label="文本格式设置工具栏"> <post-composer-toolbar-button-link-embed slot="responsive" keep-enabled-on-blur=""></post-composer-toolbar-button-link-embed><post-composer-toolbar-button-image slot="responsive" keep-enabled-on-blur="" ignore-focus=""></post-composer-toolbar-button-image><post-composer-toolbar-button-video slot="responsive" keep-enabled-on-blur="" ignore-focus=""></post-composer-toolbar-button-video><hr role="presentation" slot="responsive" ignore-focus=""><rte-toolbar-button-bold slot="responsive" ignore-focus=""></rte-toolbar-button-bold><rte-toolbar-button-italic ignore-focus="" slot="responsive"></rte-toolbar-button-italic><rte-toolbar-button-strikethrough ignore-focus="" slot="responsive"></rte-toolbar-button-strikethrough><rte-toolbar-button-superscript ignore-focus="" slot="responsive"></rte-toolbar-button-superscript><rte-toolbar-button-heading ignore-focus="" slot="responsive"></rte-toolbar-button-heading><hr role="presentation" ignore-focus="" slot="responsive"><rte-toolbar-button-link ignore-focus="" slot="responsive"></rte-toolbar-button-link><rte-toolbar-button-bulleted-list ignore-focus="" slot="responsive"></rte-toolbar-button-bulleted-list><rte-toolbar-button-numbered-list ignore-focus="" slot="responsive"></rte-toolbar-button-numbered-list><hr role="presentation" ignore-focus="" slot="responsive"><rte-toolbar-button-spoiler ignore-focus="" slot="responsive"></rte-toolbar-button-spoiler><rte-toolbar-button-block-quote ignore-focus="" slot="responsive"></rte-toolbar-button-block-quote><rte-toolbar-button-code ignore-focus="" slot="responsive"></rte-toolbar-button-code><rte-toolbar-button-code-block ignore-focus="" slot="responsive"></rte-toolbar-button-code-block><rte-toolbar-button-table ignore-focus="" slot="responsive"></rte-toolbar-button-table><button rpl="" aria-label="切换到 Markdown" slot="responsive" type="button" ignore-focus=""> <!--?lit$3093194885$--><!----><span> <!--?lit$3093194885$--> <!--?lit$3093194885$--><span><!--?lit$3093194885$-->切换到 Markdown</span> </span> <!--?lit$3093194885$--><!--?--><!----><!----><!----> </button> </rte-toolbar></div>
+                  <post-composer-standalone-toolbar show-image="" allow-gallery="" show-link="" hidden=""></post-composer-standalone-toolbar>
+                </div>
+                <div>
+    <div>
+      <a rpl="" href="#post-submit-community-picker" actioned="">跳至社区选择器
+    </a>
+      <div>
+      <r-post-form-submit-button id="submit-post-button" post-action-type="submit" is-ai-copilot-enabled="" subreddit-id="t5_32hch">
+      </r-post-form-submit-button>
+         <r-post-form-submit-button id="save-draft-button" post-action-type="draft">
+  </r-post-form-submit-button>
+      </div>
+    </div>
+  <confirmation-modal id="media-loss-draft-save-modal" title="保存草稿？" message="草稿不保存图像和视频。" confirm-text="是，保存" aria-hidden="true"></confirmation-modal>
+  <confirmation-modal id="save-draft-failed-modal" title="无法保存草稿" message="你已有 20 份草稿。请先删除一份草稿以保存此草稿。" confirm-text="管理草稿" aria-hidden="true"></confirmation-modal>
+    <ul id="submit-operation-errors"></ul>
+  </div>
+              </div>
+        </faceplate-form-section>
+      </section>
+      <post-scheduling-dialog></post-scheduling-dialog>
+    </r-post-composer-form>
