@@ -6,7 +6,7 @@ import type { ThreadContext } from '@/src/adapters/types';
 import { t, type MessageKey } from '@/src/i18n';
 import { sendToBackground, sendToTab } from '@/src/messaging/protocol';
 import type { GenerationResult } from '@/src/prompt/types';
-import { errorMessage } from '@/src/ui/errors';
+import { ErrorNotice } from '@/src/ui/ErrorNotice';
 import { DraftResult, PLATFORM_KEYS, type FlowProps, type Notice } from './draft';
 
 const FILL_FAILURE_KEYS: Record<'not-found' | 'rejected', MessageKey> = {
@@ -135,7 +135,7 @@ export function PostFlow({ tabId, url, persona, intent, operatorLanguage }: Flow
       )}
 
       {notice && <p className={notice.ok ? 'status' : 'error'}>{t(notice.key)}</p>}
-      {error !== undefined && <p className="error">{errorMessage(error)}</p>}
+      {error !== undefined && <ErrorNotice error={error} />}
     </>
   );
 }

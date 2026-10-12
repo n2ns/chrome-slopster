@@ -355,5 +355,11 @@
   },
   "contentOpenSidePanel": {
     "message": "已选中，请点击扩展图标打开侧边栏。"
+  },
+  "settingsButton": {
+    "message": "设置"
+  },
+  "openSettingsLink": {
+    "message": "打开设置"
   }
 }

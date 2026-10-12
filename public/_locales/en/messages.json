@@ -355,5 +355,11 @@
   },
   "contentOpenSidePanel": {
     "message": "Selected. Click the extension icon to open the side panel."
+  },
+  "settingsButton": {
+    "message": "Settings"
+  },
+  "openSettingsLink": {
+    "message": "Open settings"
   }
 }
