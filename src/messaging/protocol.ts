@@ -1,7 +1,7 @@
 // Every cross-context message, as one typed map. Senders and handlers both go
 // through the helpers below so payload and response types cannot drift.
 
-import type { InsertResult, ThreadContext } from '@/src/adapters/types';
+import type { InsertResult, PostDraft, ThreadContext } from '@/src/adapters/types';
 import type { GenerationRequest, GenerationResult } from '@/src/prompt/types';
 import { AppError, type ErrorCode } from '@/src/providers/types';
 
@@ -27,6 +27,13 @@ export interface ContentMessages {
   getThreadContext: { request: Record<string, never>; response: { thread: ThreadContext | null } };
   /** Fill the composer that belongs to `thread` (the target the draft was generated for); not-found when it is not on the page. */
   insertText: { request: { text: string; thread: ThreadContext }; response: InsertResult };
+  /** Where a new post would go, while the page's new-post form is open; null otherwise. */
+  getPostTarget: { request: Record<string, never>; response: { target: ThreadContext | null } };
+  /**
+   * Fill the open new-post form with a draft generated for `target`; not-found
+   * when the form is closed or the page no longer matches `target.url`. Never publishes.
+   */
+  insertPost: { request: PostDraft & { target: ThreadContext }; response: InsertResult };
 }
 
 type MessageMap = BackgroundMessages | ContentMessages;

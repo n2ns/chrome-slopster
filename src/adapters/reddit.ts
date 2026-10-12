@@ -134,6 +134,19 @@ export const redditAdapter: PlatformAdapter = {
     return postId(doc);
   },
 
+  // New-post support lands with Phase 5's adapter work.
+  postTarget() {
+    return null;
+  },
+
+  findPostComposer() {
+    return null;
+  },
+
+  async insertPost() {
+    return { ok: false, reason: 'not-found' };
+  },
+
   findAds(root) {
     return [...root.querySelectorAll<HTMLElement>(AD_SELECTOR)];
   },
