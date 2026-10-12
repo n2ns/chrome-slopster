@@ -1,0 +1,154 @@
+/* Shared base styles for the options page and side panel, light and dark. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1c1f24;
+  --muted: #5b6370;
+  --border: #d6dae0;
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+  --danger: #c62828;
+  --success: #2e7d32;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b;
+    --surface: #1f2228;
+    --text: #e6e8eb;
+    --muted: #9aa3ae;
+    --border: #353a42;
+    --accent: #60a5fa;
+    --accent-text: #0b1220;
+    --danger: #ef7070;
+    --success: #6fcf7a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 16px;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+}
+
+input[type='text'],
+input[type='password'],
+textarea,
+select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 4.5em;
+}
+
+button {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.9em;
+  margin: 4px 0 0;
+}
+
+.error {
+  color: var(--danger);
+  margin: 8px 0 0;
+}
+
+.status {
+  color: var(--success);
+  margin: 8px 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.badge {
+  font-size: 0.8em;
+  color: var(--accent);
+  margin-left: 6px;
+}
+
+.output {
+  white-space: pre-wrap;
+  margin: 8px 0 0;
+}
