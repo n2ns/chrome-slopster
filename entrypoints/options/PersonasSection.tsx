@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
-import { createPersona, defaultPersonaFields, deletePersona, setActivePersona, updatePersona } from '@/src/storage/personas';
+import { createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
+import { AppError } from '@/src/providers/types';
 import type { Persona } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { usePersonaState } from '@/src/ui/hooks';
@@ -37,6 +38,19 @@ export function PersonasSection() {
       <section>
         <h2>{t('personasHeading')}</h2>
         {loadError ? <p className="error">{errorMessage(loadError)}</p> : <p className="hint">{t('loading')}</p>}
+        {loadError instanceof AppError && loadError.code === 'storage-error' && (
+          <div className="actions">
+            <button
+              type="button"
+              className="danger"
+              onClick={() => {
+                if (window.confirm(t('personasResetConfirm'))) void run(resetPersonas);
+              }}
+            >
+              {t('personasReset')}
+            </button>
+          </div>
+        )}
       </section>
     );
   }
@@ -77,7 +91,7 @@ export function PersonasSection() {
             key={selected.id}
             persona={selected}
             isActive={selected.id === activeId}
-            onSave={(persona) => run(async () => void (await updatePersona(persona)))}
+            onSave={(patch) => run(async () => void (await updatePersona(selected.id, patch)))}
             onSetActive={() => run(() => setActivePersona(selected.id))}
             onDelete={() => {
               if (window.confirm(t('personaDeleteConfirm', selected.name))) void run(() => deletePersona(selected.id));
@@ -93,7 +107,8 @@ export function PersonasSection() {
 interface EditorProps {
   persona: Persona;
   isActive: boolean;
-  onSave: (persona: Persona) => Promise<boolean>;
+  /** Receives only the fields changed in this form, so edits made elsewhere are kept. */
+  onSave: (patch: Partial<PersonaFields>) => Promise<boolean>;
   onSetActive: () => void;
   onDelete: () => void;
 }
@@ -105,6 +120,16 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
     bannedWords: persona.bannedWords.join('\n'),
     customRules: persona.customRules.join('\n'),
   });
+  // Values this form last loaded or saved; only fields that differ are sent.
+  const [baseline, setBaseline] = useState<PersonaFields>(() => ({
+    name: persona.name,
+    identity: persona.identity,
+    tone: persona.tone,
+    replyLanguage: persona.replyLanguage,
+    bannedWords: persona.bannedWords,
+    customRules: persona.customRules,
+    antiAiVoice: persona.antiAiVoice,
+  }));
   const [saved, setSaved] = useState(false);
   const field = (id: string) => `persona-${id}`;
 
@@ -115,7 +140,23 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const ok = await onSave({ ...draft, name: draft.name.trim(), bannedWords: lines(draft.bannedWords), customRules: lines(draft.customRules) });
+    const values: PersonaFields = {
+      ...baseline,
+      name: draft.name.trim(),
+      identity: draft.identity,
+      tone: draft.tone,
+      replyLanguage: draft.replyLanguage,
+      bannedWords: lines(draft.bannedWords),
+      customRules: lines(draft.customRules),
+      antiAiVoice: draft.antiAiVoice,
+    };
+    const patch = Object.fromEntries(
+      (Object.keys(values) as (keyof PersonaFields)[])
+        .filter((key) => JSON.stringify(values[key]) !== JSON.stringify(baseline[key]))
+        .map((key) => [key, values[key]]),
+    ) as Partial<PersonaFields>;
+    const ok = await onSave(patch);
+    if (ok) setBaseline(values);
     setSaved(ok);
   }
 

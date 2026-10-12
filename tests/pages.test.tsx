@@ -8,7 +8,9 @@ import OptionsApp from '@/entrypoints/options/App';
 import SidepanelApp from '@/entrypoints/sidepanel/App';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
-import { createPersona, defaultPersonaFields, listPersonas } from '@/src/storage/personas';
+import { getApiKeys } from '@/src/storage/items';
+import { createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
+import { saveApiKeys } from '@/src/storage/settings';
 import { installLocksPolyfill, mockI18n } from './helpers/browser';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -28,8 +30,9 @@ async function settle() {
   for (let i = 0; i < 5; i += 1) await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 }
 
-function setValue(element: HTMLTextAreaElement, value: string) {
-  Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(element, value);
+function setValue(element: HTMLTextAreaElement | HTMLInputElement, value: string) {
+  const proto = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(proto, 'value')!.set!.call(element, value);
   element.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
@@ -53,6 +56,26 @@ describe('pages', () => {
       expect(text).toContain(key);
     }
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
+  });
+
+  it('saving API keys does not overwrite a key another window changed meanwhile', async () => {
+    await render(<OptionsApp />);
+    await act(async () => void (await saveApiKeys({ claude: 'claude-from-other-window' })));
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'openai-here'));
+    await act(async () => container.querySelector('#key-openai')!.closest('form')!.requestSubmit());
+    await settle();
+    expect(await getApiKeys()).toMatchObject({ openai: 'openai-here', claude: 'claude-from-other-window' });
+  });
+
+  it('saving a persona keeps fields another window changed meanwhile', async () => {
+    await render(<OptionsApp />);
+    const [persona] = await listPersonas();
+    await act(async () => void (await updatePersona(persona!.id, { tone: 'tone from other window' })));
+    await settle();
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#persona-name')!, 'Renamed here'));
+    await act(async () => container.querySelector('#persona-name')!.closest('form')!.requestSubmit());
+    await settle();
+    expect(await getPersona(persona!.id)).toMatchObject({ name: 'Renamed here', tone: 'tone from other window' });
   });
 
   it('side panel lists personas, refreshes on change, and keeps Generate disabled', async () => {

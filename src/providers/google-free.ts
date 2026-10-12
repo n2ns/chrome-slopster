@@ -1,7 +1,9 @@
 // Free Google Translate endpoint (no API key). Translation only, so it is not
-// part of AI_PROVIDERS. Retries transient failures with exponential backoff and
-// jitter; failures a retry cannot fix (4xx other than 429, bad response shape)
-// are thrown immediately.
+// part of AI_PROVIDERS. The text goes in a POST form body: in the query string,
+// a few thousand CJK characters exceed Google's URL length limit (HTTP 400).
+// Server errors and network failures are retried with exponential backoff and
+// jitter. A 429 is not retried, so the caller starts its cooldown at once;
+// other 4xx and bad response shapes are thrown immediately.
 
 import { fetchJson } from './http';
 import { AppError } from './types';
@@ -17,8 +19,8 @@ export interface GoogleFreeOptions {
   signal?: AbortSignal;
 }
 
-export function googleFreeUrl(text: string, targetLanguage: string): string {
-  const params = new URLSearchParams({ client: 'gtx', sl: 'auto', tl: targetLanguage, dt: 't', q: text });
+export function googleFreeUrl(targetLanguage: string): string {
+  const params = new URLSearchParams({ client: 'gtx', sl: 'auto', tl: targetLanguage, dt: 't' });
   return `${ENDPOINT}?${params.toString()}`;
 }
 
@@ -36,17 +38,19 @@ function parseResponse(data: unknown): string {
 
 function isRetryable(error: unknown): boolean {
   if (!(error instanceof AppError)) return false;
-  if (error.code === 'rate-limited' || error.code === 'network-error') return true;
+  if (error.code === 'network-error') return true;
   return error.code === 'http-error' && (error.status ?? 0) >= 500;
 }
 
 export async function translateGoogleFree(text: string, targetLanguage: string, options: GoogleFreeOptions = {}): Promise<string> {
   const { attempts = 3, baseDelayMs = 350, signal } = options;
-  const url = googleFreeUrl(text, targetLanguage);
+  const url = googleFreeUrl(targetLanguage);
 
   for (let attempt = 1; ; attempt += 1) {
     try {
-      return parseResponse(await fetchJson(url, { signal }, LABEL));
+      // A fresh body per attempt; fetch consumes it.
+      const body = new URLSearchParams({ q: text });
+      return parseResponse(await fetchJson(url, { method: 'POST', body, signal }, LABEL));
     } catch (error) {
       if (attempt >= attempts || !isRetryable(error)) throw error;
       const jitter = baseDelayMs > 0 ? Math.random() * 200 : 0;

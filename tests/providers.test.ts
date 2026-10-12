@@ -194,25 +194,28 @@ describe('Claude provider', () => {
 describe('Google free translation', () => {
   const fast = { baseDelayMs: 0 };
 
-  it('builds the request URL and joins the translated segments', async () => {
+  it('POSTs the text as a form body and joins the translated segments', async () => {
     const { calls } = stubFetch({ json: [[['Hello ', 'Bonjour '], ['world', 'monde']], null, 'fr'] });
     await expect(translateGoogleFree('Bonjour monde & co', 'zh-CN', fast)).resolves.toBe('Hello world');
 
     const url = new URL(calls[0]!.url);
     expect(url.origin + url.pathname).toBe('https://translate.googleapis.com/translate_a/single');
-    expect(Object.fromEntries(url.searchParams)).toEqual({ client: 'gtx', sl: 'auto', tl: 'zh-CN', dt: 't', q: 'Bonjour monde & co' });
+    expect(Object.fromEntries(url.searchParams)).toEqual({ client: 'gtx', sl: 'auto', tl: 'zh-CN', dt: 't' });
+    expect(calls[0]!.init.method).toBe('POST');
+    expect(calls[0]!.form?.get('q')).toBe('Bonjour monde & co');
   });
 
-  it('retries a 429 and succeeds', async () => {
-    const { fetchMock } = stubFetch({ status: 429 }, { json: [[['ok', 'src']]] });
-    await expect(translateGoogleFree('x', 'en', fast)).resolves.toBe('ok');
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+  it('keeps long text out of the URL so it cannot exceed URL length limits', async () => {
+    const { calls } = stubFetch({ json: [[['ok', 'src']]] });
+    await translateGoogleFree('中'.repeat(4500), 'en', fast);
+    expect(calls[0]!.url.length).toBeLessThan(200);
+    expect(calls[0]!.form?.get('q')).toBe('中'.repeat(4500));
   });
 
-  it('throws rate-limited after the last 429', async () => {
-    const { fetchMock } = stubFetch({ status: 429 }, { status: 429 }, { status: 429 });
+  it('does not retry a 429, so the caller can start the cooldown at once', async () => {
+    const { fetchMock } = stubFetch({ status: 429 });
     await expectAppError(translateGoogleFree('x', 'en', fast), 'rate-limited', 429);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('retries server errors and network failures', async () => {

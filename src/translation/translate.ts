@@ -33,9 +33,14 @@ async function translateWithAi(engine: AiEngine, text: string, target: string, s
   return { text: translated, truncated: limited.truncated };
 }
 
+/** Fall back to AI only when enabled and the fallback engine has a key; otherwise the Google failure stands. */
+function canFallBack(settings: Settings, keys: ApiKeys): boolean {
+  return settings.aiFallback && Boolean(keys[settings.aiEngine]);
+}
+
 async function translateWithGoogleFree(text: string, target: string, settings: Settings, keys: ApiKeys): Promise<TranslationResult> {
   if (await isGoogleFreeCoolingDown()) {
-    if (settings.aiFallback) return translateWithAi(settings.aiEngine, text, target, settings, keys);
+    if (canFallBack(settings, keys)) return translateWithAi(settings.aiEngine, text, target, settings, keys);
     throw new AppError('rate-limited', 'Google free translation is cooling down after a rate limit.');
   }
 
@@ -46,7 +51,7 @@ async function translateWithGoogleFree(text: string, target: string, settings: S
     if (error instanceof AppError && error.code === 'rate-limited') {
       await googleFreeCooldownAtItem.setValue(Date.now());
     }
-    if (settings.aiFallback) return translateWithAi(settings.aiEngine, text, target, settings, keys);
+    if (canFallBack(settings, keys)) return translateWithAi(settings.aiEngine, text, target, settings, keys);
     throw error;
   }
 }

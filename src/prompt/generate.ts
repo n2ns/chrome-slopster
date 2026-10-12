@@ -5,6 +5,7 @@ import { AI_PROVIDERS } from '@/src/providers';
 import { AppError } from '@/src/providers/types';
 import { getApiKeys, getSettings } from '@/src/storage/items';
 import { isAiEngine } from '@/src/storage/types';
+import { resolveOperatorLanguage } from '@/src/translation/translate';
 import { buildGenerationPrompt } from './build';
 import { parseGenerationOutput } from './parse';
 import type { GenerationRequest, GenerationResult } from './types';
@@ -14,7 +15,7 @@ export async function generateDraft(request: GenerationRequest): Promise<Generat
   const engine = settings.aiEngine;
   if (!isAiEngine(engine)) throw new AppError('unsupported-engine', `Unsupported AI engine: ${String(engine)}`);
 
-  const { system, prompt } = buildGenerationPrompt(request);
+  const { system, prompt } = buildGenerationPrompt({ ...request, operatorLanguage: resolveOperatorLanguage(request.operatorLanguage) });
   const raw = await AI_PROVIDERS[engine].generate(
     { system, prompt, json: true },
     { apiKey: keys[engine], model: resolveModel(engine, settings.models[engine]) },

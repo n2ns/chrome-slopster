@@ -11,6 +11,7 @@ import {
   getPersona,
   listPersonas,
   PERSONAS_KEY,
+  resetPersonas,
   setActivePersona,
   updatePersona,
   watchPersonas,
@@ -42,6 +43,38 @@ describe('personas', () => {
     await expect(readChunked(PERSONAS_KEY)).resolves.toEqual(personas);
   });
 
+  it('applies an update as a patch onto the latest stored persona', async () => {
+    const [persona] = await listPersonas();
+    // Window B changes the tone while window A still has the old persona open.
+    await updatePersona(persona!.id, { tone: 'from window B' });
+    // Window A saves only the field it edited.
+    const saved = await updatePersona(persona!.id, { name: 'from window A' });
+    expect(saved).toMatchObject({ name: 'from window A', tone: 'from window B' });
+    expect(await getPersona(persona!.id)).toEqual(saved);
+  });
+
+  it('serves the local backup when the synced data is corrupt, and repairs sync on the next write', async () => {
+    const created = await createPersona(fields('Big', { identity: 'x'.repeat(20000) }));
+    await fakeBrowser.storage.sync.remove(`${PERSONAS_KEY}__c1`);
+    expect((await listPersonas()).map((p) => p.id)).toContain(created.id);
+
+    await updatePersona(created.id, { tone: 'repaired' });
+    expect((await readChunked<{ tone: string }[]>(PERSONAS_KEY))!.find((p) => p.tone === 'repaired')).toBeTruthy();
+  });
+
+  it('fails with storage-error on corrupt data without a backup, and resetPersonas recovers', async () => {
+    await createPersona(fields('Big', { identity: 'x'.repeat(20000) }));
+    await fakeBrowser.storage.local.clear();
+    await fakeBrowser.storage.sync.remove(`${PERSONAS_KEY}__c1`);
+    await expect(listPersonas()).rejects.toMatchObject({ code: 'storage-error' });
+
+    await resetPersonas();
+    const personas = await listPersonas();
+    expect(personas).toHaveLength(1);
+    expect(personas[0]!.name).toBe('defaultPersonaName');
+    expect(await activePersonaIdItem.getValue()).toBe(personas[0]!.id);
+  });
+
   it('seeds only once when several windows load at the same time', async () => {
     await Promise.all([listPersonas(), listPersonas(), listPersonas()]);
     expect(await listPersonas()).toHaveLength(1);
@@ -53,7 +86,7 @@ describe('personas', () => {
     expect(created.id).toBeTruthy();
     expect(await getPersona(created.id)).toEqual(created);
 
-    const updated = await updatePersona({ ...created, tone: 'Dry humor', replyLanguage: 'ja' });
+    const updated = await updatePersona(created.id, { tone: 'Dry humor', replyLanguage: 'ja' });
     expect(await getPersona(created.id)).toEqual(updated);
     expect(updated.tone).toBe('Dry humor');
 
@@ -105,8 +138,8 @@ describe('personas', () => {
     await listPersonas();
     const [a, b] = await Promise.all([createPersona(fields('A')), createPersona(fields('B'))]);
     await Promise.all([
-      updatePersona({ ...a!, tone: 'tone A' }),
-      updatePersona({ ...b!, tone: 'tone B' }),
+      updatePersona(a!.id, { tone: 'tone A' }),
+      updatePersona(b!.id, { tone: 'tone B' }),
       createPersona(fields('C')),
       createPersona(fields('D')),
     ]);
@@ -119,7 +152,7 @@ describe('personas', () => {
   it('rejects an update with not-found when another window deleted the persona first', async () => {
     await listPersonas();
     const target = await createPersona(fields('Target'));
-    const [deleted, updated] = await Promise.allSettled([deletePersona(target.id), updatePersona({ ...target, tone: 'late edit' })]);
+    const [deleted, updated] = await Promise.allSettled([deletePersona(target.id), updatePersona(target.id, { tone: 'late edit' })]);
     expect(deleted.status).toBe('fulfilled');
     expect(updated.status).toBe('rejected');
     const reason = (updated as PromiseRejectedResult).reason;

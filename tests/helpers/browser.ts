@@ -10,6 +10,17 @@ function utf8Length(text: string): number {
 }
 
 /**
+ * Bytes Chrome charges for a value: the UTF-8 length of its JSON, where
+ * Chromium's serializer (unlike JSON.stringify) escapes '<', U+2028, and
+ * U+2029 as six-byte \\uXXXX sequences. Measured in Chrome 154.
+ */
+export function chromeJsonBytes(value: unknown): number {
+  const json = JSON.stringify(value);
+  const extra = (json.match(/</g)?.length ?? 0) * 5 + (json.match(/[\u2028\u2029]/g)?.length ?? 0) * 3;
+  return utf8Length(json) + extra;
+}
+
+/**
  * Make browser.storage.sync.set reject like Chrome when any item's key plus
  * JSON-serialized value exceeds 8192 UTF-8 bytes. fakeBrowser has no quota.
  * Restore with vi.restoreAllMocks().
@@ -19,7 +30,7 @@ export function enforceSyncItemQuota() {
   const original = sync.set.bind(sync) as (items: Record<string, unknown>) => Promise<void>;
   return vi.spyOn(sync, 'set').mockImplementation((async (items: Record<string, unknown>) => {
     for (const [key, value] of Object.entries(items)) {
-      if (utf8Length(key) + utf8Length(JSON.stringify(value)) > SYNC_QUOTA_BYTES_PER_ITEM) {
+      if (utf8Length(key) + chromeJsonBytes(value) > SYNC_QUOTA_BYTES_PER_ITEM) {
         throw new Error('QUOTA_BYTES_PER_ITEM quota exceeded');
       }
     }

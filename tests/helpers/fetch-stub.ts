@@ -10,6 +10,8 @@ export interface RecordedCall {
   init: RequestInit;
   headers: Record<string, string>;
   body: unknown;
+  /** Set when the request body is URL-encoded form data. */
+  form?: URLSearchParams;
 }
 
 export function stubFetch(...replies: StubReply[]) {
@@ -18,7 +20,8 @@ export function stubFetch(...replies: StubReply[]) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
     const headers = Object.fromEntries(new Headers(init.headers).entries());
     const body = typeof init.body === 'string' ? (JSON.parse(init.body) as unknown) : undefined;
-    calls.push({ url: String(input), init, headers, body });
+    const form = init.body instanceof URLSearchParams ? init.body : undefined;
+    calls.push({ url: String(input), init, headers, body, form });
 
     const reply = queue.shift();
     if (!reply) throw new Error(`Unexpected fetch: ${String(input)}`);

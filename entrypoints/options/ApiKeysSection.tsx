@@ -8,20 +8,29 @@ import { engineLabel } from '@/src/ui/labels';
 
 export function ApiKeysSection() {
   const [keys, setKeys] = useState<ApiKeys>();
+  // Keys as last loaded or saved; only changed engines are written, so a key
+  // another window saved meanwhile is not overwritten.
+  const [baseline, setBaseline] = useState<ApiKeys>();
   const [error, setError] = useState<unknown>();
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getApiKeys().then(setKeys, setError);
+    getApiKeys().then((loaded) => {
+      setKeys(loaded);
+      setBaseline(loaded);
+    }, setError);
   }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!keys) return;
+    if (!keys || !baseline) return;
     setError(undefined);
     setSaved(false);
     try {
-      setKeys(await saveApiKeys(keys));
+      const changed = Object.fromEntries(AI_ENGINES.filter((engine) => keys[engine] !== baseline[engine]).map((engine) => [engine, keys[engine]]));
+      const stored = await saveApiKeys(changed);
+      setKeys(stored);
+      setBaseline(stored);
       setSaved(true);
     } catch (failure) {
       setError(failure);
