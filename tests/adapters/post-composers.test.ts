@@ -57,6 +57,13 @@ describe('x new-post form', () => {
     expect(xAdapter.findPostComposer(document)?.body.getAttribute('data-testid')).toBe('tweetTextarea_0');
   });
 
+  it('offers no new-post form while a reply dialog covers the timeline composer', () => {
+    load('/home', 'x/home-composer.html', 'x/reply-dialog.html');
+    expect(xAdapter.postTarget(document)).toBeNull();
+    window.history.replaceState(null, '', '/compose/post');
+    expect(xAdapter.postTarget(document)).toBeNull();
+  });
+
   it('does not treat the reply box of a status page or a reply dialog as a new-post form', () => {
     load('/DNetwork_4/status/2109314061410120106', 'x/status.html');
     expect(xAdapter.postTarget(document)).toBeNull();
@@ -72,6 +79,27 @@ describe('facebook new-post form', () => {
     document.title = '(2) Vietnam Travelers | Facebook';
     expect(facebookAdapter.postTarget(document)).toMatchObject({ kind: 'post', platform: 'facebook', community: 'Vietnam Travelers' });
     expect(facebookAdapter.findPostComposer(document)?.body.getAttribute('aria-placeholder')).toBe('发布公开帖…');
+  });
+
+  it('does not treat other dialogs with a text box as Create post (e.g. editing an existing post)', () => {
+    load('/groups/333250224984388/');
+    document.body.innerHTML = '<div role="dialog" aria-label="Edit post"><form method="POST"><div role="textbox" contenteditable="true">existing text</div></form></div>';
+    expect(facebookAdapter.postTarget(document)).toBeNull();
+    document.body.innerHTML = '<div role="dialog"><div role="textbox" contenteditable="true"></div></div>';
+    expect(facebookAdapter.postTarget(document)).toBeNull();
+  });
+
+  it('refuses to fill a Create post editor that already has text', async () => {
+    load('/groups/333250224984388/', 'facebook/create-post-dialog.html');
+    const composer = facebookAdapter.findPostComposer(document)!;
+    composer.body.textContent = 'typed by the operator';
+    expect(facebookAdapter.findPostComposer(document)).toBeNull();
+  });
+
+  it('names no community on the home feed', () => {
+    load('/', 'facebook/create-post-dialog.html');
+    document.title = '(3) Facebook';
+    expect(facebookAdapter.postTarget(document)?.community).toBeUndefined();
   });
 
   it('does not treat a post dialog with comments as a new-post form', () => {

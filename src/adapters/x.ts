@@ -116,7 +116,10 @@ function dialogComposerFor(target: HTMLElement): HTMLElement | null {
 function postComposer(doc: Document): PostComposer | null {
   for (const dialog of doc.querySelectorAll('[role="dialog"]')) {
     const editor = dialog.querySelector<HTMLElement>(EDITOR);
-    if (editor && isVisible(editor) && !dialog.querySelector(TWEET)) return { body: editor };
+    if (!editor || !isVisible(editor)) continue;
+    // A reply dialog (it quotes the tweet) covers the page: no new-post form is in reach.
+    if (dialog.querySelector(TWEET)) return null;
+    return { body: editor };
   }
   if (statusId(doc)) return null;
   const inline = [...doc.querySelectorAll<HTMLElement>(EDITOR)].find((editor) => !editor.closest('[role="dialog"]') && isVisible(editor));

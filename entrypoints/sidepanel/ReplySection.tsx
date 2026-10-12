@@ -41,7 +41,12 @@ export function ReplySection() {
   const { tabId, url } = useActiveTab();
   const [error, setError] = useState<unknown>();
   const [intent, setIntent] = useState('');
-  const [mode, setMode] = useState<GenerationMode>('reply');
+  // The chosen mode remembers the reply target it was chosen under; selecting a
+  // new target on the page switches back to replying so the selection is visible.
+  const selectedTarget = useReplyTarget(tabId);
+  const [choice, setChoice] = useState<{ mode: GenerationMode; targetUrl: string | undefined }>({ mode: 'reply', targetUrl: undefined });
+  const mode: GenerationMode = selectedTarget && selectedTarget.url !== choice.targetUrl ? 'reply' : choice.mode;
+  const setMode = (next: GenerationMode) => setChoice({ mode: next, targetUrl: selectedTarget?.url });
 
   async function selectPersona(id: string) {
     setError(undefined);

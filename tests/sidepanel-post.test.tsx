@@ -8,7 +8,7 @@ import SidepanelApp from '@/entrypoints/sidepanel/App';
 import type { InsertResult, PostDraft, ThreadContext } from '@/src/adapters/types';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import type { GenerationRequest, GenerationResult } from '@/src/prompt/types';
-import { settingsItem } from '@/src/storage/items';
+import { replyTargetItem, settingsItem } from '@/src/storage/items';
 import { getActivePersona } from '@/src/storage/personas';
 import { DEFAULT_SETTINGS } from '@/src/storage/types';
 import { installLocksPolyfill } from './helpers/browser';
@@ -136,6 +136,17 @@ describe('side panel new-post flow', () => {
     expect(container.querySelector<HTMLElement>('#reply-flow')!.hidden).toBe(true);
 
     await click('modeReply');
+    expect(postFlow().hidden).toBe(true);
+  });
+
+  it('switches back to reply mode when a reply target is selected on the page', async () => {
+    await render();
+    await click('modePost');
+    expect(postFlow().hidden).toBe(false);
+    const comment: ThreadContext = { kind: 'comment', platform: 'reddit', url: 'https://www.reddit.com/r/selfhosted/comments/abc/comment/c1/', body: 'Hi', parentChain: [], comments: [] };
+    await act(async () => void (await replyTargetItem(TAB_ID).setValue(comment)));
+    await settle();
+    expect(button('modeReply').getAttribute('aria-pressed')).toBe('true');
     expect(postFlow().hidden).toBe(true);
   });
 

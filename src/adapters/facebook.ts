@@ -247,19 +247,25 @@ function addressedByName(editor: Element, comment: Element, thread: Element[]): 
   return label.includes(name) || collapse(editor.textContent).startsWith(name);
 }
 
-/** The "Create post" dialog: a dialog with a text box and no post or comment in it. */
+/**
+ * The "Create post" dialog: a dialog holding a post form (form[method=POST])
+ * with a text box and no post or comment in it. Its editor must still be
+ * empty: dialogs that edit an existing post look the same but carry its text,
+ * and a draft must never be appended to someone's existing text.
+ */
 function postComposer(doc: Document): PostComposer | null {
   for (const dialog of [...doc.querySelectorAll('[role="dialog"]')].reverse()) {
-    if (dialog.querySelector(ARTICLE)) continue;
+    if (dialog.querySelector(ARTICLE) || !dialog.querySelector('form[method="POST" i]')) continue;
     const editor = [...dialog.querySelectorAll<HTMLElement>(EDITOR)].find(isVisible);
-    if (editor) return { body: editor };
+    if (editor) return collapse(editor.textContent) ? null : { body: editor };
   }
   return null;
 }
 
-/** The group or page being posted to, from the document title ("(3) Name | Facebook"). */
+/** The group or page being posted to, from the document title ("(3) Name | Facebook"); none on the home feed ("Facebook"). */
 function communityName(doc: Document): string | undefined {
-  return collapse(doc.title.replace(/^\(\d+\)\s*/, '').replace(/\s*\|\s*Facebook\s*$/, '')) || undefined;
+  const match = /^(?:\(\d+\)\s*)?(.+?)\s*\|\s*Facebook\s*$/.exec(doc.title);
+  return collapse(match?.[1]) || undefined;
 }
 
 export const facebookAdapter: PlatformAdapter = {
