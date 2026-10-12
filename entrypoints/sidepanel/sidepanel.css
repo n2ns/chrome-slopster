@@ -73,3 +73,28 @@ main.sidepanel .raw {
   font: inherit;
   overflow-wrap: anywhere;
 }
+
+main.sidepanel .mode-switch {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+main.sidepanel .mode-switch button {
+  flex: 1;
+  border-radius: 0;
+}
+
+main.sidepanel .mode-switch button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+main.sidepanel .mode-switch button:last-child {
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+}
+
+main.sidepanel .mode-switch button[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
