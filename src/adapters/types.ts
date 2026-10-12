@@ -48,4 +48,6 @@ export interface PlatformAdapter {
   /** Ad nodes; only called when the platform's ad-block toggle is on. */
   findAds(root: ParentNode): HTMLElement[];
   constraints: { maxReplyLength?: number };
+  /** Optional page listeners the adapter needs (e.g. to see which Reply button opened a box). Returns a cleanup. */
+  attach?(doc: Document): () => void;
 }

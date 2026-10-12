@@ -194,6 +194,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     applyAds();
   });
 
+  const detachAdapter = adapter.attach?.(doc);
+
   // A new document in this tab, or one restored from the back/forward cache (which does not
   // rerun content scripts): a target stored for another page no longer applies.
   clearStoredTarget();
@@ -207,6 +209,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   });
 
   ctx.onInvalidated(() => {
+    detachAdapter?.();
     observer.disconnect();
     visibility.disconnect();
     unwatchSettings();

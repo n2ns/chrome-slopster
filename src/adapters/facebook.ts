@@ -30,10 +30,10 @@ function isComment(article: Element): boolean {
   return !!parentArticle(article) && !!postOf(article);
 }
 
-function depth(article: Element): number {
-  let count = 0;
-  for (let parent = parentArticle(article); parent; parent = parentArticle(parent)) count += 1;
-  return count;
+function domDepth(element: Element): number {
+  let depth = 0;
+  for (let node: Element | null = element; node; node = node.parentElement) depth += 1;
+  return depth;
 }
 
 function collapse(text: string | null | undefined): string {
@@ -55,7 +55,7 @@ function fbText(element: Element | null | undefined): string {
   return blocks.map(plainText).filter(Boolean).join('\n\n');
 }
 
-/** The comment's own text blocks (outermost dir="auto" blocks not inside a nested reply). */
+/** The comment's own text blocks (outermost dir="auto" blocks not inside a nested article). */
 function commentBodies(comment: Element): HTMLElement[] {
   return [...comment.querySelectorAll<HTMLElement>('div[dir="auto"]')].filter(
     (block) => block.closest(ARTICLE) === comment && !block.parentElement?.closest('div[dir="auto"]') && !block.closest('a, [role="button"]') && collapse(block.textContent),
@@ -80,13 +80,25 @@ function absolute(doc: Document, href: string | null | undefined): string | null
   }
 }
 
+/** Query parameters that identify a post (photo, permalink.php, story.php, watch); the rest is tracking. */
+const POST_ID_PARAMS = ['fbid', 'story_fbid', 'id', 'v'];
+
 function postUrl(post: Element): string {
   const doc = post.ownerDocument;
   const link = [...post.querySelectorAll<HTMLAnchorElement>(POST_LINK)].find((anchor) => anchor.closest(ARTICLE) === post);
   const url = absolute(doc, link?.getAttribute('href'));
-  if (!url) return doc.location?.href ?? '';
+  if (!url) {
+    // No permalink in the post: tell posts on one page apart by their feed position.
+    const position = post.getAttribute('aria-posinset');
+    return `${doc.location?.href ?? ''}${position ? `#post-${position}` : ''}`;
+  }
   const parsed = new URL(url);
-  parsed.search = '';
+  const kept = new URLSearchParams();
+  for (const name of POST_ID_PARAMS) {
+    const value = parsed.searchParams.get(name);
+    if (value) kept.set(name, value);
+  }
+  parsed.search = kept.toString();
   parsed.hash = '';
   return parsed.href;
 }
@@ -113,13 +125,93 @@ function authorOf(article: Element): string | undefined {
   return collapse(name?.textContent) || undefined;
 }
 
+/**
+ * Comments of a post in page order. Facebook renders replies as flat siblings
+ * of comments, only nested deeper in the DOM (verified 2026-10-12), so a reply
+ * is a comment deeper than the shallowest ones and belongs to the top-level
+ * comment before it.
+ */
 function commentsOf(post: Element): Element[] {
   return [...post.querySelectorAll(ARTICLE)].filter(isComment);
 }
 
-function directReplies(article: Element): Element[] {
-  const post = isPost(article) ? article : postOf(article);
-  return post ? commentsOf(post).filter((comment) => parentArticle(comment) === article) : [];
+function topLevelComments(post: Element): Element[] {
+  const comments = commentsOf(post);
+  const shallowest = Math.min(...comments.map(domDepth));
+  return comments.filter((comment) => domDepth(comment) === shallowest);
+}
+
+/** The top-level comment a comment belongs to (itself when it is top-level). */
+function threadHead(comment: Element, post: Element): Element | undefined {
+  const tops = topLevelComments(post);
+  if (tops.includes(comment)) return comment;
+  return tops.filter((top) => follows(top, comment)).pop();
+}
+
+/** The comments in a top-level comment's thread: itself and the replies after it, up to the next top-level comment. */
+function threadComments(head: Element, post: Element): Element[] {
+  const tops = topLevelComments(post);
+  const next = tops[tops.indexOf(head) + 1];
+  return commentsOf(post).filter((comment) => comment === head || (follows(head, comment) && (!next || follows(comment, next))));
+}
+
+function threadOf(target: Element): ThreadContext {
+  if (isPost(target)) {
+    return {
+      kind: 'post',
+      platform: 'facebook',
+      url: postUrl(target),
+      author: authorOf(target),
+      body: postText(target),
+      parentChain: [],
+      comments: topLevelComments(target).map(commentText).filter(Boolean).slice(0, MAX_COMMENTS),
+    };
+  }
+  const post = postOf(target)!;
+  const head = threadHead(target, post);
+  const isReply = !!head && head !== target;
+  const ancestors = [isReply ? commentText(head) : '', postText(post)].filter(Boolean);
+  const replies = !isReply && head ? threadComments(head, post).filter((comment) => comment !== head) : [];
+  const id = commentId(target);
+  const base = postUrl(post);
+  return {
+    kind: 'comment',
+    platform: 'facebook',
+    url: id ? `${base.split('#')[0]}${base.includes('?') ? '&' : '?'}comment_id=${encodeURIComponent(id)}` : base,
+    author: authorOf(target),
+    body: commentText(target),
+    parentChain: ancestors,
+    comments: replies.map(commentText).filter(Boolean).slice(0, MAX_COMMENTS),
+  };
+}
+
+const follows = (a: Node, b: Node) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+
+/** Editors that belong to `post`: inside it, or in the post dialog that shows it. */
+function postEditors(post: Element): HTMLElement[] {
+  const dialog = post.closest('[role="dialog"]');
+  const scope = dialog ?? post;
+  return [...scope.querySelectorAll<HTMLElement>(EDITOR)].filter((editor) => isVisible(editor) && (dialog || post.contains(editor)));
+}
+
+/**
+ * The post's own comment box. Reply boxes open inside a comment thread and sit
+ * deeper in the DOM than the post's box (both in feeds and in post dialogs,
+ * checked 2026-10-12), so it is the shallowest box not known to answer a comment.
+ */
+function mainEditor(post: Element): HTMLElement | null {
+  const candidates = postEditors(post).filter((editor) => !boxAddressee.has(editor));
+  let best: HTMLElement | null = null;
+  for (const editor of candidates) if (!best || domDepth(editor) <= domDepth(best)) best = editor;
+  return best;
+}
+
+/** Reply boxes that can belong to a thread: after its head and before the next top-level comment. */
+function threadEditors(head: Element, post: Element): HTMLElement[] {
+  const tops = topLevelComments(post);
+  const next = tops[tops.indexOf(head) + 1];
+  const main = mainEditor(post);
+  return postEditors(post).filter((editor) => editor !== main && follows(head, editor) && (!next || follows(editor, next)));
 }
 
 /** The post dialog Facebook opens for a permalink or a comment button, if any. */
@@ -138,59 +230,21 @@ function computePageKey(doc: Document): string | null {
   return segments[0] ?? null;
 }
 
-function threadOf(target: Element): ThreadContext {
-  const doc = target.ownerDocument;
-  if (isPost(target)) {
-    return {
-      kind: 'post',
-      platform: 'facebook',
-      url: postUrl(target),
-      author: authorOf(target),
-      body: postText(target),
-      parentChain: [],
-      comments: directReplies(target).map(commentText).filter(Boolean).slice(0, MAX_COMMENTS),
-    };
-  }
-  const post = postOf(target);
-  const ancestors: string[] = [];
-  for (let parent = parentArticle(target); parent && parent !== post; parent = parentArticle(parent)) {
-    const text = commentText(parent);
-    if (text) ancestors.push(text);
-  }
-  const body = post ? postText(post) : '';
-  if (body) ancestors.push(body);
-  const id = commentId(target);
-  const base = post ? postUrl(post) : (doc.location?.href ?? '');
-  return {
-    kind: 'comment',
-    platform: 'facebook',
-    url: id ? `${base}?comment_id=${encodeURIComponent(id)}` : base,
-    author: authorOf(target),
-    body: commentText(target),
-    parentChain: ancestors,
-    comments: directReplies(target).map(commentText).filter(Boolean).slice(0, MAX_COMMENTS),
-  };
-}
-
-const follows = (a: Node, b: Node) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-
-/** Editors that belong to `post`: inside it, or in the post dialog that shows it. */
-function postEditors(post: Element): HTMLElement[] {
-  const dialog = post.closest('[role="dialog"]');
-  const scope = dialog ?? post;
-  return [...scope.querySelectorAll<HTMLElement>(EDITOR)].filter((editor) => isVisible(editor) && (dialog || post.contains(editor)));
-}
-
 /**
- * Whether a reply box addresses the comment's author: by its label ("Reply to
- * Name…") or, where the label has no name (group posts: "Write a public
- * reply…"), by the mention Facebook prefills when Reply is clicked.
+ * Which comment each reply box answers, learned from the operator's clicks: a
+ * click inside a comment followed by focus moving into a box of the same thread
+ * (Facebook focuses the box its Reply button opens or reuses).
  */
-function mentionsAuthor(editor: Element, comment: Element): boolean {
+const boxAddressee = new WeakMap<Element, Element>();
+const REPLY_FOCUS_WINDOW_MS = 3000;
+
+function addressedByName(editor: Element, comment: Element, thread: Element[]): boolean {
   const name = authorOf(comment);
   if (!name) return false;
+  // A name shared by several comments in the thread cannot tell them apart.
+  if (thread.filter((other) => authorOf(other) === name).length > 1) return false;
   const label = editor.getAttribute('aria-label') ?? editor.getAttribute('aria-placeholder') ?? '';
-  return label.includes(name.slice(0, 12)) || collapse(editor.textContent).startsWith(name);
+  return label.includes(name) || collapse(editor.textContent).startsWith(name);
 }
 
 export const facebookAdapter: PlatformAdapter = {
@@ -231,18 +285,37 @@ export const facebookAdapter: PlatformAdapter = {
     if (!target) return null;
     const post = isPost(target) ? target : postOf(target);
     if (!post) return null;
-    const editors = postEditors(post);
-    const comments = commentsOf(post);
-    if (target === post) {
-      // The post's own box is the one not addressed to any commenter.
-      return editors.find((editor) => !comments.some((comment) => mentionsAuthor(editor, comment))) ?? null;
-    }
-    // A reply box opens after the comment's thread, before the next comment at the same or a shallower level.
-    const level = depth(target);
-    const next = comments.find((comment) => follows(target, comment) && !target.contains(comment) && depth(comment) <= level);
-    return (
-      editors.find((editor) => follows(target, editor) && (!next || follows(editor, next)) && mentionsAuthor(editor, target)) ?? null
-    );
+    if (target === post) return mainEditor(post);
+    const head = threadHead(target, post);
+    if (!head) return null;
+    const thread = threadComments(head, post);
+    const inThread = threadEditors(head, post);
+    const learned = inThread.find((editor) => boxAddressee.get(editor) === target);
+    if (learned) return learned;
+    // Without a click to go by, fall back to the name Facebook puts in the box, if it is unambiguous.
+    return inThread.find((editor) => !boxAddressee.has(editor) && addressedByName(editor, target, thread)) ?? null;
+  },
+
+  attach(doc) {
+    let lastClick: { comment: Element; at: number } | null = null;
+    const onClick = (event: Event) => {
+      const element = event.target instanceof Element ? event.target : null;
+      const article = element?.closest(ARTICLE);
+      lastClick = article && isComment(article) ? { comment: article, at: Date.now() } : null;
+    };
+    const onFocus = (event: Event) => {
+      const editor = event.target instanceof Element ? event.target.closest(EDITOR) : null;
+      if (!editor || !lastClick || Date.now() - lastClick.at > REPLY_FOCUS_WINDOW_MS) return;
+      const post = postOf(lastClick.comment);
+      const head = post && threadHead(lastClick.comment, post);
+      if (post && head && threadEditors(head, post).includes(editor as HTMLElement)) boxAddressee.set(editor, lastClick.comment);
+    };
+    doc.addEventListener('click', onClick, true);
+    doc.addEventListener('focusin', onFocus, true);
+    return () => {
+      doc.removeEventListener('click', onClick, true);
+      doc.removeEventListener('focusin', onFocus, true);
+    };
   },
 
   insertText(composer, text) {
