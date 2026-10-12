@@ -1,6 +1,6 @@
 # social-reply-assistant Implementation Plan
 
-> Status: draft, pending confirmation. The project name is provisional.
+> Status: phases 0–6 implemented; replies and new posts checked end to end on the real sites on 2026-10-12. Open work is tracked in [TODO.md](../TODO.md). The project name is provisional.
 > Reference project: `../chrome-smart-readit` (used only for design ideas; individual modules are ported by hand as needed, the codebase is not copied wholesale).
 
 ## 1. Goals and Boundaries
@@ -241,5 +241,4 @@ At the end of each phase: `tsc` and ESLint pass, `npm test` passes in full, `npm
 
 ## 9. Open Items
 
-- Final project name and icon.
-- Whether to publish on the Chrome Web Store (affects how the permission justifications and privacy policy are written).
+Tracked in [TODO.md](../TODO.md).
