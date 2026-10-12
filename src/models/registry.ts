@@ -8,6 +8,14 @@
 //   - Gemini    https://ai.google.dev/gemini-api/docs/models
 //   - Claude    https://docs.claude.com/en/docs/about-claude/models/overview
 //
+// Last verified against the docs above: 2026-10-12.
+//   - OpenAI: gpt-6-astra is the flagship; gpt-6-luna is the cheapest and the
+//     documented replacement for gpt-5.4-nano (deprecated, shutdown 2027-04-01).
+//   - DeepSeek: deepseek-v4-pro and deepseek-flash (DeepSeek-V4.1-Flash).
+//   - Gemini: gemini-3.8-flash is the newest stable model (no stable Pro);
+//     gemini-3.5-flash-lite is the most cost-effective.
+//   - Claude: claude-opus-5-5 is the recommended flagship; claude-haiku-5-5 the cheapest.
+//
 // Each engine offers exactly two options: newest flagship and cheapest.
 // IDs removed from `options` must be added to MODEL_ALIASES so saved settings
 // keep working.
@@ -26,10 +34,10 @@ interface EngineModels {
 
 export const MODEL_REGISTRY: Record<AiEngine, EngineModels> = {
   openai: {
-    defaultModel: 'gpt-5.4-nano',
+    defaultModel: 'gpt-6-luna',
     options: [
       { value: 'gpt-6-astra', label: 'gpt-6-astra' },
-      { value: 'gpt-5.4-nano', label: 'gpt-5.4-nano' },
+      { value: 'gpt-6-luna', label: 'gpt-6-luna' },
     ],
   },
   deepseek: {
@@ -57,7 +65,7 @@ export const MODEL_REGISTRY: Record<AiEngine, EngineModels> = {
 
 /** Retired or delisted model ID -> the option that replaces it. */
 export const MODEL_ALIASES: Record<AiEngine, Record<string, string>> = {
-  openai: {},
+  openai: { 'gpt-5.4-nano': 'gpt-6-luna' },
   deepseek: {},
   gemini: {},
   claude: {},
