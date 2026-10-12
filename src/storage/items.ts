@@ -1,6 +1,7 @@
 // Simple (unchunked) storage items. Personas are larger than one sync item can
 // hold and are stored through src/storage/personas.ts instead.
 
+import type { ThreadContext } from '@/src/adapters/types';
 import { DEFAULT_AD_BLOCK, DEFAULT_SETTINGS, EMPTY_API_KEYS, type AdBlockSettings, type ApiKeys, type Settings } from './types';
 
 export const settingsItem = storage.defineItem<Settings>('sync:settings', {
@@ -27,6 +28,15 @@ export const apiKeysItem = storage.defineItem<ApiKeys>('local:apiKeys', {
 export const googleFreeCooldownAtItem = storage.defineItem<number>('session:googleFreeCooldownAt', {
   fallback: 0,
 });
+
+/**
+ * Reply target a page's reply button selected in one tab. Written by the
+ * background (content scripts cannot access session storage), read by the side
+ * panel. Cleared when the tab navigates or closes.
+ */
+export function replyTargetItem(tabId: number) {
+  return storage.defineItem<ThreadContext | null>(`session:replyTarget:${tabId}`, { fallback: null });
+}
 
 /**
  * Read settings with defaults filled in for any field missing from an older
