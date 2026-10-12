@@ -2,21 +2,15 @@ import { useState } from 'react';
 import type { ThreadContext } from '@/src/adapters/types';
 import { t, type MessageKey } from '@/src/i18n';
 import { sendToBackground, sendToTab } from '@/src/messaging/protocol';
-import type { GenerationResult, ParsedGeneration } from '@/src/prompt/types';
+import type { GenerationMode, GenerationResult } from '@/src/prompt/types';
 import { replyTargetItem } from '@/src/storage/items';
 import { setActivePersona } from '@/src/storage/personas';
-import type { Persona, PlatformId } from '@/src/storage/types';
+import type { PlatformId } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { usePersonaState, useSettings } from '@/src/ui/hooks';
 import { useActiveTab, useReplyTarget } from '@/src/ui/tabs';
-
-const X_MAX_LENGTH = 280;
-
-const PLATFORM_KEYS: Record<PlatformId, MessageKey> = {
-  reddit: 'replyPlatformReddit',
-  x: 'replyPlatformX',
-  facebook: 'replyPlatformFacebook',
-};
+import { DraftResult, PLATFORM_KEYS, type FlowProps, type Notice } from './draft';
+import { PostFlow } from './PostFlow';
 
 /** Hosts each platform's pages live on. */
 const PLATFORM_HOSTS: Record<PlatformId, string[]> = {
@@ -47,6 +41,7 @@ export function ReplySection() {
   const { tabId, url } = useActiveTab();
   const [error, setError] = useState<unknown>();
   const [intent, setIntent] = useState('');
+  const [mode, setMode] = useState<GenerationMode>('reply');
 
   async function selectPersona(id: string) {
     setError(undefined);
@@ -62,6 +57,14 @@ export function ReplySection() {
   const shownError = error ?? loadError;
   return (
     <section>
+      <div className="mode-switch" role="group" aria-label={t('draftModeLabel')}>
+        {(['reply', 'post'] as const).map((option) => (
+          <button key={option} type="button" aria-pressed={mode === option} onClick={() => setMode(option)}>
+            {t(option === 'reply' ? 'modeReply' : 'modePost')}
+          </button>
+        ))}
+      </div>
+
       <label htmlFor="persona">{t('sidepanelPersona')}</label>
       <select id="persona" value={value?.activeId ?? ''} disabled={!value} onChange={(event) => selectPersona(event.target.value)}>
         {value?.personas.map((candidate) => (
@@ -72,27 +75,20 @@ export function ReplySection() {
       </select>
 
       <label htmlFor="intent">{t('intentLabel')}</label>
-      <textarea id="intent" value={intent} placeholder={t('intentPlaceholder')} onChange={(event) => setIntent(event.target.value)} />
+      <textarea id="intent" value={intent} placeholder={t(mode === 'reply' ? 'intentPlaceholder' : 'postIntentPlaceholder')} onChange={(event) => setIntent(event.target.value)} />
       {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
 
       {/* Remount per tab. A URL change keeps the draft (X opens its reply dialog at
-          /compose/post); filling is matched to the draft's own thread by the page. */}
-      <ReplyFlow key={tabId} tabId={tabId} url={url} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
+          /compose/post); filling is matched to the draft's own target by the page.
+          Both flows stay mounted so switching modes keeps each one's draft. */}
+      <div id="reply-flow" hidden={mode !== 'reply'}>
+        <ReplyFlow key={tabId} tabId={tabId} url={url} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
+      </div>
+      <div id="post-flow" hidden={mode !== 'post'}>
+        <PostFlow key={tabId} tabId={tabId} url={url} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
+      </div>
     </section>
   );
-}
-
-interface FlowProps {
-  tabId: number | undefined;
-  url: string | undefined;
-  persona: Persona | undefined;
-  intent: string;
-  operatorLanguage: string | undefined;
-}
-
-interface Notice {
-  key: MessageKey;
-  ok: boolean;
 }
 
 function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps) {
@@ -184,7 +180,6 @@ function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps)
     }
   }
 
-  const parsed = result?.generation.parsed ?? null;
   return (
     <>
       {target && <TargetPreview thread={target} onClear={clearTarget} />}
@@ -202,25 +197,18 @@ function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps)
       {noThread && <p className="hint">{t('replyNoThread')}</p>}
 
       {result && (
-        <div className="result">
-          {parsed ? (
-            <ParsedResult parsed={parsed} platform={result.thread.platform} draft={draft} onDraftChange={setDraft} />
-          ) : (
-            <>
-              <p className="error">{t('replyUnparsed')}</p>
-              <pre className="output raw">{result.generation.raw}</pre>
-            </>
-          )}
-          <div className="actions">
-            <button type="button" disabled={!parsed || !draft} onClick={copy}>
-              {t('replyCopy')}
-            </button>
-            <button type="button" disabled={!parsed || !draft.trim() || busy !== undefined || tabId === undefined} onClick={fill}>
-              {busy === 'fill' ? t('replyFilling') : t('replyFill')}
-            </button>
-          </div>
-          <p className="hint">{t('replyManualSendReminder')}</p>
-        </div>
+        <DraftResult
+          mode="reply"
+          generation={result.generation}
+          platform={result.thread.platform}
+          draft={draft}
+          onDraftChange={setDraft}
+          canCopy={!!draft}
+          canFill={!!draft.trim() && busy === undefined && tabId !== undefined}
+          filling={busy === 'fill'}
+          onCopy={copy}
+          onFill={fill}
+        />
       )}
 
       {notice && <p className={notice.ok ? 'status' : 'error'}>{t(notice.key)}</p>}
@@ -250,47 +238,5 @@ function TargetPreview({ thread, onClear }: { thread: ThreadContext; onClear: ()
       <p className="target-summary">{summary}</p>
       {isComment && <p className="hint">{t('replyTargetComment')}</p>}
     </div>
-  );
-}
-
-interface ParsedProps {
-  parsed: ParsedGeneration;
-  platform: PlatformId;
-  draft: string;
-  onDraftChange: (draft: string) => void;
-}
-
-function ParsedResult({ parsed, platform, draft, onDraftChange }: ParsedProps) {
-  // Code points, so emoji count once; X's own weighting may differ slightly.
-  const length = [...draft].length;
-  const overLimit = platform === 'x' && length > X_MAX_LENGTH;
-  return (
-    <>
-      <p className={parsed.shouldReply ? 'verdict' : 'verdict warning'}>
-        <strong>{t(parsed.shouldReply ? 'replyVerdictYes' : 'replyVerdictNo')}</strong> {parsed.reason}
-      </p>
-
-      <label htmlFor="reply-draft">{t('replyDraftLabel')}</label>
-      <textarea id="reply-draft" className="draft" value={draft} onChange={(event) => onDraftChange(event.target.value)} />
-      {platform === 'x' && (
-        <p id="reply-count" className={overLimit ? 'error' : 'hint'}>
-          {t('replyCharCount', [String(length), String(X_MAX_LENGTH)])}
-        </p>
-      )}
-      {overLimit && <p className="error">{t('replyOverLimit', String(X_MAX_LENGTH))}</p>}
-
-      {parsed.replyNative && (
-        <>
-          <label>{t('replyNativeLabel')}</label>
-          <p className="output native">{parsed.replyNative}</p>
-        </>
-      )}
-      {parsed.reviewNotes && (
-        <>
-          <label>{t('replyReviewNotesLabel')}</label>
-          <p className="output notes">{parsed.reviewNotes}</p>
-        </>
-      )}
-    </>
   );
 }
