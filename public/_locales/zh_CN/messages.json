@@ -361,5 +361,11 @@
   },
   "openSettingsLink": {
     "message": "打开设置"
+  },
+  "showKey": {
+    "message": "显示"
+  },
+  "hideKey": {
+    "message": "隐藏"
   }
 }

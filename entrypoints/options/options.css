@@ -38,3 +38,18 @@ main.options {
 .persona-editor label:first-child {
   margin-top: 0;
 }
+
+.key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-row input {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.key-row button {
+  flex: none;
+  min-width: 4.5em;
+}

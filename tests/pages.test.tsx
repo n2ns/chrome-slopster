@@ -58,6 +58,20 @@ describe('pages', () => {
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
   });
 
+  it('shows and hides each API key on request', async () => {
+    await render(<OptionsApp />);
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    const toggle = container.querySelector<HTMLButtonElement>('button[aria-controls="key-gemini"]')!;
+    expect(input.type).toBe('password');
+    expect(toggle.textContent).toBe('showKey');
+    await act(async () => toggle.click());
+    expect(input.type).toBe('text');
+    expect(toggle.textContent).toBe('hideKey');
+    expect(container.querySelector<HTMLInputElement>('#key-openai')!.type).toBe('password');
+    await act(async () => toggle.click());
+    expect(input.type).toBe('password');
+  });
+
   it('saving API keys does not overwrite a key another window changed meanwhile', async () => {
     await render(<OptionsApp />);
     await act(async () => void (await saveApiKeys({ claude: 'claude-from-other-window' })));
