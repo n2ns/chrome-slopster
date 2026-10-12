@@ -14,6 +14,7 @@ export default defineConfig({
       'https://reddit.com/*',
       'https://x.com/*',
       'https://twitter.com/*',
+      'https://www.facebook.com/*',
       'https://translate.googleapis.com/*',
       'https://api.openai.com/*',
       'https://api.deepseek.com/*',

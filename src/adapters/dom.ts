@@ -66,8 +66,12 @@ async function waitForText(editor: HTMLElement, line: string): Promise<boolean> 
  * Success is judged by the editor's DOM containing the text once it settles.
  * A paste the editor handled is never followed by the fallback, which would
  * insert the text twice.
+ *
+ * `singleLine: true` joins all lines with spaces before inserting anything, for
+ * editors where a line break can act like Enter and submit (Facebook comments).
  */
-export async function insertIntoRichEditor(editor: HTMLElement, text: string): Promise<InsertResult> {
+export async function insertIntoRichEditor(editor: HTMLElement, rawText: string, { singleLine = false } = {}): Promise<InsertResult> {
+  const text = singleLine ? rawText.split('\n').map((line) => line.trim()).filter(Boolean).join(' ') : rawText;
   const expected = firstLine(text);
   if (!expected) return { ok: false, reason: 'rejected' };
   editor.focus();
