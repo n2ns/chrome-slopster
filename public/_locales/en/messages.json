@@ -164,6 +164,78 @@
   "generateUnavailableHint": {
     "message": "Reply drafting becomes available once you open a post on Reddit, X, or Facebook."
   },
+  "generating": {
+    "message": "Generating…"
+  },
+  "replyNoThread": {
+    "message": "No post found on this page. Open a post on Reddit, X, or Facebook, or click a reply button on the page."
+  },
+  "replyTargetHeading": {
+    "message": "Replying to"
+  },
+  "replyTargetComment": {
+    "message": "Replying to a comment"
+  },
+  "replyTargetClear": {
+    "message": "Clear"
+  },
+  "replyPlatformReddit": {
+    "message": "Reddit"
+  },
+  "replyPlatformX": {
+    "message": "X"
+  },
+  "replyPlatformFacebook": {
+    "message": "Facebook"
+  },
+  "replyVerdictYes": {
+    "message": "Worth replying."
+  },
+  "replyVerdictNo": {
+    "message": "Better not to reply."
+  },
+  "replyUnparsed": {
+    "message": "The model's output could not be read. The raw output is shown below, and filling is disabled."
+  },
+  "replyDraftLabel": {
+    "message": "Reply (edit before filling)"
+  },
+  "replyNativeLabel": {
+    "message": "Review copy"
+  },
+  "replyReviewNotesLabel": {
+    "message": "Review notes"
+  },
+  "replyCharCount": {
+    "message": "$1 / $2 characters"
+  },
+  "replyOverLimit": {
+    "message": "The reply is over X's $1-character limit. Shorten it before sending."
+  },
+  "replyCopy": {
+    "message": "Copy"
+  },
+  "replyCopied": {
+    "message": "Copied."
+  },
+  "replyFill": {
+    "message": "Fill reply box"
+  },
+  "replyFilling": {
+    "message": "Filling…"
+  },
+  "replyFilled": {
+    "message": "Filled. Review it on the page and send it yourself."
+  },
+  "replyFillNotFound": {
+    "message": "No reply box found. Open the reply box on the page, then try again."
+  },
+  "replyFillRejected": {
+    "message": "The page did not accept the text. Copy it and paste it instead."
+  },
+  "replyManualSendReminder": {
+    "message": "The extension only fills the reply box. Review the text and send it yourself."
+  },
   "translateHeading": {
     "message": "Translate text"
   },
