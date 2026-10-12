@@ -4,7 +4,8 @@
 // the key plus the JSON serialization of the value. The value is serialized
 // once, split into string chunks `<key>__c0..N`, and the chunk count is kept in
 // `<key>__chunks`. Each chunk is a JSON string itself, so the budget accounts
-// for the escaping that serialization adds (quotes, backslashes, control chars).
+// for the escaping Chrome's serializer adds: quotes, backslashes, control chars,
+// and, unlike JSON.stringify, '<', U+2028, and U+2029 as \uXXXX.
 
 import { AppError } from '@/src/providers/types';
 
@@ -22,8 +23,12 @@ function utf8Length(text: string): number {
   return new TextEncoder().encode(text).length;
 }
 
-/** UTF-8 bytes one UTF-16 code unit takes inside a JSON string literal. */
+/**
+ * UTF-8 bytes one UTF-16 code unit takes inside a JSON string literal as Chrome
+ * serializes it for the quota check (measured against Chrome 154).
+ */
 function jsonCharCost(code: number): number {
+  if (code === 0x3c || code === 0x2028 || code === 0x2029) return 6; // \u003C, \u2028, \u2029
   if (code === 0x22 || code === 0x5c) return 2; // \" and \\
   if (code === 0x08 || code === 0x09 || code === 0x0a || code === 0x0c || code === 0x0d) return 2; // \b \t \n \f \r
   if (code < 0x20) return 6; // \u00XX
@@ -104,14 +109,18 @@ export async function readChunked<T>(key: string): Promise<T | null> {
   }
 }
 
-/** Write a value as chunks, then remove chunks left over from a longer previous value. */
+/**
+ * Write a value as chunks, then remove every chunk beyond the new count. Stale
+ * chunks are found by scanning all stored keys rather than trusting the previous
+ * count, so chunks a failed removal left behind are cleaned up on the next write.
+ */
 export async function writeChunked(key: string, value: unknown): Promise<void> {
   const countKey = chunkCountKey(key);
   const chunks = splitIntoChunks(JSON.stringify(value), key);
 
-  let previousCount: number;
+  let storedKeys: string[];
   try {
-    previousCount = Number((await browser.storage.sync.get(countKey))[countKey]) || 0;
+    storedKeys = Object.keys(await browser.storage.sync.get(null));
   } catch (error) {
     throw toStorageError(error);
   }
@@ -126,13 +135,13 @@ export async function writeChunked(key: string, value: unknown): Promise<void> {
     throw toStorageError(error);
   }
 
-  if (previousCount > chunks.length) {
-    const stale: string[] = [];
-    for (let index = chunks.length; index < previousCount; index += 1) stale.push(chunkKey(key, index));
+  const prefix = `${key}__c`;
+  const stale = storedKeys.filter((stored) => isChunkedKey(key, stored) && stored.startsWith(prefix) && Number(stored.slice(prefix.length)) >= chunks.length);
+  if (stale.length > 0) {
     try {
       await browser.storage.sync.remove(stale);
     } catch (error) {
-      // The count is already updated, so leftover chunks are never read.
+      // The count is already updated, so leftover chunks are never read; the next write retries the removal.
       console.warn('Failed to remove stale sync chunks.', error);
     }
   }

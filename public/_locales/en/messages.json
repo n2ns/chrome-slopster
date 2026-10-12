@@ -208,5 +208,11 @@
   },
   "errorGeneric": {
     "message": "Something went wrong. Please try again."
+  },
+  "personasReset": {
+    "message": "Reset personas"
+  },
+  "personasResetConfirm": {
+    "message": "The saved personas cannot be read. Replace them with a fresh default persona? This cannot be undone."
   }
 }

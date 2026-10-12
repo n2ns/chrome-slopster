@@ -208,5 +208,11 @@
   },
   "errorGeneric": {
     "message": "出现问题，请重试。"
+  },
+  "personasReset": {
+    "message": "重置人设"
+  },
+  "personasResetConfirm": {
+    "message": "已保存的人设无法读取。要用一个新的默认人设替换它们吗？此操作无法撤销。"
   }
 }

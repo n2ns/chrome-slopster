@@ -1,6 +1,11 @@
 // Persona profiles: an array stored in sync through chunked storage, plus the
 // active persona ID. Several extension pages may edit at once, so every write
 // runs under one Web Lock and re-reads the stored list inside it.
+//
+// Sync resolves conflicts per item, so edits from two offline devices can leave
+// a mix of chunk generations that no longer parses. The last good list is kept
+// in storage.local as a backup and served when the synced copy is unreadable;
+// the next write repairs sync. Without a backup, resetPersonas() starts over.
 
 import { t } from '@/src/i18n';
 import { AppError } from '@/src/providers/types';
@@ -53,10 +58,39 @@ function normalizePersona(value: unknown): Persona | null {
   };
 }
 
-async function readStored(): Promise<Persona[]> {
-  const stored = await readChunked<unknown>(PERSONAS_KEY);
+/** Last list read from or written to sync; never synced itself. */
+const backupItem = storage.defineItem<Persona[] | null>('local:personasBackup', { fallback: null });
+
+function normalizeList(stored: unknown): Persona[] {
   if (!Array.isArray(stored)) return [];
   return stored.map(normalizePersona).filter((persona): persona is Persona => persona !== null);
+}
+
+async function saveBackup(personas: Persona[]): Promise<void> {
+  try {
+    await backupItem.setValue(personas);
+  } catch (error) {
+    console.warn('Failed to update the local persona backup.', error);
+  }
+}
+
+async function readStored(): Promise<Persona[]> {
+  let stored: unknown;
+  try {
+    stored = await readChunked<unknown>(PERSONAS_KEY);
+  } catch (error) {
+    const backup = await backupItem.getValue();
+    if (error instanceof AppError && error.code === 'storage-error' && backup) return normalizeList(backup);
+    throw error;
+  }
+  const personas = normalizeList(stored);
+  if (personas.length > 0 && JSON.stringify(personas) !== JSON.stringify(await backupItem.getValue())) await saveBackup(personas);
+  return personas;
+}
+
+async function writeStored(personas: Persona[]): Promise<void> {
+  await writeChunked(PERSONAS_KEY, personas);
+  await saveBackup(personas);
 }
 
 async function setActiveId(id: string): Promise<void> {
@@ -70,7 +104,7 @@ async function setActiveId(id: string): Promise<void> {
 /** Store the default persona and make it active. Call inside the lock. */
 async function seed(): Promise<Persona[]> {
   const personas = [{ id: crypto.randomUUID(), ...defaultPersonaFields() }];
-  await writeChunked(PERSONAS_KEY, personas);
+  await writeStored(personas);
   await setActiveId(personas[0]!.id);
   return personas;
 }
@@ -97,20 +131,23 @@ export async function createPersona(fields: PersonaFields): Promise<Persona> {
   return withLock(async () => {
     const personas = await readStored();
     const persona: Persona = { ...fields, id: crypto.randomUUID() };
-    await writeChunked(PERSONAS_KEY, [...personas, persona]);
+    await writeStored([...personas, persona]);
     if (personas.length === 0) await setActiveId(persona.id);
     return persona;
   });
 }
 
-/** Replace a stored persona. Rejects with not-found when another window deleted it. */
-export async function updatePersona(persona: Persona): Promise<Persona> {
+/**
+ * Apply `patch` to the latest stored copy of a persona, so fields another window
+ * changed meanwhile are kept. Rejects with not-found when the persona was deleted.
+ */
+export async function updatePersona(id: string, patch: Partial<PersonaFields>): Promise<Persona> {
   return withLock(async () => {
     const personas = await readStored();
-    const index = personas.findIndex((item) => item.id === persona.id);
-    if (index < 0) throw notFound(persona.id);
-    personas[index] = { ...persona };
-    await writeChunked(PERSONAS_KEY, personas);
+    const index = personas.findIndex((item) => item.id === id);
+    if (index < 0) throw notFound(id);
+    personas[index] = { ...personas[index]!, ...patch, id };
+    await writeStored(personas);
     return personas[index]!;
   });
 }
@@ -128,7 +165,7 @@ export async function deletePersona(id: string): Promise<void> {
       await seed();
       return;
     }
-    await writeChunked(PERSONAS_KEY, remaining);
+    await writeStored(remaining);
     const activeId = await activePersonaIdItem.getValue();
     if (!remaining.some((persona) => persona.id === activeId)) await setActiveId(remaining[0]!.id);
   });
@@ -146,6 +183,13 @@ export async function setActivePersona(id: string): Promise<void> {
     const personas = await readStored();
     if (!personas.some((persona) => persona.id === id)) throw notFound(id);
     await setActiveId(id);
+  });
+}
+
+/** Replace all personas, readable or not, with a fresh default persona. */
+export async function resetPersonas(): Promise<void> {
+  await withLock(async () => {
+    await seed();
   });
 }
 

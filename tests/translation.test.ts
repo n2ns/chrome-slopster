@@ -135,7 +135,7 @@ describe('translateText', () => {
     const { calls } = stubFetch(GOOGLE_OK('translated'));
     const result = await settle(translateText('x'.repeat(GOOGLE_FREE_MAX_CHARS + 100)));
     expect(result).toEqual({ text: 'translated', truncated: true });
-    expect(new URL(calls[0]!.url).searchParams.get('q')).toBe('x'.repeat(GOOGLE_FREE_MAX_CHARS));
+    expect(calls[0]!.form?.get('q')).toBe('x'.repeat(GOOGLE_FREE_MAX_CHARS));
   });
 
   it('uses the selected AI engine with an 8000-char cap', async () => {
@@ -150,12 +150,12 @@ describe('translateText', () => {
 
   it('starts a cooldown after a Google 429 and rethrows without fallback', async () => {
     vi.setSystemTime(1_000_000);
-    stubFetch({ status: 429 }, { status: 429 }, { status: 429 });
+    const { fetchMock } = stubFetch({ status: 429 });
     await expect(settle(translateText('hello'))).rejects.toMatchObject({ code: 'rate-limited' });
-    // Marked when the final 429 arrives, after the retry backoff has elapsed.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     const startedAt = await googleFreeCooldownAtItem.getValue();
-    expect(startedAt).toBeGreaterThan(1_000_000);
-    expect(startedAt).toBeLessThan(1_000_000 + 5_000);
+    expect(startedAt).toBeGreaterThanOrEqual(1_000_000);
+    expect(startedAt).toBeLessThan(1_000_000 + 1_000);
   });
 
   it('refuses Google free during the cooldown when fallback is off', async () => {
@@ -197,9 +197,25 @@ describe('translateText', () => {
 
   it('falls back after a 429 and still records the cooldown', async () => {
     await setSettings({ aiFallback: true, aiEngine: 'gemini' });
-    stubFetch({ status: 429 }, { status: 429 }, { status: 429 }, GEMINI_OK('fallback'));
+    stubFetch({ status: 429 }, GEMINI_OK('fallback'));
     await expect(settle(translateText('hello'))).resolves.toEqual({ text: 'fallback', truncated: false });
     expect(await googleFreeCooldownAtItem.getValue()).toBeGreaterThan(0);
+  });
+
+  it('keeps the Google error when the fallback engine has no API key', async () => {
+    await setSettings({ aiFallback: true, aiEngine: 'claude' });
+    const { fetchMock } = stubFetch({ status: 400, text: 'bad' });
+    await expect(settle(translateText('hello'))).rejects.toMatchObject({ code: 'http-error', status: 400 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the cooldown, not a missing key, when the fallback engine has no API key', async () => {
+    await setSettings({ aiFallback: true, aiEngine: 'claude' });
+    vi.setSystemTime(10_000_000);
+    await googleFreeCooldownAtItem.setValue(10_000_000 - 1000);
+    const { fetchMock } = stubFetch();
+    await expect(settle(translateText('hello'))).rejects.toMatchObject({ code: 'rate-limited' });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('rejects empty text', async () => {

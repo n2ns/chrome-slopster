@@ -10,7 +10,7 @@ import {
   watchChunked,
   writeChunked,
 } from '@/src/storage/chunked-sync';
-import { enforceSyncItemQuota } from './helpers/browser';
+import { chromeJsonBytes, enforceSyncItemQuota } from './helpers/browser';
 
 const KEY = 'data';
 const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
@@ -89,6 +89,31 @@ describe('chunked sync storage', () => {
     expect(snapshot).not.toHaveProperty(chunkKey(KEY, 1));
     expect(snapshot).not.toHaveProperty(chunkKey(KEY, 2));
     await expect(readChunked(KEY)).resolves.toBe('small');
+  });
+
+  it("budgets for Chrome escaping '<', U+2028, and U+2029 as six bytes", async () => {
+    const value = { rules: 'Use <b> sparingly.\u2028'.repeat(1500) };
+    await expect(writeChunked(KEY, value)).resolves.toBeUndefined();
+    await expect(readChunked(KEY)).resolves.toEqual(value);
+    const snapshot = await syncSnapshot();
+    for (let index = 0; index < (snapshot[chunkCountKey(KEY)] as number); index += 1) {
+      const key = chunkKey(KEY, index);
+      expect(new TextEncoder().encode(key).length + chromeJsonBytes(snapshot[key])).toBeLessThanOrEqual(MAX_SYNC_ITEM_BYTES);
+    }
+  });
+
+  it('cleans up chunks a failed removal left behind on the next write', async () => {
+    await writeChunked(KEY, 'z'.repeat(20000));
+    const remove = vi.spyOn(fakeBrowser.storage.sync, 'remove').mockRejectedValueOnce(new Error('MAX_WRITE_OPERATIONS_PER_MINUTE'));
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await writeChunked(KEY, 'small');
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(await syncSnapshot()).toHaveProperty(chunkKey(KEY, 2));
+
+    await writeChunked(KEY, 'smaller');
+    const snapshot = await syncSnapshot();
+    expect(snapshot).not.toHaveProperty(chunkKey(KEY, 1));
+    expect(snapshot).not.toHaveProperty(chunkKey(KEY, 2));
   });
 
   it('throws storage-error when a chunk is missing instead of parsing truncated JSON', async () => {

@@ -203,7 +203,10 @@ describe('parseGenerationOutput', () => {
 
 describe('generateDraft', () => {
   beforeEach(() => fakeBrowser.reset());
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it('calls the selected engine with the resolved model and returns raw plus parsed output', async () => {
     await settingsItem.setValue({ ...DEFAULT_SETTINGS, aiEngine: 'claude', models: { ...DEFAULT_SETTINGS.models, claude: 'claude-retired' } });
@@ -223,6 +226,16 @@ describe('generateDraft', () => {
     await apiKeysItem.setValue({ ...EMPTY_API_KEYS, gemini: 'g' });
     stubFetch({ json: { candidates: [{ content: { parts: [{ text: 'not json' }] } }] } });
     await expect(generateDraft(request())).resolves.toEqual({ raw: 'not json', parsed: null });
+  });
+
+  it("resolves operatorLanguage 'auto' to the browser UI language before building the prompt", async () => {
+    vi.spyOn(browser.i18n, 'getUILanguage').mockReturnValue('ja');
+    await apiKeysItem.setValue({ ...EMPTY_API_KEYS, gemini: 'g' });
+    const { calls } = stubFetch({ json: { candidates: [{ content: { parts: [{ text: 'x' }] } }] } });
+    await generateDraft(request({ operatorLanguage: 'auto' }));
+    const body = calls[0]!.body as { contents: { parts: { text: string }[] }[] };
+    const prompt = body.contents[0]!.parts[0]!.text;
+    expect(prompt).toBe(buildGenerationPrompt(request({ operatorLanguage: 'ja' })).prompt);
   });
 
   it('reports a missing key for the selected engine', async () => {
