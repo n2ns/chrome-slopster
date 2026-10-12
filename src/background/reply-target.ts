@@ -1,5 +1,6 @@
 // Per-tab reply targets: written when a page's reply button is clicked, read by
-// the side panel, and cleared when the tab navigates away or closes.
+// the side panel, and cleared when the page drops the target (reported by the
+// content script) or the tab closes.
 
 import type { ThreadContext } from '@/src/adapters/types';
 import type { BackgroundMessages } from '@/src/messaging/protocol';
@@ -34,12 +35,17 @@ export async function selectReplyTarget(
   return { sidePanelOpened: await opening };
 }
 
-/** Drop a tab's reply target when the tab closes or loads a different URL. */
+/** Forget the sender tab's reply target. */
+export async function clearReplyTarget(_request: Record<string, never>, sender: Browser.runtime.MessageSender): Promise<Record<string, never>> {
+  const tabId = sender.tab?.id;
+  if (tabId === undefined) throw new AppError('invalid-request', 'clearReplyTarget must come from a tab.');
+  await replyTargetItem(tabId).removeValue();
+  return {};
+}
+
+/** Drop a tab's reply target when the tab closes. */
 export function registerReplyTargetCleanup(): void {
   browser.tabs.onRemoved.addListener((tabId) => {
     void replyTargetItem(tabId).removeValue();
-  });
-  browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
-    if (changeInfo.url !== undefined) void replyTargetItem(tabId).removeValue();
   });
 }

@@ -26,7 +26,7 @@ const FILL_FAILURE_KEYS: Record<'not-found' | 'rejected', MessageKey> = {
 export function ReplySection() {
   const { value, error: loadError, reload } = usePersonaState();
   const { value: settings } = useSettings();
-  const { tabId, url } = useActiveTab();
+  const { tabId } = useActiveTab();
   const [error, setError] = useState<unknown>();
   const [intent, setIntent] = useState('');
 
@@ -57,8 +57,9 @@ export function ReplySection() {
       <textarea id="intent" value={intent} placeholder={t('intentPlaceholder')} onChange={(event) => setIntent(event.target.value)} />
       {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
 
-      {/* Remount per tab and URL so a draft is never filled into another page. */}
-      <ReplyFlow key={`${tabId}|${url}`} tabId={tabId} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
+      {/* Remount per tab. A URL change keeps the draft (X opens its reply dialog at
+          /compose/post); filling is matched to the draft's own thread by the page. */}
+      <ReplyFlow key={tabId} tabId={tabId} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
     </section>
   );
 }
@@ -87,13 +88,13 @@ function ReplyFlow({ tabId, persona, intent, operatorLanguage }: FlowProps) {
 
   const target = storedTarget ?? pageThread;
 
-  /** The selected target, else the page's main post as reported by the content script. */
+  /** The selected target, else the page's main post, asked afresh so it is never from an earlier page. */
   async function resolveThread(): Promise<ThreadContext | null> {
-    if (target) return target;
+    if (storedTarget) return storedTarget;
     if (tabId === undefined) return null;
     try {
       const { thread } = await sendToTab(tabId, 'getThreadContext', {});
-      if (thread) setPageThread(thread);
+      setPageThread(thread);
       return thread;
     } catch {
       // No content script on this page.

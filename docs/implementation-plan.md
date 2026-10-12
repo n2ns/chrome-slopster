@@ -118,6 +118,7 @@ All messages are defined in `src/messaging/protocol.ts` as typed request/respons
 |---|---|---|
 | content → bg | `translate {text, targetLang}` | Translate a piece of text |
 | content → bg | `selectReplyTarget {thread}` | A reply button on the page was clicked: write the reply target to `session` and open the side panel |
+| content → bg | `clearReplyTarget {}` | The selected target left the page, or the content script started on a new document: forget the tab's reply target. URL changes alone do not clear it, because X opens its reply dialog at `/compose/post` |
 | sidepanel → bg | `generate {mode, thread, persona, intent, operatorLanguage}` | Generate a reply or post; the side panel sends the full persona so the background does not read persona storage |
 | sidepanel → bg | `translate` | Translate the draft |
 | sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page |

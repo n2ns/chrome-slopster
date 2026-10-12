@@ -28,6 +28,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   const translated = new WeakSet<HTMLElement>();
   const replyButtons = new Map<HTMLElement, HTMLButtonElement>();
   const observed = new Set<HTMLElement>();
+  /** The target the operator last selected here; its removal from the page clears the stored target. */
+  let selected: HTMLElement | null = null;
   let autoTranslate = false;
   let blockAds = false;
   let scanTimer: number | undefined;
@@ -63,6 +65,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
 
   async function selectTarget(target: HTMLElement, toolbar: Toolbar): Promise<void> {
     if (!ctx.isValid) return;
+    selected = target;
     for (const [owner, button] of replyButtons) button.setAttribute('aria-pressed', String(owner === target));
     toolbar.setNote('');
     try {
@@ -95,6 +98,11 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   function scan(): void {
     scanTimer = undefined;
     if (!ctx.isValid) return;
+    if (selected && !selected.isConnected) {
+      // The page replaced the thread (SPA navigation), so the stored target no longer applies.
+      selected = null;
+      clearStoredTarget();
+    }
     // Forget nodes the page removed (SPA navigation, collapsed threads).
     for (const [target, button] of replyButtons) if (!target.isConnected || !button.isConnected) replyButtons.delete(target);
     for (const unit of observed) {
@@ -137,13 +145,21 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     applyAds();
   }
 
+  function clearStoredTarget(): void {
+    sendToBackground('clearReplyTarget', {}).catch((error: unknown) => console.warn('Failed to clear the reply target.', error));
+  }
+
   function scheduleScan(): void {
     if (scanTimer === undefined && ctx.isValid) scanTimer = ctx.setTimeout(scan, SCAN_DELAY_MS);
   }
 
   const observer = new MutationObserver((mutations) => {
-    // Ignore mutations caused only by our own toolbars.
-    if (mutations.every((mutation) => [...mutation.addedNodes].every((node) => node instanceof Element && node.hasAttribute('data-sra-toolbar')))) return;
+    // Ignore mutations that only added our own toolbars; removals still matter.
+    const ownOnly = (mutation: MutationRecord) =>
+      mutation.removedNodes.length === 0 &&
+      mutation.addedNodes.length > 0 &&
+      [...mutation.addedNodes].every((node) => node instanceof Element && node.hasAttribute('data-sra-toolbar'));
+    if (mutations.every(ownOnly)) return;
     scheduleScan();
   });
   observer.observe(doc.documentElement, { childList: true, subtree: true });
@@ -175,6 +191,9 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     blockAds = Boolean(adBlock?.[adapter.id]);
     applyAds();
   });
+
+  // A new document in this tab: a target stored for the previous page no longer applies.
+  clearStoredTarget();
 
   ctx.onInvalidated(() => {
     observer.disconnect();

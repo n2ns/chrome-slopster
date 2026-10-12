@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import type { ThreadContext } from '@/src/adapters/types';
-import { registerReplyTargetCleanup, selectReplyTarget } from '@/src/background/reply-target';
+import { clearReplyTarget, registerReplyTargetCleanup, selectReplyTarget } from '@/src/background/reply-target';
 import { registerHandlers, sendToBackground, type BackgroundMessages } from '@/src/messaging/protocol';
 import { replyTargetItem } from '@/src/storage/items';
 
@@ -43,19 +43,23 @@ describe('selectReplyTarget', () => {
     await expect(sendToBackground('selectReplyTarget', { thread })).rejects.toMatchObject({ code: 'invalid-request' });
   });
 
-  it('clears a tab target when the tab closes or navigates', async () => {
+  it('clears a tab target when the tab closes, but not when only the URL changes', async () => {
     registerReplyTargetCleanup();
     await replyTargetItem(1).setValue(thread);
     await replyTargetItem(2).setValue(thread);
-    await replyTargetItem(3).setValue(thread);
 
     await fakeBrowser.tabs.onRemoved.trigger(1, { isWindowClosing: false, windowId: 0 });
-    await fakeBrowser.tabs.onUpdated.trigger(2, { url: 'https://www.reddit.com/r/other/' }, { id: 2 } as Browser.tabs.Tab);
-    await fakeBrowser.tabs.onUpdated.trigger(3, { status: 'complete' }, { id: 3 } as Browser.tabs.Tab);
-    await vi.waitFor(async () => {
-      expect(await replyTargetItem(1).getValue()).toBeNull();
-      expect(await replyTargetItem(2).getValue()).toBeNull();
-    });
-    expect(await replyTargetItem(3).getValue()).toEqual(thread);
+    // X opens its reply dialog at /compose/post while the tweet stays on the page.
+    await fakeBrowser.tabs.onUpdated.trigger(2, { url: 'https://x.com/compose/post' }, { id: 2 } as Browser.tabs.Tab);
+    await vi.waitFor(async () => expect(await replyTargetItem(1).getValue()).toBeNull());
+    expect(await replyTargetItem(2).getValue()).toEqual(thread);
+  });
+
+  it('clears the sender tab target on request from its content script', async () => {
+    await replyTargetItem(7).setValue(thread);
+    await replyTargetItem(8).setValue(thread);
+    await clearReplyTarget({}, sender(7));
+    expect(await replyTargetItem(7).getValue()).toBeNull();
+    expect(await replyTargetItem(8).getValue()).toEqual(thread);
   });
 });
