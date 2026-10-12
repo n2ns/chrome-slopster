@@ -8,13 +8,205 @@
   "sidepanelTitle": {
     "message": "回帖助手"
   },
-  "sidepanelPlaceholder": {
-    "message": "打开 Reddit、X 或 Facebook 上的帖子即可开始。"
-  },
   "optionsTitle": {
     "message": "设置"
   },
-  "optionsPlaceholder": {
-    "message": "人设档案、API Key 和平台设置将显示在这里。"
+  "loading": {
+    "message": "加载中…"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "saved": {
+    "message": "已保存。"
+  },
+  "engineGoogleFree": {
+    "message": "Google 翻译（免费）"
+  },
+  "engineOpenai": {
+    "message": "OpenAI"
+  },
+  "engineDeepseek": {
+    "message": "DeepSeek"
+  },
+  "engineGemini": {
+    "message": "Gemini"
+  },
+  "engineClaude": {
+    "message": "Claude"
+  },
+  "languageBrowserDefault": {
+    "message": "跟随浏览器语言"
+  },
+  "languageFollowPost": {
+    "message": "与帖子语言相同"
+  },
+  "personasHeading": {
+    "message": "人设"
+  },
+  "personasIntro": {
+    "message": "人设决定你回复时的身份和语气，不包含任何产品或推广信息。"
+  },
+  "personaNew": {
+    "message": "新建人设"
+  },
+  "personaActiveBadge": {
+    "message": "当前使用"
+  },
+  "personaName": {
+    "message": "名称"
+  },
+  "personaIdentity": {
+    "message": "身份与背景"
+  },
+  "personaIdentityHint": {
+    "message": "你是谁。生成内容据此措辞，不会编造超出这里的经历。"
+  },
+  "personaTone": {
+    "message": "语气"
+  },
+  "personaReplyLanguage": {
+    "message": "回复语言"
+  },
+  "personaBannedWords": {
+    "message": "禁用词"
+  },
+  "personaCustomRules": {
+    "message": "自定义规则"
+  },
+  "onePerLineHint": {
+    "message": "每行一条。"
+  },
+  "personaAntiAiVoice": {
+    "message": "避免 AI 腔"
+  },
+  "personaSetActive": {
+    "message": "设为当前人设"
+  },
+  "personaDelete": {
+    "message": "删除"
+  },
+  "personaDeleteConfirm": {
+    "message": "确定删除人设“$1”吗？此操作无法撤销。"
+  },
+  "defaultPersonaName": {
+    "message": "默认人设"
+  },
+  "defaultPersonaTone": {
+    "message": "友好、简洁、有帮助。"
+  },
+  "apiKeysHeading": {
+    "message": "API Key"
+  },
+  "apiKeysNote": {
+    "message": "API Key 只保存在本设备上，不会同步到你的其他设备。"
+  },
+  "enginesHeading": {
+    "message": "引擎与模型"
+  },
+  "translationEngine": {
+    "message": "翻译引擎"
+  },
+  "aiEngine": {
+    "message": "AI 引擎"
+  },
+  "modelFor": {
+    "message": "$1 模型"
+  },
+  "operatorLanguage": {
+    "message": "你的语言"
+  },
+  "operatorLanguageHint": {
+    "message": "页面内容会翻译成此语言，回复草稿也会附上此语言的对照译文。"
+  },
+  "autoTranslate": {
+    "message": "自动翻译帖子"
+  },
+  "aiFallback": {
+    "message": "Google 翻译失败时改用 AI 引擎"
+  },
+  "fontSize": {
+    "message": "字号"
+  },
+  "fontSizeSmall": {
+    "message": "小"
+  },
+  "fontSizeMedium": {
+    "message": "中"
+  },
+  "fontSizeLarge": {
+    "message": "大"
+  },
+  "adBlockHeading": {
+    "message": "广告屏蔽"
+  },
+  "adBlockReddit": {
+    "message": "屏蔽 Reddit 广告"
+  },
+  "adBlockX": {
+    "message": "屏蔽 X 广告"
+  },
+  "adBlockFacebook": {
+    "message": "屏蔽 Facebook 广告"
+  },
+  "sidepanelPersona": {
+    "message": "人设"
+  },
+  "intentLabel": {
+    "message": "你想表达什么？"
+  },
+  "intentPlaceholder": {
+    "message": "可选：这条回复想表达的要点。"
+  },
+  "generate": {
+    "message": "生成"
+  },
+  "generateUnavailableHint": {
+    "message": "在 Reddit、X 或 Facebook 上打开帖子后即可起草回复。"
+  },
+  "translateHeading": {
+    "message": "翻译文本"
+  },
+  "translateInputPlaceholder": {
+    "message": "粘贴要翻译成你的语言的文本。"
+  },
+  "translateButton": {
+    "message": "翻译"
+  },
+  "translating": {
+    "message": "翻译中…"
+  },
+  "translationTruncated": {
+    "message": "（文本过长，只翻译了开头部分。）"
+  },
+  "errorMissingApiKey": {
+    "message": "所选引擎尚未设置 API Key，请在设置中添加。"
+  },
+  "errorRateLimited": {
+    "message": "请求过于频繁，请稍后再试。"
+  },
+  "errorHttp": {
+    "message": "服务返回错误，请检查 API Key 和模型后重试。"
+  },
+  "errorNetwork": {
+    "message": "网络错误，请检查网络连接后重试。"
+  },
+  "errorBadResponse": {
+    "message": "服务返回了无法识别的结果。"
+  },
+  "errorUnsupportedEngine": {
+    "message": "所选引擎不支持此操作。"
+  },
+  "errorInvalidRequest": {
+    "message": "请求无效。"
+  },
+  "errorNotFound": {
+    "message": "该项已在其他窗口中修改或删除，列表已刷新。"
+  },
+  "errorStorage": {
+    "message": "无法读取或保存 Chrome 存储中的数据。同步空间可能已满，或保存过于频繁，请稍后再试。"
+  },
+  "errorGeneric": {
+    "message": "出现问题，请重试。"
   }
 }
