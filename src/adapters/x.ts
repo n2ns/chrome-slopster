@@ -11,6 +11,20 @@ const AD_LABELS = new Set(['Ad', 'Promoted', '广告', '推广']);
 const MAX_LENGTH = 280;
 const MAX_COMMENTS = 5;
 
+/** Routes X opens as overlays on top of the current page (the reply dialog is /compose/post). */
+const OVERLAY_PATH = /^\/(compose|i)\//;
+const STATUS_PATH = /^\/[^/]+\/status\/(\d+)/;
+
+/** Status ID of the conversation shown, remembered while an overlay route is open. */
+let lastStatusId: string | null = null;
+
+function statusId(doc: Document): string | null {
+  const path = doc.location?.pathname ?? '';
+  if (OVERLAY_PATH.test(path)) return lastStatusId;
+  lastStatusId = STATUS_PATH.exec(path)?.[1] ?? null;
+  return lastStatusId;
+}
+
 /**
  * Tweet text keeps its own line breaks (rendered with pre-wrap), and emoji are
  * images whose alt text is the character, so walk the nodes instead of reading
@@ -29,6 +43,13 @@ function tweetText(element: Element | null): string {
 
 function handleOf(tweet: Element): string | undefined {
   return tweet.querySelector('[data-testid="User-Name"]')?.textContent?.match(/@(\w{1,15})/)?.[1];
+}
+
+/** Handle plus post time identify a tweet; text alone is often empty (media) or repeated. */
+function tweetIdentity(tweet: Element): string | null {
+  const handle = handleOf(tweet);
+  const time = tweet.querySelector('time')?.getAttribute('datetime');
+  return handle && time ? `${handle}@${time}` : null;
 }
 
 function statusPath(tweet: Element): string | null {
@@ -81,8 +102,8 @@ function dialogComposerFor(target: HTMLElement): HTMLElement | null {
     const quoted = dialog.querySelector(TWEET);
     const editor = dialog.querySelector<HTMLElement>(EDITOR);
     if (!quoted || !editor || !isVisible(editor)) continue;
-    const sameTweet = handleOf(quoted) === handleOf(target) && tweetText(quoted.querySelector(TEXT)) === tweetText(target.querySelector(TEXT));
-    if (sameTweet) return editor;
+    const identity = tweetIdentity(target);
+    if (identity && tweetIdentity(quoted) === identity) return editor;
   }
   return null;
 }
@@ -100,11 +121,11 @@ export const xAdapter: PlatformAdapter = {
   },
 
   findReplyTargets(root) {
-    // Replies are drafted from a tweet's own page, recognized by its focal tweet rather than
-    // the URL: X switches the URL to /compose/post while its reply dialog is open.
+    // Replies are drafted from a tweet's own page. The focal tweet may be unmounted by
+    // X's virtualized list, so the page is recognized by its key, not by the focal tweet.
     const doc = root instanceof Document ? root : (root as Node).ownerDocument;
-    const focal = doc ? focalTweet(doc) : undefined;
-    if (!doc || !focal) return [];
+    if (!doc || !statusId(doc)) return [];
+    const focal = focalTweet(doc);
     // The focal tweet first, so getThreadContext answers with it.
     return conversation(doc).sort((a, b) => Number(b === focal) - Number(a === focal));
   },
@@ -130,10 +151,16 @@ export const xAdapter: PlatformAdapter = {
     return insertIntoRichEditor(composer, text);
   },
 
+  pageKey(doc) {
+    return statusId(doc);
+  },
+
   findAds(root) {
-    // Promoted tweets carry a standalone "Ad" label; hide the whole timeline cell.
+    // Promoted tweets carry a standalone "Ad" label outside the author name and tweet text; hide the whole timeline cell.
+    const isLabel = (span: Element) =>
+      AD_LABELS.has(span.textContent?.trim() ?? '') && !span.closest(`${TEXT}, [data-testid="User-Name"]`);
     return [...root.querySelectorAll<HTMLElement>(TWEET)]
-      .filter((tweet) => [...tweet.querySelectorAll('span')].some((span) => AD_LABELS.has(span.textContent?.trim() ?? '')))
+      .filter((tweet) => [...tweet.querySelectorAll('span')].some(isLabel))
       .map((tweet) => tweet.closest<HTMLElement>('[data-testid="cellInnerDiv"]') ?? tweet);
   },
 

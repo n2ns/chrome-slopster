@@ -85,6 +85,10 @@ describe('reddit adapter on a post page', () => {
     expect(redditAdapter.findComposer(comment('t1_pfcb65f'))).toBeNull();
   });
 
+  it('keys the page by post id', () => {
+    expect(redditAdapter.pageKey(document)).toBe('1x3m5xo');
+  });
+
   it('finds the in-thread ad', () => {
     expect(redditAdapter.findAds(document).map((ad) => ad.tagName.toLowerCase())).toEqual(['shreddit-comments-page-ad']);
   });
@@ -92,6 +96,10 @@ describe('reddit adapter on a post page', () => {
 
 describe('reddit adapter on a feed', () => {
   beforeEach(() => load('feed.html', '/r/selfhosted/'));
+
+  it('has no page key on a feed', () => {
+    expect(redditAdapter.pageKey(document)).toBeNull();
+  });
 
   it('translates feed titles but offers no reply targets', () => {
     expect(redditAdapter.findTranslatableUnits(document).length).toBeGreaterThanOrEqual(3);

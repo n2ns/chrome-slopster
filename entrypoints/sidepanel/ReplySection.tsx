@@ -18,6 +18,24 @@ const PLATFORM_KEYS: Record<PlatformId, MessageKey> = {
   facebook: 'replyPlatformFacebook',
 };
 
+/** Hosts each platform's pages live on. */
+const PLATFORM_HOSTS: Record<PlatformId, string[]> = {
+  reddit: ['reddit.com'],
+  x: ['x.com', 'twitter.com'],
+  facebook: ['facebook.com'],
+};
+
+/** Whether the tab shows a page of `platform`. URLs are only visible for sites the extension may access. */
+function isOnPlatform(url: string | undefined, platform: PlatformId): boolean {
+  if (!url) return false;
+  try {
+    const host = new URL(url).hostname;
+    return PLATFORM_HOSTS[platform].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
 const FILL_FAILURE_KEYS: Record<'not-found' | 'rejected', MessageKey> = {
   'not-found': 'replyFillNotFound',
   rejected: 'replyFillRejected',
@@ -26,7 +44,7 @@ const FILL_FAILURE_KEYS: Record<'not-found' | 'rejected', MessageKey> = {
 export function ReplySection() {
   const { value, error: loadError, reload } = usePersonaState();
   const { value: settings } = useSettings();
-  const { tabId } = useActiveTab();
+  const { tabId, url } = useActiveTab();
   const [error, setError] = useState<unknown>();
   const [intent, setIntent] = useState('');
 
@@ -59,13 +77,14 @@ export function ReplySection() {
 
       {/* Remount per tab. A URL change keeps the draft (X opens its reply dialog at
           /compose/post); filling is matched to the draft's own thread by the page. */}
-      <ReplyFlow key={tabId} tabId={tabId} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
+      <ReplyFlow key={tabId} tabId={tabId} url={url} persona={persona} intent={intent} operatorLanguage={settings?.operatorLanguage} />
     </section>
   );
 }
 
 interface FlowProps {
   tabId: number | undefined;
+  url: string | undefined;
   persona: Persona | undefined;
   intent: string;
   operatorLanguage: string | undefined;
@@ -76,9 +95,13 @@ interface Notice {
   ok: boolean;
 }
 
-function ReplyFlow({ tabId, persona, intent, operatorLanguage }: FlowProps) {
-  const storedTarget = useReplyTarget(tabId);
-  const [pageThread, setPageThread] = useState<ThreadContext | null>(null);
+function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps) {
+  const savedTarget = useReplyTarget(tabId);
+  // A target stays stored while the tab shows another site (no content script there to clear it); ignore it then.
+  const storedTarget = savedTarget && isOnPlatform(url, savedTarget.platform) ? savedTarget : null;
+  // The page's own thread, tagged with the URL it was read from so it is forgotten after navigation.
+  const [pageRead, setPageRead] = useState<{ url: string | undefined; thread: ThreadContext | null }>({ url: undefined, thread: null });
+  const pageThread = pageRead.url === url ? pageRead.thread : null;
   const [noThread, setNoThread] = useState(false);
   const [result, setResult] = useState<{ thread: ThreadContext; generation: GenerationResult }>();
   const [draft, setDraft] = useState('');
@@ -94,7 +117,7 @@ function ReplyFlow({ tabId, persona, intent, operatorLanguage }: FlowProps) {
     if (tabId === undefined) return null;
     try {
       const { thread } = await sendToTab(tabId, 'getThreadContext', {});
-      setPageThread(thread);
+      setPageRead({ url, thread });
       return thread;
     } catch {
       // No content script on this page.
@@ -125,7 +148,7 @@ function ReplyFlow({ tabId, persona, intent, operatorLanguage }: FlowProps) {
   }
 
   async function clearTarget() {
-    setPageThread(null);
+    setPageRead({ url, thread: null });
     if (storedTarget && tabId !== undefined) {
       try {
         await replyTargetItem(tabId).removeValue();

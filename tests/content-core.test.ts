@@ -26,6 +26,10 @@ function fakeContext() {
     isValid: true,
     setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms),
     onInvalidated: (fn: () => void) => invalidated.push(fn),
+    addEventListener: (target: EventTarget, type: string, listener: EventListener) => {
+      target.addEventListener(type, listener);
+      invalidated.push(() => target.removeEventListener(type, listener));
+    },
     invalidate: () => invalidated.forEach((fn) => fn()),
   };
 }
@@ -152,15 +156,33 @@ describe('content core on a Reddit post page', () => {
     await expect(sendToTab(1, 'insertText', { text: 'hello', thread })).resolves.toEqual({ ok: false, reason: 'not-found' });
   });
 
-  it('asks the background to clear the tab target when the selected element leaves the page', async () => {
+  it('clears the tab target when the page navigates to another post', async () => {
+    const clearReplyTarget = vi.fn(async () => ({}));
+    registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }), clearReplyTarget });
+    toolbarButton(ownToolbar(comment('t1_pfccwzm')), 'reply')!.click();
+    await flush();
+    clearReplyTarget.mockClear();
+    window.history.pushState(null, '', '/r/selfhosted/comments/zzz999/other_post/');
+    document.body.append(document.createElement('div'));
+    await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
+  });
+
+  it('keeps the tab target when the selected element is only unmounted (virtualized lists)', async () => {
     const clearReplyTarget = vi.fn(async () => ({}));
     registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }), clearReplyTarget });
     const target = comment('t1_pfccwzm');
     toolbarButton(ownToolbar(target), 'reply')!.click();
     await flush();
     clearReplyTarget.mockClear();
-    // Reddit replaces the thread when it navigates to another post.
     target.remove();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(clearReplyTarget).not.toHaveBeenCalled();
+  });
+
+  it('clears the tab target when the page is restored from the back/forward cache', async () => {
+    const clearReplyTarget = vi.fn(async () => ({}));
+    registerHandlers<BackgroundMessages>({ clearReplyTarget });
+    window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }));
     await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
   });
 

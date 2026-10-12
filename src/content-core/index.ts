@@ -28,8 +28,9 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   const translated = new WeakSet<HTMLElement>();
   const replyButtons = new Map<HTMLElement, HTMLButtonElement>();
   const observed = new Set<HTMLElement>();
-  /** The target the operator last selected here; its removal from the page clears the stored target. */
-  let selected: HTMLElement | null = null;
+  /** Page key at the time the operator selected a target here; a different key clears the stored target. */
+  let selectedPageKey: string | null = null;
+  let hasSelection = false;
   let autoTranslate = false;
   let blockAds = false;
   let scanTimer: number | undefined;
@@ -65,7 +66,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
 
   async function selectTarget(target: HTMLElement, toolbar: Toolbar): Promise<void> {
     if (!ctx.isValid) return;
-    selected = target;
+    hasSelection = true;
+    selectedPageKey = adapter.pageKey(doc);
     for (const [owner, button] of replyButtons) button.setAttribute('aria-pressed', String(owner === target));
     toolbar.setNote('');
     try {
@@ -98,9 +100,9 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   function scan(): void {
     scanTimer = undefined;
     if (!ctx.isValid) return;
-    if (selected && !selected.isConnected) {
-      // The page replaced the thread (SPA navigation), so the stored target no longer applies.
-      selected = null;
+    if (hasSelection && adapter.pageKey(doc) !== selectedPageKey) {
+      // The page now shows another conversation (SPA navigation), so the stored target no longer applies.
+      hasSelection = false;
       clearStoredTarget();
     }
     // Forget nodes the page removed (SPA navigation, collapsed threads).
@@ -192,8 +194,17 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     applyAds();
   });
 
-  // A new document in this tab: a target stored for the previous page no longer applies.
+  // A new document in this tab, or one restored from the back/forward cache (which does not
+  // rerun content scripts): a target stored for another page no longer applies.
   clearStoredTarget();
+  // SPA navigation may not touch the DOM right away; check the page key on every URL change.
+  ctx.addEventListener(window, 'wxt:locationchange', scheduleScan);
+  ctx.addEventListener(window, 'pageshow', (event) => {
+    if ((event as PageTransitionEvent).persisted) {
+      hasSelection = false;
+      clearStoredTarget();
+    }
+  });
 
   ctx.onInvalidated(() => {
     observer.disconnect();

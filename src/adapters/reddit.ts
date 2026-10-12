@@ -9,8 +9,8 @@ const EDITOR_SELECTOR = '[contenteditable="true"][role="textbox"]';
 const AD_SELECTOR = 'shreddit-ad-post, shreddit-comments-page-ad';
 const MAX_COMMENTS = 5;
 
-function isPostPage(doc: Document): boolean {
-  return /^\/r\/[^/]+\/comments\//.test(doc.location?.pathname ?? '');
+function postId(doc: Document): string | null {
+  return /^\/r\/[^/]+\/comments\/([^/]+)/.exec(doc.location?.pathname ?? '')?.[1] ?? null;
 }
 
 function absoluteUrl(doc: Document, path: string | null): string {
@@ -103,7 +103,7 @@ export const redditAdapter: PlatformAdapter = {
   findReplyTargets(root) {
     // Replies are only possible on a post's own page.
     const doc = root instanceof Document ? root : (root as Node).ownerDocument;
-    if (!doc || !isPostPage(doc)) return [];
+    if (!doc || !postId(doc)) return [];
     return [...root.querySelectorAll<HTMLElement>('shreddit-post, shreddit-comment')];
   },
 
@@ -128,6 +128,10 @@ export const redditAdapter: PlatformAdapter = {
 
   insertText(composer, text) {
     return insertIntoRichEditor(composer, text);
+  },
+
+  pageKey(doc) {
+    return postId(doc);
   },
 
   findAds(root) {
