@@ -361,5 +361,11 @@
   },
   "openSettingsLink": {
     "message": "Open settings"
+  },
+  "showKey": {
+    "message": "Show"
+  },
+  "hideKey": {
+    "message": "Hide"
   }
 }

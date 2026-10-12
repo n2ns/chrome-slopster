@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { getApiKeys } from '@/src/storage/items';
 import { saveApiKeys } from '@/src/storage/settings';
-import { AI_ENGINES, type ApiKeys } from '@/src/storage/types';
+import { AI_ENGINES, type AiEngine, type ApiKeys } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { engineLabel } from '@/src/ui/labels';
 
@@ -13,6 +13,15 @@ export function ApiKeysSection() {
   const [baseline, setBaseline] = useState<ApiKeys>();
   const [error, setError] = useState<unknown>();
   const [saved, setSaved] = useState(false);
+  // Keys the operator chose to show in plain text, to check what was pasted.
+  const [shown, setShown] = useState<Set<AiEngine>>(new Set());
+
+  function toggleShown(engine: AiEngine) {
+    const next = new Set(shown);
+    if (next.has(engine)) next.delete(engine);
+    else next.add(engine);
+    setShown(next);
+  }
 
   useEffect(() => {
     getApiKeys().then((loaded) => {
@@ -46,17 +55,22 @@ export function ApiKeysSection() {
           {AI_ENGINES.map((engine) => (
             <div key={engine}>
               <label htmlFor={`key-${engine}`}>{engineLabel(engine)}</label>
-              <input
-                id={`key-${engine}`}
-                type="password"
-                autoComplete="off"
-                spellCheck={false}
-                value={keys[engine]}
-                onChange={(event) => {
-                  setKeys({ ...keys, [engine]: event.target.value });
-                  setSaved(false);
-                }}
-              />
+              <div className="key-row">
+                <input
+                  id={`key-${engine}`}
+                  type={shown.has(engine) ? 'text' : 'password'}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={keys[engine]}
+                  onChange={(event) => {
+                    setKeys({ ...keys, [engine]: event.target.value });
+                    setSaved(false);
+                  }}
+                />
+                <button type="button" aria-controls={`key-${engine}`} aria-pressed={shown.has(engine)} onClick={() => toggleShown(engine)}>
+                  {shown.has(engine) ? t('hideKey') : t('showKey')}
+                </button>
+              </div>
             </div>
           ))}
           <div className="actions">
