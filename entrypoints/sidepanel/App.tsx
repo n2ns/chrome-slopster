@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
-import { setActivePersona } from '@/src/storage/personas';
 import { errorMessage } from '@/src/ui/errors';
-import { usePersonaState } from '@/src/ui/hooks';
+import { ReplySection } from './ReplySection';
 
 export default function App() {
   return (
@@ -12,47 +11,6 @@ export default function App() {
       <ReplySection />
       <TranslateSection />
     </main>
-  );
-}
-
-function ReplySection() {
-  const { value, error: loadError, reload } = usePersonaState();
-  const [error, setError] = useState<unknown>();
-  const [intent, setIntent] = useState('');
-
-  async function selectPersona(id: string) {
-    setError(undefined);
-    try {
-      await setActivePersona(id);
-    } catch (failure) {
-      setError(failure);
-    }
-    reload();
-  }
-
-  const shownError = error ?? loadError;
-  return (
-    <section>
-      <label htmlFor="persona">{t('sidepanelPersona')}</label>
-      <select id="persona" value={value?.activeId ?? ''} disabled={!value} onChange={(event) => selectPersona(event.target.value)}>
-        {value?.personas.map((persona) => (
-          <option key={persona.id} value={persona.id}>
-            {persona.name}
-          </option>
-        ))}
-      </select>
-
-      <label htmlFor="intent">{t('intentLabel')}</label>
-      <textarea id="intent" value={intent} placeholder={t('intentPlaceholder')} onChange={(event) => setIntent(event.target.value)} />
-
-      <div className="actions">
-        <button type="button" className="primary" disabled>
-          {t('generate')}
-        </button>
-      </div>
-      <p className="hint">{t('generateUnavailableHint')}</p>
-      {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
-    </section>
   );
 }
 

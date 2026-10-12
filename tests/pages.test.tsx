@@ -78,7 +78,7 @@ describe('pages', () => {
     expect(await getPersona(persona!.id)).toMatchObject({ name: 'Renamed here', tone: 'tone from other window' });
   });
 
-  it('side panel lists personas, refreshes on change, and keeps Generate disabled', async () => {
+  it('side panel lists personas and refreshes on change', async () => {
     await render(<SidepanelApp />);
     const select = container.querySelector<HTMLSelectElement>('#persona')!;
     expect(select.options).toHaveLength(1);
@@ -87,9 +87,6 @@ describe('pages', () => {
     await settle();
     expect([...select.options].map((option) => option.text)).toContain('Second');
     expect(select.value).toBe((await listPersonas())[0]!.id);
-
-    const generate = [...container.querySelectorAll('button')].find((button) => button.textContent === 'generate')!;
-    expect(generate.disabled).toBe(true);
   });
 
   it('side panel translates text and appends the truncation notice', async () => {

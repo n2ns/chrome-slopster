@@ -164,6 +164,78 @@
   "generateUnavailableHint": {
     "message": "在 Reddit、X 或 Facebook 上打开帖子后即可起草回复。"
   },
+  "generating": {
+    "message": "生成中…"
+  },
+  "replyNoThread": {
+    "message": "当前页面没有找到帖子。请在 Reddit、X 或 Facebook 上打开一个帖子，或点击页面上的回复按钮。"
+  },
+  "replyTargetHeading": {
+    "message": "回复对象"
+  },
+  "replyTargetComment": {
+    "message": "回复一条评论"
+  },
+  "replyTargetClear": {
+    "message": "清除"
+  },
+  "replyPlatformReddit": {
+    "message": "Reddit"
+  },
+  "replyPlatformX": {
+    "message": "X"
+  },
+  "replyPlatformFacebook": {
+    "message": "Facebook"
+  },
+  "replyVerdictYes": {
+    "message": "适合回复。"
+  },
+  "replyVerdictNo": {
+    "message": "建议不要回复。"
+  },
+  "replyUnparsed": {
+    "message": "无法解析模型的输出。下面显示原始输出，填入功能已停用。"
+  },
+  "replyDraftLabel": {
+    "message": "回复（填入前可编辑）"
+  },
+  "replyNativeLabel": {
+    "message": "对照译文"
+  },
+  "replyReviewNotesLabel": {
+    "message": "审阅提示"
+  },
+  "replyCharCount": {
+    "message": "$1 / $2 字符"
+  },
+  "replyOverLimit": {
+    "message": "回复超过了 X 的 $1 字符上限，请在发送前删减。"
+  },
+  "replyCopy": {
+    "message": "复制"
+  },
+  "replyCopied": {
+    "message": "已复制。"
+  },
+  "replyFill": {
+    "message": "填入回复框"
+  },
+  "replyFilling": {
+    "message": "填入中…"
+  },
+  "replyFilled": {
+    "message": "已填入。请在页面上检查后自行发送。"
+  },
+  "replyFillNotFound": {
+    "message": "没有找到回复框。请先在页面上打开回复框，然后重试。"
+  },
+  "replyFillRejected": {
+    "message": "页面没有接受这段文字。请改用复制后手动粘贴。"
+  },
+  "replyManualSendReminder": {
+    "message": "扩展只负责填入回复框，请检查内容后自行发送。"
+  },
   "translateHeading": {
     "message": "翻译文本"
   },
