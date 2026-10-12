@@ -14,7 +14,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['*.config.{js,ts}', 'tests/**'],
+    // Playwright fixtures pass values with a `use` callback, which is not a React hook.
+    files: ['e2e/**'],
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
+  },
+  {
+    files: ['*.config.{js,ts}', 'tests/**', 'e2e/**'],
     languageOptions: {
       globals: { ...globals.node },
     },

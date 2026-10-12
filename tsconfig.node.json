@@ -3,6 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": [".wxt/wxt.d.ts", "src", "entrypoints", "tests", "*.config.ts"],
+  "include": [".wxt/wxt.d.ts", "src", "entrypoints", "tests", "e2e", "*.config.ts"],
   "exclude": ["node_modules", ".output"]
 }

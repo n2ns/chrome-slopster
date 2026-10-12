@@ -286,5 +286,26 @@
   },
   "personasResetConfirm": {
     "message": "已保存的人设无法读取。要用一个新的默认人设替换它们吗？此操作无法撤销。"
+  },
+  "contentTranslate": {
+    "message": "翻译"
+  },
+  "contentTranslating": {
+    "message": "翻译中…"
+  },
+  "contentHideTranslation": {
+    "message": "隐藏译文"
+  },
+  "contentShowTranslation": {
+    "message": "显示译文"
+  },
+  "contentDraftReply": {
+    "message": "起草回复"
+  },
+  "contentReplySelected": {
+    "message": "已选中，请在侧边栏继续。"
+  },
+  "contentOpenSidePanel": {
+    "message": "已选中，请点击扩展图标打开侧边栏。"
   }
 }
