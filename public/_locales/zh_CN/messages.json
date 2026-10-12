@@ -236,6 +236,54 @@
   "replyManualSendReminder": {
     "message": "扩展只负责填入回复框，请检查内容后自行发送。"
   },
+  "draftModeLabel": {
+    "message": "起草类型"
+  },
+  "modeReply": {
+    "message": "回复"
+  },
+  "modePost": {
+    "message": "新帖"
+  },
+  "postIntentPlaceholder": {
+    "message": "可选：这篇帖子想说什么或问什么。"
+  },
+  "postNoTarget": {
+    "message": "当前页面没有打开发帖表单。请先打开：Reddit 上是子版块的“Create post”页面；X 上是发帖框；Facebook 上是小组或主页里的“Create post”或“Write something”。"
+  },
+  "postTargetHeading": {
+    "message": "发布到"
+  },
+  "postVerdictYes": {
+    "message": "适合在这里发布。"
+  },
+  "postVerdictNo": {
+    "message": "建议不要在这里发布。"
+  },
+  "postTitleLabel": {
+    "message": "标题（填入前可编辑）"
+  },
+  "postTitleRequired": {
+    "message": "Reddit 要求填写标题。"
+  },
+  "postDraftLabel": {
+    "message": "帖子正文（填入前可编辑）"
+  },
+  "postOverLimit": {
+    "message": "帖子超过了 X 的 $1 字符上限，请在发布前删减。"
+  },
+  "postFill": {
+    "message": "填入发帖表单"
+  },
+  "postFilled": {
+    "message": "已填入。请在页面上检查后自行发布。"
+  },
+  "postFillNotFound": {
+    "message": "当前页面没有打开发帖表单，或页面已变化。请重新打开发帖表单后重试。"
+  },
+  "postManualPublishReminder": {
+    "message": "扩展只负责填入发帖表单，请检查内容后自行发布。"
+  },
   "translateHeading": {
     "message": "翻译文本"
   },

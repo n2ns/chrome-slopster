@@ -236,6 +236,54 @@
   "replyManualSendReminder": {
     "message": "The extension only fills the reply box. Review the text and send it yourself."
   },
+  "draftModeLabel": {
+    "message": "Draft type"
+  },
+  "modeReply": {
+    "message": "Reply"
+  },
+  "modePost": {
+    "message": "New post"
+  },
+  "postIntentPlaceholder": {
+    "message": "Optional: what the post should say or ask."
+  },
+  "postNoTarget": {
+    "message": "No new-post form is open on this page. Open it first: on Reddit, the subreddit's \"Create post\" page; on X, the post composer; on Facebook, \"Create post\" or \"Write something\" in a group or page."
+  },
+  "postTargetHeading": {
+    "message": "Posting to"
+  },
+  "postVerdictYes": {
+    "message": "Fits the community."
+  },
+  "postVerdictNo": {
+    "message": "Better not to post this here."
+  },
+  "postTitleLabel": {
+    "message": "Title (edit before filling)"
+  },
+  "postTitleRequired": {
+    "message": "Reddit requires a title."
+  },
+  "postDraftLabel": {
+    "message": "Post (edit before filling)"
+  },
+  "postOverLimit": {
+    "message": "The post is over X's $1-character limit. Shorten it before publishing."
+  },
+  "postFill": {
+    "message": "Fill post form"
+  },
+  "postFilled": {
+    "message": "Filled. Review it on the page and publish it yourself."
+  },
+  "postFillNotFound": {
+    "message": "The new-post form is not open on this page, or the page changed. Open the form again, then try again."
+  },
+  "postManualPublishReminder": {
+    "message": "The extension only fills the new-post form. Review the text and publish it yourself."
+  },
   "translateHeading": {
     "message": "Translate text"
   },
