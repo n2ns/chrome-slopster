@@ -1,13 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
-import { errorMessage } from '@/src/ui/errors';
+import { ErrorNotice, openSettings } from '@/src/ui/ErrorNotice';
 import { ReplySection } from './ReplySection';
 
 export default function App() {
   return (
     <main className="sidepanel">
-      <h1>{t('sidepanelTitle')}</h1>
+      <header className="sidepanel-header">
+        <h1>{t('sidepanelTitle')}</h1>
+        <button type="button" className="link" onClick={openSettings}>
+          {t('settingsButton')}
+        </button>
+      </header>
       <ReplySection />
       <TranslateSection />
     </main>
@@ -54,7 +59,7 @@ function TranslateSection() {
         </div>
       </form>
       {result !== undefined && <p className="output">{result}</p>}
-      {error !== undefined && <p className="error">{errorMessage(error)}</p>}
+      {error !== undefined && <ErrorNotice error={error} />}
     </section>
   );
 }

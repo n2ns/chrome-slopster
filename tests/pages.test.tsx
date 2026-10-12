@@ -98,6 +98,30 @@ describe('pages', () => {
     expect(container.querySelector('.output')!.textContent).toBe('T:hello\n\ntranslationTruncated');
   });
 
+  it('side panel opens the settings from its header', async () => {
+    const open = vi.spyOn(fakeBrowser.runtime, 'openOptionsPage').mockResolvedValue(undefined as never);
+    await render(<SidepanelApp />);
+    const settings = [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => button.textContent === 'settingsButton')!;
+    await act(async () => settings.click());
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('side panel offers the settings when an API key is missing', async () => {
+    const open = vi.spyOn(fakeBrowser.runtime, 'openOptionsPage').mockResolvedValue(undefined as never);
+    registerHandlers<BackgroundMessages>({
+      translate: async () => {
+        throw new AppError('missing-api-key', 'no key');
+      },
+    });
+    await render(<SidepanelApp />);
+    await act(async () => setValue(container.querySelector<HTMLTextAreaElement>('#translate-input')!, 'hello'));
+    await act(async () => container.querySelector('form')!.requestSubmit());
+    await settle();
+    const link = [...container.querySelectorAll('button')].find((button) => button.textContent === 'openSettingsLink')!;
+    await act(async () => link.click());
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
   it('side panel shows a localized error when translation fails', async () => {
     registerHandlers<BackgroundMessages>({
       translate: async () => {

@@ -6,7 +6,7 @@ import type { GenerationMode, GenerationResult } from '@/src/prompt/types';
 import { replyTargetItem } from '@/src/storage/items';
 import { setActivePersona } from '@/src/storage/personas';
 import type { PlatformId } from '@/src/storage/types';
-import { errorMessage } from '@/src/ui/errors';
+import { ErrorNotice } from '@/src/ui/ErrorNotice';
 import { usePersonaState, useSettings } from '@/src/ui/hooks';
 import { useActiveTab, useReplyTarget } from '@/src/ui/tabs';
 import { DraftResult, PLATFORM_KEYS, type FlowProps, type Notice } from './draft';
@@ -81,7 +81,7 @@ export function ReplySection() {
 
       <label htmlFor="intent">{t('intentLabel')}</label>
       <textarea id="intent" value={intent} placeholder={t(mode === 'reply' ? 'intentPlaceholder' : 'postIntentPlaceholder')} onChange={(event) => setIntent(event.target.value)} />
-      {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
+      {shownError !== undefined && <ErrorNotice error={shownError} />}
 
       {/* Remount per tab. A URL change keeps the draft (X opens its reply dialog at
           /compose/post); filling is matched to the draft's own target by the page.
@@ -217,7 +217,7 @@ function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps)
       )}
 
       {notice && <p className={notice.ok ? 'status' : 'error'}>{t(notice.key)}</p>}
-      {error !== undefined && <p className="error">{errorMessage(error)}</p>}
+      {error !== undefined && <ErrorNotice error={error} />}
     </>
   );
 }

@@ -2,9 +2,26 @@ main.sidepanel {
   padding: 12px;
 }
 
+main.sidepanel .sidepanel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 main.sidepanel h1 {
   font-size: 1.25rem;
-  margin-bottom: 12px;
+  margin: 0;
+}
+
+main.sidepanel button.link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent, #5b8def);
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 main.sidepanel section {
