@@ -212,6 +212,28 @@ describe('side panel reply flow', () => {
     expect(fills.map((thread) => thread.url)).toEqual([comment.url]);
   });
 
+  it('keeps the draft when the tab URL changes (X opens its reply dialog at /compose/post)', async () => {
+    await replyTargetItem(TAB_ID).setValue(post);
+    useGenerate(parsedResult);
+    await render();
+    await click('generate');
+    vi.spyOn(fakeBrowser.tabs, 'query').mockImplementation((async () => [{ id: TAB_ID, url: 'https://x.com/compose/post' }]) as never);
+    await act(async () => void (await fakeBrowser.tabs.onUpdated.trigger(TAB_ID, { url: 'https://x.com/compose/post' }, { id: TAB_ID } as Browser.tabs.Tab)));
+    await settle();
+    expect(container.querySelector<HTMLTextAreaElement>('#reply-draft')).not.toBeNull();
+  });
+
+  it('asks the page for its current thread on every generate when no target is selected', async () => {
+    useGenerate(parsedResult);
+    contentReplies.getThreadContext = () => ({ thread: post });
+    await render();
+    await click('generate');
+    const other = { ...post, url: 'https://www.reddit.com/r/selfhosted/comments/other/' };
+    contentReplies.getThreadContext = () => ({ thread: other });
+    await click('generate');
+    expect(generateRequests.map((request) => request.thread.url)).toEqual([post.url, other.url]);
+  });
+
   it('labels a comment target as a comment even when the post has no body', async () => {
     await replyTargetItem(TAB_ID).setValue({ ...comment, parentChain: [] });
     await render();

@@ -35,6 +35,22 @@ const toolbarButton = (host: Element, action: string) => host.shadowRoot!.queryS
 const comment = (id: string) => document.querySelector<HTMLElement>(`shreddit-comment[thingid="${id}"]`)!;
 const ownToolbar = (target: Element) => [...target.querySelectorAll('[data-sra-toolbar]')].find((host) => host.closest(target.tagName) === target)!;
 
+describe('content core startup', () => {
+  it('clears any reply target left from a previous page in this tab', async () => {
+    fakeBrowser.reset();
+    mockI18n();
+    vi.stubGlobal('IntersectionObserver', NoopIntersectionObserver);
+    const clearReplyTarget = vi.fn(async () => ({}));
+    registerHandlers<BackgroundMessages>({ clearReplyTarget });
+    const ctx = fakeContext();
+    runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
+    await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
+    ctx.invalidate();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+});
+
 describe('content core on a Reddit post page', () => {
   let ctx: ReturnType<typeof fakeContext>;
 
@@ -134,6 +150,18 @@ describe('content core on a Reddit post page', () => {
   it('reports not-found when the selected comment has no open reply box', async () => {
     const thread = redditAdapter.extractThread(comment('t1_pfcb65f'));
     await expect(sendToTab(1, 'insertText', { text: 'hello', thread })).resolves.toEqual({ ok: false, reason: 'not-found' });
+  });
+
+  it('asks the background to clear the tab target when the selected element leaves the page', async () => {
+    const clearReplyTarget = vi.fn(async () => ({}));
+    registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }), clearReplyTarget });
+    const target = comment('t1_pfccwzm');
+    toolbarButton(ownToolbar(target), 'reply')!.click();
+    await flush();
+    clearReplyTarget.mockClear();
+    // Reddit replaces the thread when it navigates to another post.
+    target.remove();
+    await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
   });
 
   it('answers getThreadContext with the post', async () => {

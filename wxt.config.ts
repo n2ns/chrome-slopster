@@ -12,6 +12,8 @@ export default defineConfig({
       // Site access lets the background see tab URLs, so a reply target is cleared when the tab navigates.
       'https://www.reddit.com/*',
       'https://reddit.com/*',
+      'https://x.com/*',
+      'https://twitter.com/*',
       'https://translate.googleapis.com/*',
       'https://api.openai.com/*',
       'https://api.deepseek.com/*',

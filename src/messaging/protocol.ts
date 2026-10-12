@@ -13,6 +13,12 @@ export interface BackgroundMessages {
   generate: { request: GenerationRequest; response: GenerationResult };
   /** A reply button on the page was clicked: remember the target for this tab and open the side panel. */
   selectReplyTarget: { request: { thread: ThreadContext }; response: { sidePanelOpened: boolean } };
+  /**
+   * Sent by a content script when the selected target left the page, or when it
+   * starts on a new document: forget the reply target of the sender's tab.
+   * URL changes alone do not clear it (X opens its reply dialog at /compose/post).
+   */
+  clearReplyTarget: { request: Record<string, never>; response: Record<string, never> };
 }
 
 /** Messages handled by a content script, sent to a specific tab. */

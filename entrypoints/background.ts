@@ -1,4 +1,4 @@
-import { registerReplyTargetCleanup, selectReplyTarget } from '@/src/background/reply-target';
+import { clearReplyTarget, registerReplyTargetCleanup, selectReplyTarget } from '@/src/background/reply-target';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { generateDraft } from '@/src/prompt/generate';
 import { translateText } from '@/src/translation/translate';
@@ -15,5 +15,6 @@ export default defineBackground(() => {
     translate: ({ text, targetLanguage }) => translateText(text, targetLanguage),
     generate: (request) => generateDraft(request),
     selectReplyTarget: (payload, sender) => selectReplyTarget(payload, sender),
+    clearReplyTarget: (payload, sender) => clearReplyTarget(payload, sender),
   });
 });

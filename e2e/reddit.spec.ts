@@ -39,16 +39,29 @@ test('selecting a comment stores it as the reply target for the tab', async ({ c
     .toBe('Beautiful_Ad_4813');
 });
 
-test('navigating to another post clears the reply target for the tab', async ({ context, background }) => {
+const storedTargets = (background: { evaluate: <T>(fn: () => Promise<T>) => Promise<T> }) =>
+  background.evaluate(async () => Object.keys(await chrome.storage.session.get(null)).filter((name) => name.startsWith('replyTarget:')).length);
+
+test('navigating to another post in place (SPA) clears the reply target', async ({ context, background }) => {
   const page = await context.newPage();
   await page.goto(POST_URL);
   await page.locator(`${COMMENT} [data-sra-toolbar] [data-action="reply"]`).first().click();
-  const storedTargets = () =>
-    background.evaluate(async () => Object.keys(await chrome.storage.session.get(null)).filter((name) => name.startsWith('replyTarget:')).length);
-  await expect.poll(storedTargets).toBe(1);
-  // Reddit navigates between posts with the History API.
-  await page.evaluate(() => history.pushState(null, '', '/r/selfhosted/comments/other/another_post/'));
-  await expect.poll(storedTargets).toBe(0);
+  await expect.poll(() => storedTargets(background)).toBe(1);
+  // Reddit's History API navigation replaces the thread in the DOM.
+  await page.evaluate(() => {
+    history.pushState(null, '', '/r/selfhosted/comments/other/another_post/');
+    document.querySelector('shreddit-comment-tree')?.remove();
+  });
+  await expect.poll(() => storedTargets(background)).toBe(0);
+});
+
+test('loading another page in the tab clears the reply target', async ({ context, background }) => {
+  const page = await context.newPage();
+  await page.goto(POST_URL);
+  await page.locator(`${COMMENT} [data-sra-toolbar] [data-action="reply"]`).first().click();
+  await expect.poll(() => storedTargets(background)).toBe(1);
+  await page.goto('https://www.reddit.com/r/selfhosted/comments/other/another_post/');
+  await expect.poll(() => storedTargets(background)).toBe(0);
 });
 
 test('hides ads while the Reddit toggle is on', async ({ context, background }) => {
