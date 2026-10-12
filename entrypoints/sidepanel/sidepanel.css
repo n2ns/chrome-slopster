@@ -15,3 +15,61 @@ main.sidepanel section {
 main.sidepanel label:first-child {
   margin-top: 0;
 }
+
+main.sidepanel .target {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+main.sidepanel .target-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+main.sidepanel .target-heading {
+  font-weight: 600;
+}
+
+main.sidepanel .target-meta {
+  color: var(--muted);
+  font-size: 0.9em;
+  margin: 4px 0 0;
+}
+
+main.sidepanel .target-summary {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+main.sidepanel .result {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+main.sidepanel .verdict {
+  margin: 0;
+}
+
+main.sidepanel .verdict.warning {
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+main.sidepanel textarea.draft {
+  min-height: 8em;
+}
+
+main.sidepanel .raw {
+  font: inherit;
+  overflow-wrap: anywhere;
+}
