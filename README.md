@@ -1,4 +1,4 @@
-# Social Reply Assistant
+# Slopster
 
 A Chrome extension that helps you read and take part in conversations on **Reddit**, **X**, and **Facebook**:
 

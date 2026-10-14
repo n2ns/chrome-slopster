@@ -1,12 +1,12 @@
 {
   "extName": {
-    "message": "社交回帖助手"
+    "message": "Slopster"
   },
   "extDescription": {
-    "message": "在 Reddit、X 和 Facebook 上翻译帖子，并起草经人工审核的回复。"
+    "message": "在 Reddit、X 和 Facebook 上翻译帖子，起草经人工审核的回复和新帖。"
   },
   "sidepanelTitle": {
-    "message": "回帖助手"
+    "message": "Slopster"
   },
   "loading": {
     "message": "加载中…"
