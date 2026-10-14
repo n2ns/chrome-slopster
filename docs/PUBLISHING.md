@@ -14,7 +14,7 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 ## Status
 
 - 2026-10-15: 0.1.0 uploaded by hand and submitted for review under the Datafrog.io publisher (item ID `mmgmeicjkmabnhjedpinlnpddagpoend`; it publishes automatically once approved). The listing uses category Productivity > Tools, the five store screenshots, both promo tiles, homepage https://n2ns.com/projects/slopster, support https://github.com/n2ns/chrome-slopster/issues, and the privacy policy at https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md.
-- The `chrome-web-store` environment exists with `EXTENSION_ID`. The upload uses Chrome Web Store API v2 with the shared n2ns organization secrets `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL` and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (set); `CWS_PUBLISHER_ID` is still missing, so tag-triggered publishing does not work yet.
+- The `chrome-web-store` environment exists with `EXTENSION_ID`. The upload uses Chrome Web Store API v2 with the shared n2ns organization secrets `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL` and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` and `CWS_PUBLISHER_ID` (all set). The service account is added to the publisher and can read this item, so tag-triggered publishing works for versions after 0.1.0.
 - No `v0.1.0` tag or GitHub Release yet: pushing the tag would run the publish workflow, whose store upload fails while the item is under review and the OAuth secrets are missing.
 
 ## One-time setup
