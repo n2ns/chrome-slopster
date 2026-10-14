@@ -8,9 +8,12 @@ import { SettingsView } from './settings/SettingsView';
 
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
+  // Once opened, the settings stay mounted too, so unsaved edits survive going back.
+  const [settingsOpened, setSettingsOpened] = useState(false);
 
   function switchView(settings: boolean) {
     setShowSettings(settings);
+    if (settings) setSettingsOpened(true);
     window.scrollTo(0, 0);
   }
 
@@ -39,7 +42,11 @@ export default function App() {
           <ReplySection />
           <TranslateSection />
         </div>
-        {showSettings && <SettingsView />}
+        {settingsOpened && (
+          <div hidden={!showSettings}>
+            <SettingsView />
+          </div>
+        )}
       </main>
     </SettingsNavContext>
   );
