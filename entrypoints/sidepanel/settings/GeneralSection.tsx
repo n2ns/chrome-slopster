@@ -1,3 +1,4 @@
+import { CircleAlert, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { t, type MessageKey } from '@/src/i18n';
 import { saveSettings } from '@/src/storage/settings';
@@ -29,7 +30,10 @@ export function GeneralSection() {
   const shownError = error ?? loadError;
   return (
     <section>
-      <h2>{t('generalHeading')}</h2>
+      <h2>
+        <SlidersHorizontal className="icon" size={18} aria-hidden />
+        {t('generalHeading')}
+      </h2>
       {settings ? (
         <>
           <label htmlFor="operator-language">{t('operatorLanguage')}</label>
@@ -43,7 +47,7 @@ export function GeneralSection() {
 
           <label className="check">
             <input type="checkbox" checked={settings.autoTranslate} onChange={(event) => save({ autoTranslate: event.target.checked })} />
-            {t('autoTranslate')}
+            <span>{t('autoTranslate')}</span>
           </label>
 
           <label htmlFor="font-size">{t('fontSize')}</label>
@@ -62,7 +66,12 @@ export function GeneralSection() {
       ) : (
         !shownError && <p className="hint">{t('loading')}</p>
       )}
-      {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
+      {shownError !== undefined && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {errorMessage(shownError)}
+        </p>
+      )}
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { CircleAlert, CircleCheck, Eye, EyeOff, KeyRound, Save } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { getApiKeys } from '@/src/storage/items';
@@ -48,7 +49,10 @@ export function ApiKeysSection() {
 
   return (
     <section>
-      <h2>{t('apiKeysHeading')}</h2>
+      <h2>
+        <KeyRound className="icon" size={18} aria-hidden />
+        {t('apiKeysHeading')}
+      </h2>
       <p className="hint">{t('apiKeysNote')}</p>
       {keys ? (
         <form onSubmit={submit}>
@@ -67,23 +71,42 @@ export function ApiKeysSection() {
                     setSaved(false);
                   }}
                 />
-                <button type="button" aria-controls={`key-${engine}`} aria-pressed={shown.has(engine)} onClick={() => toggleShown(engine)}>
-                  {shown.has(engine) ? t('hideKey') : t('showKey')}
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-controls={`key-${engine}`}
+                  aria-pressed={shown.has(engine)}
+                  aria-label={shown.has(engine) ? t('hideKey') : t('showKey')}
+                  title={shown.has(engine) ? t('hideKey') : t('showKey')}
+                  onClick={() => toggleShown(engine)}
+                >
+                  {shown.has(engine) ? <EyeOff className="icon" size={18} aria-hidden /> : <Eye className="icon" size={18} aria-hidden />}
                 </button>
               </div>
             </div>
           ))}
           <div className="actions">
             <button type="submit" className="primary">
+              <Save className="icon" size={16} aria-hidden />
               {t('save')}
             </button>
           </div>
-          {saved && <p className="status">{t('saved')}</p>}
+          {saved && (
+            <p className="status">
+              <CircleCheck className="icon" size={16} aria-hidden />
+              {t('saved')}
+            </p>
+          )}
         </form>
       ) : (
         !error && <p className="hint">{t('loading')}</p>
       )}
-      {error !== undefined && <p className="error">{errorMessage(error)}</p>}
+      {error !== undefined && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {errorMessage(error)}
+        </p>
+      )}
     </section>
   );
 }

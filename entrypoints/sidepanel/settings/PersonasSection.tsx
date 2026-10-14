@@ -1,3 +1,4 @@
+import { CircleAlert, CircleCheck, Plus, Save, Star, Trash2, UsersRound } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
@@ -36,8 +37,18 @@ export function PersonasSection() {
   if (!value) {
     return (
       <section>
-        <h2>{t('personasHeading')}</h2>
-        {loadError ? <p className="error">{errorMessage(loadError)}</p> : <p className="hint">{t('loading')}</p>}
+        <h2>
+          <UsersRound className="icon" size={18} aria-hidden />
+          {t('personasHeading')}
+        </h2>
+        {loadError ? (
+          <p className="error">
+            <CircleAlert className="icon" size={16} aria-hidden />
+            {errorMessage(loadError)}
+          </p>
+        ) : (
+          <p className="hint">{t('loading')}</p>
+        )}
         {loadError instanceof AppError && loadError.code === 'storage-error' && (
           <div className="actions">
             <button
@@ -47,6 +58,7 @@ export function PersonasSection() {
                 if (window.confirm(t('personasResetConfirm'))) void run(resetPersonas);
               }}
             >
+              <Trash2 className="icon" size={16} aria-hidden />
               {t('personasReset')}
             </button>
           </div>
@@ -60,7 +72,10 @@ export function PersonasSection() {
 
   return (
     <section>
-      <h2>{t('personasHeading')}</h2>
+      <h2>
+        <UsersRound className="icon" size={18} aria-hidden />
+        {t('personasHeading')}
+      </h2>
       <p className="hint">{t('personasIntro')}</p>
       <div className="personas">
         <ul className="persona-list">
@@ -83,7 +98,8 @@ export function PersonasSection() {
                 })
               }
             >
-              + {t('personaNew')}
+              <Plus className="icon" size={16} aria-hidden />
+              {t('personaNew')}
             </button>
           </li>
         </ul>
@@ -100,7 +116,12 @@ export function PersonasSection() {
           />
         )}
       </div>
-      {(error ?? loadError) !== undefined && <p className="error">{errorMessage(error ?? loadError)}</p>}
+      {(error ?? loadError) !== undefined && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {errorMessage(error ?? loadError)}
+        </p>
+      )}
     </section>
   );
 }
@@ -191,21 +212,29 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
 
       <label className="check">
         <input type="checkbox" checked={draft.antiAiVoice} onChange={(event) => edit({ antiAiVoice: event.target.checked })} />
-        {t('personaAntiAiVoice')}
+        <span>{t('personaAntiAiVoice')}</span>
       </label>
 
       <div className="actions">
         <button type="submit" className="primary">
+          <Save className="icon" size={16} aria-hidden />
           {t('save')}
         </button>
         <button type="button" disabled={isActive} onClick={onSetActive}>
+          <Star className="icon" size={16} aria-hidden />
           {t('personaSetActive')}
         </button>
         <button type="button" className="danger" onClick={onDelete}>
+          <Trash2 className="icon" size={16} aria-hidden />
           {t('personaDelete')}
         </button>
       </div>
-      {saved && <p className="status">{t('saved')}</p>}
+      {saved && (
+        <p className="status">
+          <CircleCheck className="icon" size={16} aria-hidden />
+          {t('saved')}
+        </p>
+      )}
     </form>
   );
 }

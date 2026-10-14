@@ -1,3 +1,4 @@
+import { CircleAlert, ShieldBan } from 'lucide-react';
 import { useState } from 'react';
 import { t, type MessageKey } from '@/src/i18n';
 import { adBlockItem } from '@/src/storage/items';
@@ -32,16 +33,28 @@ export function AdBlockSection() {
   const shownError = error ?? loadError;
   return (
     <section>
-      <h2>{t('adBlockHeading')}</h2>
-      {value
-        ? PLATFORMS.map((platform) => (
+      <h2>
+        <ShieldBan className="icon" size={18} aria-hidden />
+        {t('adBlockHeading')}
+      </h2>
+      {value ? (
+        <div className="toggle-list">
+          {PLATFORMS.map((platform) => (
             <label key={platform} className="check">
               <input type="checkbox" checked={value[platform]} onChange={(event) => toggle(platform, event.target.checked)} />
-              {t(LABELS[platform])}
+              <span>{t(LABELS[platform])}</span>
             </label>
-          ))
-        : !shownError && <p className="hint">{t('loading')}</p>}
-      {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
+          ))}
+        </div>
+      ) : (
+        !shownError && <p className="hint">{t('loading')}</p>
+      )}
+      {shownError !== undefined && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {errorMessage(shownError)}
+        </p>
+      )}
     </section>
   );
 }
