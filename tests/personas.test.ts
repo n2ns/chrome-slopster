@@ -76,6 +76,12 @@ describe('personas', () => {
     expect(await activePersonaIdItem.getValue()).toBe(personas[0]!.id);
   });
 
+  it('keeps the default persona when the first persona is created on empty storage', async () => {
+    const created = await createPersona(fields('First'));
+    expect((await listPersonas()).map((p) => p.id)).toEqual([DEFAULT_PERSONA_ID, created.id]);
+    expect(await activePersonaIdItem.getValue()).toBe(DEFAULT_PERSONA_ID);
+  });
+
   it('seeds only once when several windows load at the same time', async () => {
     await Promise.all([listPersonas(), listPersonas(), listPersonas()]);
     expect(await listPersonas()).toHaveLength(1);

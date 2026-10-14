@@ -132,10 +132,11 @@ export async function getPersona(id: string): Promise<Persona | undefined> {
 
 export async function createPersona(fields: PersonaFields): Promise<Persona> {
   return withLock(async () => {
-    const personas = await readStored();
+    // On empty storage the default persona is seeded first, so it always exists.
+    const stored = await readStored();
+    const personas = stored.length > 0 ? stored : await seed();
     const persona: Persona = { ...fields, id: crypto.randomUUID() };
     await writeStored([...personas, persona]);
-    if (personas.length === 0) await setActiveId(persona.id);
     return persona;
   });
 }

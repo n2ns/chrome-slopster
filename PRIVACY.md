@@ -36,4 +36,4 @@ The extension reads pages only on `www.reddit.com`, `reddit.com`, `x.com`, `twit
 
 ## Removing your data
 
-Uninstalling the extension removes what it stored on this device. To remove synced personas and settings from your other devices as well, reset them in the side panel before uninstalling: personas under **Personas**, API keys under **AI settings**, the other settings under **Settings**. You can delete personas and clear API keys there at any time.
+Uninstalling the extension removes what it stored on this device. To remove synced personas and settings from your other devices as well, reset them in the side panel before uninstalling: personas under **Personas**, API keys under **AI settings**, the other settings under **Settings**. You can delete personas (the built-in default persona can only be edited) and clear API keys there at any time.
