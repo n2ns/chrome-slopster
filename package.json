@@ -1,5 +1,5 @@
 {
-  "name": "social-reply-assistant",
+  "name": "chrome-slopster",
   "description": "Translate posts and draft operator-reviewed replies on Reddit, X, and Facebook.",
   "private": true,
   "version": "0.0.1",
