@@ -269,3 +269,9 @@
   background: var(--accent-soft);
 }
 
+
+/* The key's Save button sits on the input row and must not wrap its label. */
+.settings .key-row button.primary {
+  flex: none;
+  white-space: nowrap;
+}
