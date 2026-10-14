@@ -32,5 +32,8 @@ jobs:
 
       - name: Package and inspect extension
         run: |
-          npm run zip
-          unzip -t .output/chrome-slopster-*-chrome.zip
+          # Same packaging as the publish workflow (zip tool, not `wxt zip`, for valid entry dates).
+          VERSION=$(node -p "require('./package.json').version")
+          (cd .output/chrome-mv3 && zip -qrX "../chrome-slopster-$VERSION-chrome.zip" .)
+          unzip -t ".output/chrome-slopster-$VERSION-chrome.zip"
+          unzip -l ".output/chrome-slopster-$VERSION-chrome.zip" | grep -q ' manifest.json$'
