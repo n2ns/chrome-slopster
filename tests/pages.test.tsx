@@ -212,6 +212,26 @@ describe('pages', () => {
     expect(container.querySelector('input[type="color"]')!.getAttribute('aria-label')).toBe('translationColorCustom, colorSelected');
   });
 
+  it('leaving the custom picker right after choosing keeps showing the chosen color while it saves', async () => {
+    await render(<GeneralSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('input[type="color"]')!;
+    const realSet = fakeBrowser.storage.sync.set.bind(fakeBrowser.storage.sync);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.sync, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    await act(async () => setValue(input, '#123456'));
+    await act(async () => void input.dispatchEvent(new Event('change', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => void input.dispatchEvent(new FocusEvent('blur')));
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#123456');
+    release();
+    await settle();
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#123456');
+  });
+
   it('shows and hides each API key on request', async () => {
     await render(<AiSettingsView />);
     const input = container.querySelector<HTMLInputElement>('#key-gemini')!;

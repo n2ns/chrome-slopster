@@ -39,9 +39,19 @@ export function GeneralSection() {
   useEffect(() => {
     const input = customInput.current;
     if (!input) return;
-    const commit = () => void save({ translationColor: input.value }).finally(() => setDraft(undefined));
-    // A picker closed without a change (e.g. cancelled) leaves no change event; drop the draft when leaving it.
-    const discard = () => setDraft(undefined);
+    let saving = false;
+    const commit = () => {
+      saving = true;
+      void save({ translationColor: input.value }).finally(() => {
+        saving = false;
+        setDraft(undefined);
+      });
+    };
+    // A picker closed without a change (e.g. cancelled) leaves no change event; drop the draft when leaving it,
+    // unless a save is running, whose end drops it once the stored color is the new one.
+    const discard = () => {
+      if (!saving) setDraft(undefined);
+    };
     input.addEventListener('change', commit);
     input.addEventListener('blur', discard);
     return () => {
