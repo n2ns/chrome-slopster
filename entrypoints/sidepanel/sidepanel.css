@@ -89,7 +89,7 @@ main.sidepanel .mode-switch {
   padding: 3px;
   margin-bottom: 0.25rem;
   background: var(--surface-2);
-  border: 1px solid var(--border);
+  border: 1px solid var(--button-border);
   border-radius: var(--radius);
 }
 
@@ -101,18 +101,19 @@ main.sidepanel .mode-switch button {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--muted);
-}
-
-main.sidepanel .mode-switch button:hover:not(:disabled) {
-  background: var(--accent-soft);
   color: var(--text);
 }
 
-main.sidepanel .mode-switch button[aria-pressed='true'] {
-  background: var(--button-bg);
-  color: var(--accent);
-  box-shadow: var(--shadow), 0 0 0 1px var(--button-border);
+main.sidepanel .mode-switch button:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+/* The selected mode is a solid accent fill, so it reads as chosen at a glance. */
+main.sidepanel .mode-switch button[aria-pressed='true'],
+main.sidepanel .mode-switch button[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow);
 }
 
 main.sidepanel .mode-switch + label {
