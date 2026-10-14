@@ -536,6 +536,13 @@ describe('pages', () => {
     expect(visible('#persona-name')).toBe(false);
   });
 
+  it('side panel header shows the extension icon before the title', async () => {
+    await render(<SidepanelApp />);
+    const icon = container.querySelector<HTMLImageElement>('header button.home img')!;
+    expect(icon.getAttribute('src')).toBe('/icon/48.png');
+    expect(icon.getAttribute('alt')).toBe('');
+  });
+
   it('side panel applies the font size setting to the whole panel', async () => {
     await render(<SidepanelApp />);
     expect(document.documentElement.dataset.fontSize).toBe('medium');
