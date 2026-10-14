@@ -59,25 +59,19 @@ export function AiEngineSection() {
             ))}
           </select>
 
-          <fieldset className="model-group">
-            <legend>{t('modelsHeading')}</legend>
-            {AI_ENGINES.map((engine) => (
-              <div key={engine}>
-                <label htmlFor={`model-${engine}`}>{t('modelFor', engineLabel(engine))}</label>
-                <select
-                  id={`model-${engine}`}
-                  value={resolveModel(engine, settings.models[engine])}
-                  onChange={(event) => save({ models: { ...settings.models, [engine]: event.target.value } })}
-                >
-                  {getModelOptions(engine).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Only the selected engine's model is shown; it follows the AI engine select. */}
+          <label htmlFor={`model-${settings.aiEngine}`}>{t('modelFor', engineLabel(settings.aiEngine))}</label>
+          <select
+            id={`model-${settings.aiEngine}`}
+            value={resolveModel(settings.aiEngine, settings.models[settings.aiEngine])}
+            onChange={(event) => save({ models: { ...settings.models, [settings.aiEngine]: event.target.value } })}
+          >
+            {getModelOptions(settings.aiEngine).map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
-          </fieldset>
+          </select>
 
           <label className="check">
             <input type="checkbox" checked={settings.aiFallback} onChange={(event) => save({ aiFallback: event.target.checked })} />

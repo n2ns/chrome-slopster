@@ -269,30 +269,3 @@
   background: var(--accent-soft);
 }
 
-/* Engines: the per-engine model selects form one sub-group. */
-
-.model-group {
-  min-width: 0;
-  margin: 18px 0 0;
-  padding: 4px 12px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-}
-
-.model-group legend {
-  padding: 0 6px;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: 650;
-}
-
-.settings .model-group div > label:first-child {
-  margin: 10px 0 4px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.settings .model-group div:first-of-type > label:first-child {
-  margin-top: 4px;
-}
