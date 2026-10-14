@@ -13,7 +13,8 @@
     "test": "vitest run",
     "check": "npm run compile && npm run lint && npm test && npm run build",
     "postinstall": "wxt prepare",
-    "test:e2e": "wxt build && playwright test"
+    "test:e2e": "wxt build && playwright test",
+    "assets:store": "wxt build && node scripts/generate-store-assets.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.57.0",
