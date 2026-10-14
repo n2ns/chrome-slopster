@@ -86,6 +86,21 @@ describe('pages', () => {
     expect(container.querySelector<HTMLInputElement>('#key-gemini')!.value).toBe('unsaved-gemini');
   });
 
+  it('the saved notice belongs to the engine whose key was saved', async () => {
+    await render(<AiSettingsView />);
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-gemini')!, 'gemini-key'));
+    await act(async () => container.querySelector('#key-gemini')!.closest('form')!.requestSubmit());
+    await settle();
+    expect(container.querySelector('.key-field .status')).not.toBeNull();
+    const engine = container.querySelector<HTMLSelectElement>('#ai-engine')!;
+    await act(async () => {
+      engine.value = 'openai';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect(container.querySelector('.key-field .status')).toBeNull();
+  });
+
   it('the translation engine is Google or the selected AI engine', async () => {
     await render(<AiSettingsView />);
     const options = [...container.querySelector<HTMLSelectElement>('#translation-engine')!.options].map((option) => option.value);

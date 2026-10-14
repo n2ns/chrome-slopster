@@ -96,7 +96,7 @@
     "message": "Friendly, concise, and helpful."
   },
   "apiKeysHeading": {
-    "message": "API keys"
+    "message": "API key"
   },
   "apiKeysNote": {
     "message": "Keys are stored on this device only and never sync to your other devices."
