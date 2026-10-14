@@ -38,7 +38,7 @@ social-reply-assistant/
 ├─ entrypoints/
 │  ├─ background.ts                # Message routing, translation queue, provider calls, opening the side panel
 │  ├─ sidepanel/                   # React: drafting, translation, filling
-│  ├─ options/                     # React: persona profiles, API keys, models, platform toggles
+│  │  └─ settings/                 # React: persona profiles, API keys, models, platform toggles (shown inside the side panel)
 │  ├─ reddit.content.ts            # Composition only: core + Reddit adapter
 │  ├─ x.content.ts
 │  └─ facebook.content.ts
@@ -55,7 +55,7 @@ social-reply-assistant/
 │  ├─ translation/                 # Queue, cooldown, fallback, length truncation
 │  ├─ prompt/                      # Prompt building, platform rules, tone rules, result parsing
 │  ├─ models/registry.ts           # Single source of model IDs + aliases for old IDs
-│  └─ ui/                          # React components shared by the side panel and options page
+│  └─ ui/                          # React components shared by the side panel and its settings view
 ├─ public/_locales/{en,zh_CN}/messages.json
 ├─ tests/
 │  ├─ fixtures/{reddit,x,facebook}/*.html   # Saved page fragments
