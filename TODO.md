@@ -10,7 +10,7 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 ## Decisions pending
 
-- [ ] **First Chrome Web Store release.** 0.1.0 is submitted for review (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)). After approval: put the store link in README.md and on n2ns.com, add the `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN` secrets, and create the `v0.1.0` GitHub Release with the zip.
+- [ ] **First Chrome Web Store release.** 0.1.0 is submitted for review (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)). After approval: put the store link in README.md and on n2ns.com, set the `CWS_PUBLISHER_ID` organization secret, and create the `v0.1.0` GitHub Release with the zip.
 - [ ] License. The repository has none yet.
 
 ## Known gaps
