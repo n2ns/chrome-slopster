@@ -1,5 +1,5 @@
 import { Check, CircleAlert, CircleCheck, Plus, Star, Trash2, UsersRound } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
 import { AppError } from '@/src/providers/types';
@@ -142,8 +142,10 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
     bannedWords: persona.bannedWords.join('\n'),
     customRules: persona.customRules.join('\n'),
   });
+  // Latest draft for saves that run after a queued one finishes.
+  const draftRef = useRef(draft);
   // Values this form last loaded or saved; only fields that differ are sent.
-  const [baseline, setBaseline] = useState<PersonaFields>(() => ({
+  const baselineRef = useRef<PersonaFields>({
     name: persona.name,
     identity: persona.identity,
     tone: persona.tone,
@@ -151,46 +153,60 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
     bannedWords: persona.bannedWords,
     customRules: persona.customRules,
     antiAiVoice: persona.antiAiVoice,
-  }));
+  });
+  // Saves run one after another, each against the baseline the previous one left.
+  const queueRef = useRef(Promise.resolve());
   const [saved, setSaved] = useState(false);
   const field = (id: string) => `persona-${id}`;
 
   function edit(patch: Partial<typeof draft>) {
-    setDraft({ ...draft, ...patch });
+    draftRef.current = { ...draftRef.current, ...patch };
+    setDraft(draftRef.current);
     setSaved(false);
   }
 
-  /** Save the fields that differ from the baseline. On blur, nothing is written when nothing changed or the form is invalid. */
-  async function save(onBlur: boolean) {
+  /** Save the fields that differ from the baseline. On blur, nothing is written when the name is empty. */
+  async function saveNow(onBlur: boolean) {
+    const current = draftRef.current;
+    const baseline = baselineRef.current;
     const values: PersonaFields = {
       ...baseline,
-      name: draft.name.trim(),
-      identity: draft.identity,
-      tone: draft.tone,
-      replyLanguage: draft.replyLanguage,
-      bannedWords: lines(draft.bannedWords),
-      customRules: lines(draft.customRules),
-      antiAiVoice: draft.antiAiVoice,
+      name: current.name.trim(),
+      identity: current.identity,
+      tone: current.tone,
+      replyLanguage: current.replyLanguage,
+      bannedWords: lines(current.bannedWords),
+      customRules: lines(current.customRules),
+      antiAiVoice: current.antiAiVoice,
     };
     const patch = Object.fromEntries(
       (Object.keys(values) as (keyof PersonaFields)[])
         .filter((key) => JSON.stringify(values[key]) !== JSON.stringify(baseline[key]))
         .map((key) => [key, values[key]]),
     ) as Partial<PersonaFields>;
-    if (onBlur && (Object.keys(patch).length === 0 || !values.name)) return;
+    if (Object.keys(patch).length === 0) {
+      // Nothing to write; an explicit save still confirms.
+      if (!onBlur) setSaved(true);
+      return;
+    }
+    if (onBlur && !values.name) return;
     const ok = await onSave(patch);
-    if (ok) setBaseline(values);
+    if (ok) baselineRef.current = values;
     setSaved(ok);
+  }
+
+  function save(onBlur: boolean) {
+    queueRef.current = queueRef.current.then(() => saveNow(onBlur));
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    void save(false);
+    save(false);
   }
 
   // Any field that loses focus saves its changes.
   return (
-    <form className="persona-editor" onSubmit={submit} onBlur={() => void save(true)}>
+    <form className="persona-editor" onSubmit={submit} onBlur={() => save(true)}>
       <label htmlFor={field('name')}>{t('personaName')}</label>
       <input id={field('name')} type="text" required value={draft.name} onChange={(event) => edit({ name: event.target.value })} />
 
