@@ -1,62 +1,129 @@
 # Slopster
 
-A Chrome extension that helps you read and take part in conversations on **Reddit**, **X**, and **Facebook**:
+Slopster is a Chrome extension that helps you read and join conversations on **Reddit**, **X**, and **Facebook**, even in languages you do not speak.
 
-- **Translate** posts and comments in place, on demand or automatically as they scroll into view.
-- **Draft replies** to a post or a comment with an AI model, in the voice of a persona you define, with a copy in your own language for review.
+- **Translate** posts and comments right on the page, with one click or automatically as you scroll.
+- **Draft replies** to a post or a comment in the voice of a persona you set up, using the AI engine you choose (OpenAI, DeepSeek, Gemini, or Claude). Each draft comes with a copy in your own language, so you know exactly what it says.
 - **Draft new posts** for a subreddit, your X timeline, or a Facebook group or page.
-- **Fill** a reviewed draft into the right reply or post box with one click.
-- Optionally **hide ads**, separately for each site.
+- **Fill** a draft you have reviewed into the site's reply box or new-post form with one click.
+- Optionally **hide ads** on each site.
 
-The extension never sends or publishes anything. You review every draft and post it yourself.
+**You stay in control.** Slopster never posts, replies, or sends anything for you. It only fills text into a box you opened; you read it and press send yourself.
 
-## How it works
+## Getting started
 
-1. Open the side panel from the toolbar icon (or click **Draft reply** under any post or comment).
-2. Pick a persona and, optionally, say what you want the reply to get across.
-3. Click **Generate**. The panel shows whether replying seems appropriate, the draft, a translation in your language, and notes for review.
-4. Edit the draft if needed. Open the site's own reply box (or new-post form), then click **Fill**.
-5. Read it once more on the page and send it yourself.
+1. Install Slopster from the Chrome Web Store (link coming soon).
+2. Pin it: click the puzzle-piece icon in Chrome's toolbar, then the pin next to Slopster.
+3. Click the Slopster icon to open the side panel.
+4. To draft replies and posts, open **AI settings** in the side panel, choose an AI engine, and paste your API key for it. You get the key from that company's website.
 
-Settings open inside the side panel from the three icons in its fixed top bar; the open one is highlighted, and clicking it again or the title returns to your draft. **Personas**: persona profiles. **AI settings**: the AI engine (OpenAI, DeepSeek, Gemini, or Claude), used everywhere, with its API key and model shown below it; translation engine (free Google Translate or the selected AI engine, with optional AI fallback when Google is rate limited). **Settings**: your language; auto-translate; the color of translations shown on pages (presets or a custom color); font size of the side panel; ad blocking per site. The interface is available in English, Spanish, and Simplified Chinese and follows the browser language (English for any other language).
+Translation works right away without any key, using the free Google Translate.
 
-See [PRIVACY.md](PRIVACY.md) for what is stored and what is sent where, and [SECURITY.md](SECURITY.md) for how keys and drafts are handled.
+## How to use
+
+### Translate
+
+Every post and comment on Reddit, X, and Facebook gets a small **Translate** button. Click it to show the translation below the original; click again to hide or show it. To have posts translated automatically as they scroll into view, turn on **Translate posts automatically** in **Settings**.
+
+You can also paste any text into the translation box in the side panel.
+
+### Draft a reply
+
+1. Click **Draft reply** under the post or comment you want to answer. The side panel opens with it selected. (Or just open a post and use the side panel; it replies to the post itself.)
+2. Pick a persona and, if you like, write the point you want to make.
+3. Click **Generate**. You get a suggestion on whether replying is a good idea, the draft, a copy in your language, and notes to check before sending.
+4. Edit the draft if needed.
+
+### Draft a new post
+
+1. Open the site's own new-post form first: on Reddit, the subreddit's **Create post** page; on X, the post composer; on Facebook, **Create post** or **Write something** in a group or page.
+2. In the side panel, switch **Draft type** to **New post**, pick a persona, and optionally say what the post should be about.
+3. Click **Generate**, then review and edit the draft. Reddit posts also get a title.
+
+### Fill and send yourself
+
+1. Open the site's reply box (or new-post form) for the right post.
+2. Click **Fill reply box** (or **Fill post form**) in the side panel.
+3. Read the text once more on the page, then send or publish it yourself.
+
+On X, the side panel counts characters and warns you when a reply or post goes over X's 280-character limit.
+
+## The side panel
+
+The top bar of the side panel has three buttons:
+
+- **Personas**: the voices you write in.
+- **AI settings**: the AI engine, its API key and model, and the translation engine.
+- **Settings**: language, translation, display, and ad blocking options.
+
+The open view is highlighted. Click its button again, or the Slopster title, to go back to your draft.
+
+## Settings
+
+**Personas.** A persona describes who you are and how you write: name, identity and background, tone, reply language, banned words, custom rules, and an option to avoid an AI-sounding tone. Drafts never invent experiences beyond what the persona says. You can create several and set one as active. The built-in default persona can be edited but not deleted.
+
+**AI settings.**
+
+- **AI engine**: OpenAI, DeepSeek, Gemini, or Claude. It is used for all drafting, and for translation if you pick it there.
+- **API key**: the key for the selected engine. It is stored on this device only.
+- **Model**: each engine offers a stronger model and a cheaper, faster one.
+- **Translation engine**: free Google Translate, or the AI engine you selected. With Google, you can also let the AI engine take over when Google translation fails.
+
+**Settings.**
+
+- **Your language**: pages are translated into this language, and every draft includes a copy in it. By default it follows your browser.
+- **Translate posts automatically**.
+- **Translation color**: the color of translations shown on pages, from presets or a custom color.
+- **Font size** of the side panel: small, medium, or large.
+- **Ad blocking**: hide ads on Reddit, X, and Facebook, each turned on separately.
+
+## Languages
+
+Slopster's interface is available in English, Spanish, and Simplified Chinese. It follows your browser's language, and uses English for any other language. Your language and each persona's reply language can be chosen from many more, such as Japanese, Korean, French, German, or Arabic.
+
+## Privacy
+
+In short:
+
+- Your API keys stay on this device. They are never synced and are sent only to the AI company they belong to.
+- Text is sent only to the services you use, when you use them: Google Translate or your AI engine for translation, and your AI engine for drafts.
+- Nothing is sent to us. Slopster has no server of its own and collects no analytics.
+- Your personas and settings sync to your other computers through Chrome Sync, like other extension settings.
+
+Read the full [privacy policy](PRIVACY.md) for details.
 
 ## Responsible use
 
-Drafts are suggestions for a person to review, not automated posting. Generated text must not impersonate anyone, invent experiences you did not have, or hide an affiliation, and every community's own rules come first. The prompts sent to the model state these rules for every platform.
+Slopster is meant to help a real person write their own replies, not to post automatically.
 
-## Install
+- Do not use it for spam, bulk posting, or fake engagement.
+- Do not pretend to be someone else, claim experiences you did not have, or hide an affiliation.
+- Follow the rules of each site and each community you post in.
 
-From a release zip: unzip it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose the unzipped folder.
+## FAQ
 
-From source (Node 22 or later):
+**Do I need an API key?**
+Not for translation: free Google Translate works without one. To draft replies and posts, you need a key for the AI engine you choose.
 
-```bash
-npm ci
-npm run build        # output in .output/chrome-mv3, load it as an unpacked extension
-npm run zip          # .output/chrome-slopster-<version>-chrome.zip
-```
+**Which AI engine should I pick?**
+Any of them works. If you already have an account with OpenAI, DeepSeek, Google (Gemini), or Anthropic (Claude), use that one. Each engine offers a stronger model and a cheaper one; the cheaper model is a good place to start. Usage is billed by the AI company, not by Slopster.
 
-## Development
+**Why doesn't the reply box get filled?**
+Slopster fills only a box that is already open. Click the site's own reply button (or open its new-post form) for the post you are answering, then click **Fill** again. If the site does not accept the text, use **Copy** and paste it yourself.
 
-```bash
-npm run dev          # WXT dev mode with hot reload
-npm run check        # type check, lint, unit tests, build (run before every commit)
-npm run test:e2e     # build, then Playwright tests of the built extension
-```
+**Why is my Facebook comment one line?**
+On Facebook, a line break in a comment box can post the comment right away. To be safe, Slopster fills Facebook comments as a single line. New Facebook posts keep their paragraphs.
 
-Tests come in three layers:
+**Does it work on the mobile sites?**
+No. Only the desktop sites are supported (not `m.facebook.com` or `mobile.x.com`).
 
-1. **Unit and fixture tests** (Vitest, jsdom): platform adapters run against page fragments saved from the real sites in `tests/fixtures/`; storage, providers, prompts, and the side panel against fakes.
-2. **Extension end-to-end tests** (Playwright, `e2e/`): the built extension in Chromium, with every request answered by a route, so no login and no network.
-3. **Real-site checks** in a separate test Chrome profile, filling drafts and clearing them again without ever sending.
+**Something stopped working on a site.**
+Sites change their pages from time to time, which can break the Translate and Draft reply buttons until Slopster is updated. Please let us know (see below).
 
-Project layout, conventions, and the design are described in [CLAUDE.md](CLAUDE.md) and [docs/implementation-plan.md](docs/implementation-plan.md).
+## Support and feedback
 
-## Known limitations
+Report problems or suggest ideas on [GitHub Issues](https://github.com/n2ns/chrome-slopster/issues). Please never include your API keys in a report.
 
-- Site markup changes over time; when a site redesigns, its adapter in `src/adapters/` and the saved fixtures need updating.
-- Facebook comment drafts are filled as one line (a line break there can post the comment). New Facebook posts keep their paragraphs.
-- Ad detection on X and Facebook has not yet been checked against real ads.
-- Only the desktop sites are supported (not `m.facebook.com` or `mobile.x.com`).
+Slopster is made by [N2NS Lab](https://n2ns.com).
+
+Developers: see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
