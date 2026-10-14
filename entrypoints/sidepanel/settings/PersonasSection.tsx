@@ -110,9 +110,7 @@ export function PersonasSection() {
             isActive={selected.id === activeId}
             onSave={(patch) => run(async () => void (await updatePersona(selected.id, patch)))}
             onSetActive={() => run(() => setActivePersona(selected.id))}
-            onDelete={() => {
-              if (window.confirm(t('personaDeleteConfirm', selected.name))) void run(() => deletePersona(selected.id));
-            }}
+            onDelete={() => void run(() => deletePersona(selected.id))}
           />
         )}
       </div>
@@ -132,6 +130,7 @@ interface EditorProps {
   /** Receives only the fields changed in this form, so edits made elsewhere are kept. */
   onSave: (patch: Partial<PersonaFields>) => Promise<boolean>;
   onSetActive: () => void;
+  /** Called after the operator confirmed the deletion. */
   onDelete: () => void;
 }
 
@@ -156,6 +155,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
   });
   // Saves run one after another, each against the baseline the previous one left.
   const queueRef = useRef(Promise.resolve());
+  // Set once deletion is confirmed; saves still queued are dropped.
+  const deletedRef = useRef(false);
   const [saved, setSaved] = useState(false);
   const field = (id: string) => `persona-${id}`;
 
@@ -167,6 +168,7 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
 
   /** Save the fields that differ from the baseline. On blur, nothing is written when the name is empty. */
   async function saveNow(onBlur: boolean) {
+    if (deletedRef.current) return;
     const current = draftRef.current;
     const baseline = baselineRef.current;
     const values: PersonaFields = {
@@ -189,10 +191,11 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
       if (!onBlur) setSaved(true);
       return;
     }
-    if (onBlur && !values.name) return;
+    if (!values.name) return;
     const ok = await onSave(patch);
     if (ok) baselineRef.current = values;
-    setSaved(ok);
+    // "Saved" only when nothing was typed while the save ran.
+    setSaved(ok && draftRef.current === current);
   }
 
   function save(onBlur: boolean) {
@@ -208,7 +211,7 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
   return (
     <form className="persona-editor" onSubmit={submit} onBlur={() => save(true)}>
       <label htmlFor={field('name')}>{t('personaName')}</label>
-      <input id={field('name')} type="text" required value={draft.name} onChange={(event) => edit({ name: event.target.value })} />
+      <input id={field('name')} type="text" required pattern=".*\S.*" value={draft.name} onChange={(event) => edit({ name: event.target.value })} />
 
       <label htmlFor={field('identity')}>{t('personaIdentity')}</label>
       <textarea id={field('identity')} value={draft.identity} onChange={(event) => edit({ identity: event.target.value })} />
@@ -252,7 +255,11 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
           aria-label={t('personaDelete')}
           title={persona.id === DEFAULT_PERSONA_ID ? t('personaDefaultUndeletable') : t('personaDelete')}
           disabled={persona.id === DEFAULT_PERSONA_ID}
-          onClick={onDelete}
+          onClick={() => {
+            if (!window.confirm(t('personaDeleteConfirm', persona.name))) return;
+            deletedRef.current = true;
+            onDelete();
+          }}
         >
           <Trash2 className="icon" size={16} aria-hidden />
         </button>

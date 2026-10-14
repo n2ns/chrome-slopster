@@ -52,6 +52,7 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
     if (Object.keys(changed).length === 0) {
       // Nothing to write; an explicit save still confirms.
       if (explicit) {
+        setError(undefined);
         setResultFor(savedEngine);
         setSaved(true);
       }
@@ -66,7 +67,8 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
       // Keep anything typed while the save ran; take the stored (trimmed) value elsewhere.
       const current = keysRef.current ?? stored;
       setKeys(Object.fromEntries(AI_ENGINES.map((name) => [name, current[name] === sent[name] ? stored[name] : current[name]])) as ApiKeys);
-      setSaved(true);
+      // "Saved" only when nothing was typed while the save ran.
+      setSaved(AI_ENGINES.every((name) => current[name] === sent[name]));
     } catch (failure) {
       setError(failure);
     }
