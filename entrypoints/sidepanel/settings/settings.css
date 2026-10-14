@@ -40,14 +40,12 @@
   margin-top: 16px;
 }
 
+/* Compact buttons at their natural width, side by side; they wrap only when the panel is too narrow. */
 .settings .actions button {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 40px;
-}
-
-.settings .actions button.primary {
-  flex-basis: 100%;
+  flex: none;
+  min-height: 32px;
+  padding: 5px 12px;
+  font-size: var(--text-sm);
 }
 
 .settings .status,
