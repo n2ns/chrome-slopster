@@ -53,8 +53,12 @@
   flex-wrap: nowrap;
 }
 
-.settings .persona-editor .actions button:not(.primary):not(.delete) {
+.settings .persona-editor .actions button.set-active {
   flex: 0 1 auto;
+  min-width: 0;
+}
+
+.settings .persona-editor .actions button.set-active span {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;

@@ -220,9 +220,9 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
           <Save className="icon" size={16} aria-hidden />
           {t('save')}
         </button>
-        <button type="button" disabled={isActive} onClick={onSetActive}>
+        <button type="button" className="set-active" title={t('personaSetActive')} disabled={isActive} onClick={onSetActive}>
           <Star className="icon" size={16} aria-hidden />
-          {t('personaSetActive')}
+          <span>{t('personaSetActive')}</span>
         </button>
         <button
           type="button"
