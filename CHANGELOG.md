@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-10-15
 
-First release, not yet published to the Chrome Web Store.
+First release.
 
 ### Added
 - Translate posts and comments in place on Reddit, X, and Facebook, on demand or automatically as they scroll into view, with free Google Translate or the selected AI engine (optional AI fallback when Google is rate limited).
