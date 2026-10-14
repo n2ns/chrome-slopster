@@ -1,0 +1,70 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrome-web-store-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build, Package, and Submit
+    runs-on: ubuntu-latest
+    environment: chrome-web-store
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check that the tag matches the package version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "Error: tag $GITHUB_REF_NAME does not match package version v$VERSION"
+            exit 1
+          fi
+
+      - name: Check
+        run: npm run check
+
+      - name: Package Extension
+        id: package
+        run: |
+          npm run zip
+          VERSION=$(node -p "require('./package.json').version")
+          ZIP_FILE=".output/chrome-slopster-$VERSION-chrome.zip"
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "Error: packaged zip $ZIP_FILE not found"
+            exit 1
+          fi
+          MANIFEST_VERSION=$(unzip -p "$ZIP_FILE" manifest.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")
+          if [ "$MANIFEST_VERSION" != "$VERSION" ]; then
+            echo "Error: manifest version $MANIFEST_VERSION does not match package version $VERSION"
+            exit 1
+          fi
+          echo "zip_path=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload & Submit for Review
+        uses: mnao305/chrome-extension-upload@fdfe79400af990f5145a319e834aee64907ccff4 # v6.0.0
+        with:
+          file-path: ${{ steps.package.outputs.zip_path }}
+          extension-id: ${{ secrets.EXTENSION_ID }}
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+          publish: true
