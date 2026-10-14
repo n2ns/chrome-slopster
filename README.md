@@ -35,7 +35,7 @@ From source (Node 22 or later):
 ```bash
 npm ci
 npm run build        # output in .output/chrome-mv3, load it as an unpacked extension
-npm run zip          # .output/social-reply-assistant-<version>-chrome.zip
+npm run zip          # .output/chrome-slopster-<version>-chrome.zip
 ```
 
 ## Development
