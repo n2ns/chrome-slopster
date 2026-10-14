@@ -296,6 +296,104 @@ describe('pages', () => {
     expect(container.querySelector('.key-field .error')!.textContent).toContain('engineGemini');
   });
 
+  it('an explicit key save with nothing changed clears an old error from another engine', async () => {
+    await render(<AiSettingsView />);
+    const failing = vi.spyOn(fakeBrowser.storage.local, 'set').mockRejectedValue(new Error('quota'));
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    const original = input.value;
+    await act(async () => setValue(input, 'will-fail'));
+    await act(async () => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    failing.mockRestore();
+    await act(async () => setValue(input, original));
+    const engine = container.querySelector<HTMLSelectElement>('#ai-engine')!;
+    await act(async () => {
+      engine.value = 'openai';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    await act(async () => container.querySelector('#key-openai')!.closest('form')!.requestSubmit());
+    await settle();
+    expect(container.querySelector('.key-field .error')).toBeNull();
+  });
+
+  it('no saved notice while the API key has text typed after the save started', async () => {
+    await render(<AiSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    const realSet = fakeBrowser.storage.local.set.bind(fakeBrowser.storage.local);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.local, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    await act(async () => setValue(input, 'k1'));
+    await act(async () => void input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => setValue(input, 'k12'));
+    release();
+    await settle();
+    expect(container.querySelector('.key-field .status')).toBeNull();
+  });
+
+  it('no saved notice while a persona field has text typed after the save started', async () => {
+    await render(<PersonasSettingsView />);
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    const realSet = fakeBrowser.storage.sync.set.bind(fakeBrowser.storage.sync);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.sync, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    await act(async () => setValue(tone, 'saved part'));
+    await act(async () => void tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => setValue(tone, 'saved part, still typing'));
+    release();
+    await settle();
+    expect(container.querySelector('.persona-editor .status')).toBeNull();
+  });
+
+  it('deleting a persona right after editing it shows no not-found error', async () => {
+    await act(async () => void (await createPersona({ ...defaultPersonaFields(), name: 'Doomed' })));
+    await render(<PersonasSettingsView />);
+    const chip = [...container.querySelectorAll<HTMLButtonElement>('.persona-list button')].find((button) => button.textContent?.includes('Doomed'))!;
+    await act(async () => chip.click());
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    const realSet = fakeBrowser.storage.sync.set.bind(fakeBrowser.storage.sync);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.sync, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await act(async () => setValue(tone, 'first edit'));
+    await act(async () => void tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => setValue(tone, 'second edit'));
+    const deleteButton = container.querySelector<HTMLButtonElement>('button[aria-label="personaDelete"]')!;
+    await act(async () => {
+      tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      deleteButton.click();
+    });
+    release();
+    await settle();
+    await settle();
+    expect((await listPersonas()).some((persona) => persona.name === 'Doomed')).toBe(false);
+    expect(container.querySelector('.error')).toBeNull();
+  });
+
+  it('a persona name of only spaces is not saved', async () => {
+    await render(<PersonasSettingsView />);
+    const name = container.querySelector<HTMLInputElement>('#persona-name')!;
+    await act(async () => setValue(name, '   '));
+    await act(async () => name.closest('form')!.requestSubmit());
+    await settle();
+    expect((await getPersona(DEFAULT_PERSONA_ID))!.name).toBe('defaultPersonaName');
+  });
+
   it('saving a persona keeps fields another window changed meanwhile', async () => {
     await render(<PersonasSettingsView />);
     const [persona] = await listPersonas();
