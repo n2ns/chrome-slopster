@@ -11,6 +11,12 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `npm run check` and a test package on every push to `main` and on pull requests.
 
+## Status
+
+- 2026-10-15: 0.1.0 uploaded by hand and submitted for review under the Datafrog.io publisher (item ID `mmgmeicjkmabnhjedpinlnpddagpoend`; it publishes automatically once approved). The listing uses category Productivity > Tools, the five store screenshots, both promo tiles, homepage https://n2ns.com/projects/slopster, support https://github.com/n2ns/chrome-slopster/issues, and the privacy policy at https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md.
+- The `chrome-web-store` environment exists with `EXTENSION_ID`; `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN` are still missing, so tag-triggered publishing does not work yet.
+- No `v0.1.0` tag or GitHub Release yet: pushing the tag would run the publish workflow, whose store upload fails while the item is under review and the OAuth secrets are missing.
+
 ## One-time setup
 
 1. **First upload by hand.** The Web Store API can only update an existing item. Build the zip with `npm run zip`, create a new item in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) under the N2NS account, upload the zip, fill in the listing, privacy, and distribution tabs from the drafts below, and submit. The item ID shown in the dashboard is the `EXTENSION_ID`.
