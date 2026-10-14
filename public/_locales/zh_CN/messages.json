@@ -379,5 +379,26 @@
   },
   "hideKey": {
     "message": "隐藏"
+  },
+  "translationColor": {
+    "message": "译文颜色"
+  },
+  "translationColorCustom": {
+    "message": "自定义颜色"
+  },
+  "colorBlue": {
+    "message": "蓝色"
+  },
+  "colorGreen": {
+    "message": "绿色"
+  },
+  "colorOrange": {
+    "message": "橙色"
+  },
+  "colorRed": {
+    "message": "红色"
+  },
+  "colorGray": {
+    "message": "灰色"
   }
 }
