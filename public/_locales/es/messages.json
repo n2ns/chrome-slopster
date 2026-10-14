@@ -1,0 +1,383 @@
+{
+  "extName": {
+    "message": "Slopster"
+  },
+  "extDescription": {
+    "message": "Traduce publicaciones y redacta respuestas y publicaciones nuevas, revisadas por ti, en Reddit, X y Facebook."
+  },
+  "sidepanelTitle": {
+    "message": "Slopster"
+  },
+  "loading": {
+    "message": "Cargando…"
+  },
+  "save": {
+    "message": "Guardar"
+  },
+  "saved": {
+    "message": "Guardado."
+  },
+  "engineGoogleFree": {
+    "message": "Google Translate (gratis)"
+  },
+  "engineOpenai": {
+    "message": "OpenAI"
+  },
+  "engineDeepseek": {
+    "message": "DeepSeek"
+  },
+  "engineGemini": {
+    "message": "Gemini"
+  },
+  "engineClaude": {
+    "message": "Claude"
+  },
+  "languageBrowserDefault": {
+    "message": "Idioma del navegador"
+  },
+  "languageFollowPost": {
+    "message": "El mismo que la publicación"
+  },
+  "personasHeading": {
+    "message": "Perfiles"
+  },
+  "personasIntro": {
+    "message": "Un perfil es la voz con la que respondes. No contiene datos de productos ni de promoción."
+  },
+  "personaNew": {
+    "message": "Nuevo perfil"
+  },
+  "personaActiveBadge": {
+    "message": "Activo"
+  },
+  "personaName": {
+    "message": "Nombre"
+  },
+  "personaIdentity": {
+    "message": "Identidad y trayectoria"
+  },
+  "personaIdentityHint": {
+    "message": "Quién eres. Los borradores lo usan para orientar el tono y nunca inventan experiencias que no estén aquí."
+  },
+  "personaTone": {
+    "message": "Tono"
+  },
+  "personaReplyLanguage": {
+    "message": "Idioma de respuesta"
+  },
+  "personaBannedWords": {
+    "message": "Palabras prohibidas"
+  },
+  "personaCustomRules": {
+    "message": "Reglas personalizadas"
+  },
+  "onePerLineHint": {
+    "message": "Una por línea."
+  },
+  "personaAntiAiVoice": {
+    "message": "Evitar un tono que suene a IA"
+  },
+  "personaSetActive": {
+    "message": "Usar este perfil"
+  },
+  "personaDefaultUndeletable": {
+    "message": "El perfil predeterminado no se puede eliminar"
+  },
+  "personaNameRequired": {
+    "message": "Escribe un nombre; hasta entonces los cambios no se guardan."
+  },
+  "personaDelete": {
+    "message": "Eliminar"
+  },
+  "personaDeleteConfirm": {
+    "message": "¿Eliminar el perfil \"$1\"? No se puede deshacer."
+  },
+  "defaultPersonaName": {
+    "message": "Predeterminado"
+  },
+  "defaultPersonaTone": {
+    "message": "Amable, conciso y útil."
+  },
+  "apiKeysHeading": {
+    "message": "Clave de API"
+  },
+  "apiKeysNote": {
+    "message": "Las claves se guardan solo en este dispositivo y nunca se sincronizan con tus otros dispositivos."
+  },
+  "enginesHeading": {
+    "message": "Motores y modelos"
+  },
+  "translationEngine": {
+    "message": "Motor de traducción"
+  },
+  "translationUseAi": {
+    "message": "Motor de IA ($1)"
+  },
+  "aiEngine": {
+    "message": "Motor de IA"
+  },
+  "modelFor": {
+    "message": "Modelo de $1"
+  },
+  "operatorLanguage": {
+    "message": "Tu idioma"
+  },
+  "operatorLanguageHint": {
+    "message": "Las páginas se traducen a este idioma y los borradores de respuesta incluyen una copia de revisión en él."
+  },
+  "autoTranslate": {
+    "message": "Traducir publicaciones automáticamente"
+  },
+  "aiFallback": {
+    "message": "Usar el motor de IA si falla Google Translate"
+  },
+  "fontSize": {
+    "message": "Tamaño de letra"
+  },
+  "fontSizeSmall": {
+    "message": "Pequeño"
+  },
+  "fontSizeMedium": {
+    "message": "Mediano"
+  },
+  "fontSizeLarge": {
+    "message": "Grande"
+  },
+  "adBlockHeading": {
+    "message": "Bloqueo de anuncios"
+  },
+  "adBlockReddit": {
+    "message": "Ocultar anuncios en Reddit"
+  },
+  "adBlockX": {
+    "message": "Ocultar anuncios en X"
+  },
+  "adBlockFacebook": {
+    "message": "Ocultar anuncios en Facebook"
+  },
+  "sidepanelPersona": {
+    "message": "Perfil"
+  },
+  "intentLabel": {
+    "message": "¿Qué quieres decir?"
+  },
+  "intentPlaceholder": {
+    "message": "Opcional: la idea que quieres transmitir en esta respuesta."
+  },
+  "generate": {
+    "message": "Generar"
+  },
+  "generateUnavailableHint": {
+    "message": "La redacción de respuestas estará disponible cuando abras una publicación en Reddit, X o Facebook."
+  },
+  "generating": {
+    "message": "Generando…"
+  },
+  "replyNoThread": {
+    "message": "No se encontró ninguna publicación en esta página. Abre una publicación en Reddit, X o Facebook, o haz clic en un botón de respuesta de la página."
+  },
+  "replyTargetHeading": {
+    "message": "Respondiendo a"
+  },
+  "replyTargetComment": {
+    "message": "Respondiendo a un comentario"
+  },
+  "replyTargetClear": {
+    "message": "Quitar"
+  },
+  "replyPlatformReddit": {
+    "message": "Reddit"
+  },
+  "replyPlatformX": {
+    "message": "X"
+  },
+  "replyPlatformFacebook": {
+    "message": "Facebook"
+  },
+  "replyVerdictYes": {
+    "message": "Vale la pena responder."
+  },
+  "replyVerdictNo": {
+    "message": "Mejor no responder."
+  },
+  "replyUnparsed": {
+    "message": "No se pudo leer la salida del modelo. Abajo se muestra la salida sin procesar y el relleno está desactivado."
+  },
+  "replyDraftLabel": {
+    "message": "Respuesta (edítala antes de rellenar)"
+  },
+  "replyNativeLabel": {
+    "message": "Copia de revisión"
+  },
+  "replyReviewNotesLabel": {
+    "message": "Notas de revisión"
+  },
+  "replyCharCount": {
+    "message": "$1 / $2 caracteres"
+  },
+  "replyOverLimit": {
+    "message": "La respuesta supera el límite de $1 caracteres de X. Acórtala antes de enviarla."
+  },
+  "replyCopy": {
+    "message": "Copiar"
+  },
+  "replyCopied": {
+    "message": "Copiado."
+  },
+  "replyFill": {
+    "message": "Rellenar el cuadro de respuesta"
+  },
+  "replyFilling": {
+    "message": "Rellenando…"
+  },
+  "replyFilled": {
+    "message": "Listo. Revísalo en la página y envíalo tú mismo."
+  },
+  "replyFillNotFound": {
+    "message": "No se encontró el cuadro de respuesta. Ábrelo en la página y vuelve a intentarlo."
+  },
+  "replyFillRejected": {
+    "message": "La página no aceptó el texto. Cópialo y pégalo."
+  },
+  "replyManualSendReminder": {
+    "message": "La extensión solo rellena el cuadro de respuesta. Revisa el texto y envíalo tú mismo."
+  },
+  "draftModeLabel": {
+    "message": "Tipo de borrador"
+  },
+  "modeReply": {
+    "message": "Responder"
+  },
+  "modePost": {
+    "message": "Publicar"
+  },
+  "postIntentPlaceholder": {
+    "message": "Opcional: qué debe decir o preguntar la publicación."
+  },
+  "postNoTarget": {
+    "message": "No hay ningún formulario de nueva publicación abierto en esta página. Ábrelo primero: en Reddit, la página \"Create post\" del subreddit; en X, el editor de publicaciones; en Facebook, \"Crear publicación\" o \"Escribe algo\" en un grupo o página."
+  },
+  "postTargetHeading": {
+    "message": "Publicando en"
+  },
+  "postVerdictYes": {
+    "message": "Encaja en la comunidad."
+  },
+  "postVerdictNo": {
+    "message": "Mejor no publicar esto aquí."
+  },
+  "postTitleLabel": {
+    "message": "Título (edítalo antes de rellenar)"
+  },
+  "postTitleRequired": {
+    "message": "Reddit exige un título."
+  },
+  "postDraftLabel": {
+    "message": "Publicación (edítala antes de rellenar)"
+  },
+  "postOverLimit": {
+    "message": "La publicación supera el límite de $1 caracteres de X. Acórtala antes de publicarla."
+  },
+  "postFill": {
+    "message": "Rellenar el formulario"
+  },
+  "postFilled": {
+    "message": "Listo. Revísalo en la página y publícalo tú mismo."
+  },
+  "postFillNotFound": {
+    "message": "El formulario de nueva publicación no está abierto en esta página o la página cambió. Vuelve a abrirlo e inténtalo de nuevo."
+  },
+  "postManualPublishReminder": {
+    "message": "La extensión solo rellena el formulario de nueva publicación. Revisa el texto y publícalo tú mismo."
+  },
+  "translateHeading": {
+    "message": "Traducir texto"
+  },
+  "translateInputPlaceholder": {
+    "message": "Pega el texto que quieras traducir a tu idioma."
+  },
+  "translateButton": {
+    "message": "Traducir"
+  },
+  "translating": {
+    "message": "Traduciendo…"
+  },
+  "translationTruncated": {
+    "message": "(El texto era demasiado largo; solo se tradujo el principio.)"
+  },
+  "errorMissingApiKey": {
+    "message": "No hay ninguna clave de API para el motor seleccionado. Añade una en los ajustes."
+  },
+  "errorRateLimited": {
+    "message": "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo."
+  },
+  "errorHttp": {
+    "message": "El servicio devolvió un error. Revisa la clave de API y el modelo, y vuelve a intentarlo."
+  },
+  "errorNetwork": {
+    "message": "Error de red. Revisa tu conexión y vuelve a intentarlo."
+  },
+  "errorBadResponse": {
+    "message": "El servicio devolvió una respuesta inesperada."
+  },
+  "errorUnsupportedEngine": {
+    "message": "El motor seleccionado no admite esta acción."
+  },
+  "errorInvalidRequest": {
+    "message": "La solicitud no es válida."
+  },
+  "errorNotFound": {
+    "message": "Este elemento se modificó o eliminó en otra ventana. La lista se ha actualizado."
+  },
+  "errorStorage": {
+    "message": "No se pudieron leer o guardar los datos en el almacenamiento de Chrome. Puede que el almacenamiento sincronizado esté lleno o que se guarde con demasiada frecuencia; inténtalo de nuevo en breve."
+  },
+  "errorGeneric": {
+    "message": "Algo salió mal. Inténtalo de nuevo."
+  },
+  "personasReset": {
+    "message": "Restablecer perfiles"
+  },
+  "personasResetConfirm": {
+    "message": "No se pueden leer los perfiles guardados. ¿Reemplazarlos por un perfil predeterminado nuevo? No se puede deshacer."
+  },
+  "contentTranslate": {
+    "message": "Traducir"
+  },
+  "contentTranslating": {
+    "message": "Traduciendo…"
+  },
+  "contentHideTranslation": {
+    "message": "Ocultar traducción"
+  },
+  "contentShowTranslation": {
+    "message": "Mostrar traducción"
+  },
+  "contentDraftReply": {
+    "message": "Redactar respuesta"
+  },
+  "contentReplySelected": {
+    "message": "Seleccionado. Continúa en el panel lateral."
+  },
+  "contentOpenSidePanel": {
+    "message": "Seleccionado. Haz clic en el icono de la extensión para abrir el panel lateral."
+  },
+  "settingsButton": {
+    "message": "Ajustes"
+  },
+  "generalHeading": {
+    "message": "General"
+  },
+  "aiSettingsButton": {
+    "message": "Ajustes de IA"
+  },
+  "openSettingsLink": {
+    "message": "Abrir ajustes"
+  },
+  "showKey": {
+    "message": "Mostrar"
+  },
+  "hideKey": {
+    "message": "Ocultar"
+  }
+}

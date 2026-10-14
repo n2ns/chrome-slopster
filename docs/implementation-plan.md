@@ -27,7 +27,7 @@ Hard boundaries:
 | Package manager | npm |
 | Testing | Vitest + WXT's testing plugin (`fakeBrowser`) + jsdom page fixtures |
 | Linting | ESLint (typescript-eslint) + `tsc --noEmit` |
-| i18n | WXT i18n, with `en` and `zh_CN` message sets, following the browser language |
+| i18n | WXT i18n, with `en`, `es`, and `zh_CN` message sets, following the browser language |
 
 Exact dependency versions are determined from the official docs during Phase 0 setup and recorded in the lockfile.
 
@@ -56,7 +56,7 @@ chrome-slopster/
 │  ├─ prompt/                      # Prompt building, platform rules, tone rules, result parsing
 │  ├─ models/registry.ts           # Single source of model IDs + aliases for old IDs
 │  └─ ui/                          # React components and base styles shared by the side panel and its settings views
-├─ public/_locales/{en,zh_CN}/messages.json
+├─ public/_locales/{en,es,zh_CN}/messages.json
 ├─ tests/
 │  ├─ fixtures/{reddit,x,facebook}/*.html   # Saved page fragments
 │  └─ ...

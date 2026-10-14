@@ -10,7 +10,7 @@ A Chrome MV3 extension (WXT + React + TypeScript) that translates posts and draf
 
 - **Never send.** The extension only fills text into a composer. No code path may click a send / post / submit button, simulate submission, or act in bulk. The same applies to Claude during real-site testing: fill, read back, clear.
 - **No promotion.** No product info, promotional or tracking links, or promotion-fit fields.
-- **English only** for all project documentation and code comments. UI text goes through i18n (`en` and `zh_CN`), never hard-coded in components.
+- **English only** for all project documentation and code comments. UI text goes through i18n (`en`, `es`, and `zh_CN`), never hard-coded in components.
 - API keys live in `chrome.storage.local` only, never in `sync`.
 
 ## Commands
