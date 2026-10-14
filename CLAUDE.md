@@ -30,7 +30,7 @@ Run a single test file: `npx vitest run tests/locales.test.ts`
 
 ## Layout
 
-- `entrypoints/`: WXT entry points (`background.ts`, `sidepanel/` with the AI and general settings views in `sidepanel/settings/`, `reddit|x|facebook.content.ts`). Keep them thin; logic lives in `src/`.
+- `entrypoints/`: WXT entry points (`background.ts`, `sidepanel/` with the personas, AI, and general settings views in `sidepanel/settings/`, `reddit|x|facebook.content.ts`). Keep them thin; logic lives in `src/`.
 - `src/adapters/`: one `PlatformAdapter` per site (`types.ts` is the contract) plus shared DOM helpers (`dom.ts`: rich-editor insertion via synthetic paste). All site-specific selectors live here, never class names.
 - `src/content-core/`: platform-agnostic content script: toolbars (Translate / Draft reply) in shadow roots, ad hiding, and the content-side message handlers. Fills are always resolved from the thread or post target the draft was generated for.
 - `src/messaging/protocol.ts`: every cross-context message, typed. Errors cross as `AppError` codes; only UI code localizes them.

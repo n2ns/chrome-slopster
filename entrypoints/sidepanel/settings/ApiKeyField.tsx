@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, Eye, EyeOff, Save } from 'lucide-react';
+import { Check, CircleAlert, CircleCheck, Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { getApiKeys } from '@/src/storage/items';
@@ -79,9 +79,8 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
             >
               {shown.has(engine) ? <EyeOff className="icon" size={18} aria-hidden /> : <Eye className="icon" size={18} aria-hidden />}
             </button>
-            <button type="submit" className="primary">
-              <Save className="icon" size={16} aria-hidden />
-              {t('save')}
+            <button type="submit" className="primary key-save" aria-label={t('save')} title={t('save')}>
+              <Check className="icon" size={18} aria-hidden />
             </button>
           </div>
           <p className="hint">{t('apiKeysNote')}</p>

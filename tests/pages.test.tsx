@@ -7,6 +7,7 @@ import { fakeBrowser } from 'wxt/testing/fake-browser';
 import SidepanelApp from '@/entrypoints/sidepanel/App';
 import { AiSettingsView } from '@/entrypoints/sidepanel/settings/AiSettingsView';
 import { GeneralSettingsView } from '@/entrypoints/sidepanel/settings/GeneralSettingsView';
+import { PersonasSettingsView } from '@/entrypoints/sidepanel/settings/PersonasSettingsView';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
 import { getApiKeys } from '@/src/storage/items';
@@ -51,12 +52,13 @@ describe('pages', () => {
     vi.restoreAllMocks();
   });
 
-  it('AI settings view renders personas, API keys, and engines', async () => {
+  it('AI settings view renders the engine, its API key, and its model, without personas', async () => {
     await render(<AiSettingsView />);
     const text = container.textContent ?? '';
-    for (const key of ['personasHeading', 'apiKeysHeading', 'enginesHeading', 'aiFallback', 'defaultPersonaName']) {
+    for (const key of ['apiKeysHeading', 'enginesHeading', 'aiFallback']) {
       expect(text).toContain(key);
     }
+    expect(text).not.toContain('personasHeading');
     expect(text).not.toContain('adBlockHeading');
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(1);
   });
@@ -152,8 +154,16 @@ describe('pages', () => {
     expect(await getApiKeys()).toMatchObject({ gemini: 'gemini-here', claude: 'claude-from-other-window' });
   });
 
+  it('personas view renders the seeded persona and nothing else', async () => {
+    await render(<PersonasSettingsView />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('personasHeading');
+    expect(text).toContain('defaultPersonaName');
+    expect(text).not.toContain('apiKeysHeading');
+  });
+
   it('saving a persona keeps fields another window changed meanwhile', async () => {
-    await render(<AiSettingsView />);
+    await render(<PersonasSettingsView />);
     const [persona] = await listPersonas();
     await act(async () => void (await updatePersona(persona!.id, { tone: 'tone from other window' })));
     await settle();
@@ -202,6 +212,13 @@ describe('pages', () => {
     expect(container.querySelector('header h1')!.textContent).toBe('optionsTitle');
     expect(visible('#font-size')).toBe(true);
     expect(visible('#key-gemini')).toBe(false);
+
+    await act(async () => headerButton('backButton').click());
+    await act(async () => headerButton('personasHeading').click());
+    await settle();
+    expect(container.querySelector('header h1')!.textContent).toBe('personasHeading');
+    expect(visible('#persona-name')).toBe(true);
+    expect(visible('#font-size')).toBe(false);
 
     await act(async () => headerButton('backButton').click());
     expect(container.querySelector('header h1')!.textContent).toBe('sidepanelTitle');
