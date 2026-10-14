@@ -6,7 +6,8 @@ on:
       - 'v*'
 
 permissions:
-  contents: read
+  # write: create the GitHub Release with the downloadable zip
+  contents: write
 
 concurrency:
   group: chrome-web-store-publish
@@ -58,6 +59,31 @@ jobs:
             exit 1
           fi
           echo "zip_path=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release with the zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZIP_FILE: ${{ steps.package.outputs.zip_path }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Release notes: this version's CHANGELOG section, plus manual install steps.
+          awk -v v="$VERSION" '/^## \[/{p = index($0, "## [" v "]") == 1; next} p' CHANGELOG.md > release-notes.md
+          [ -s release-notes.md ] || echo "See CHANGELOG.md for changes." > release-notes.md
+          cat >> release-notes.md <<'NOTES'
+
+          ## Install manually
+
+          1. Download the `.zip` file below and unzip it into a folder you will keep.
+          2. Open `chrome://extensions` in Chrome and turn on **Developer mode** (top right).
+          3. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`).
+
+          A manually installed copy does not update itself. See the README for details.
+          NOTES
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ZIP_FILE" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ZIP_FILE" --title "Slopster $GITHUB_REF_NAME" --notes-file release-notes.md
+          fi
 
       - name: Upload & Submit for Review
         uses: mnao305/chrome-extension-upload@fdfe79400af990f5145a319e834aee64907ccff4 # v6.0.0

@@ -12,12 +12,42 @@ Slopster is a Chrome extension that helps you read and join conversations on **R
 
 ## Getting started
 
-1. Install Slopster from the Chrome Web Store (link coming soon).
+1. Install Slopster from the Chrome Web Store (link coming soon), or download it from GitHub and install it by hand (see [Install manually](#install-manually-download-from-github) below; the first release is on its way).
 2. Pin it: click the puzzle-piece icon in Chrome's toolbar, then the pin next to Slopster.
 3. Click the Slopster icon to open the side panel.
 4. To draft replies and posts, open **AI settings** in the side panel, choose an AI engine, and paste your API key for it. You get the key from that company's website.
 
 Translation works right away without any key, using the free Google Translate.
+
+## Install manually (download from GitHub)
+
+Use this if you cannot use the Chrome Web Store, or want a specific version. A manually installed copy works the same, but it does not update itself.
+
+**Install**
+
+1. Open the [Releases page](https://github.com/n2ns/chrome-slopster/releases) and, under **Assets** of the latest release, download `chrome-slopster-<version>-chrome.zip`.
+2. Unzip it into a folder you will keep, for example `Documents\Slopster` on Windows or `~/Slopster` on macOS and Linux. Chrome loads the extension from this folder every time it starts, so do not delete, move, or rename it.
+3. In Chrome, open `chrome://extensions` (type it into the address bar).
+4. Turn on **Developer mode** with the switch in the top-right corner.
+5. Click **Load unpacked** and select the unzipped folder: the one that directly contains `manifest.json`.
+6. Pin it: click the puzzle-piece icon in Chrome's toolbar, then the pin next to Slopster.
+
+**Update**
+
+1. Download the newer zip from the [Releases page](https://github.com/n2ns/chrome-slopster/releases).
+2. Unzip it into the same folder, replacing the old files.
+3. On `chrome://extensions`, click the reload arrow on the Slopster card.
+
+Keep using the same folder: Chrome ties a manually installed extension, and the settings it saved, to the folder it was loaded from. Loading it from a different folder installs a separate copy that starts with empty settings.
+
+**Remove**
+
+On `chrome://extensions`, click **Remove** on the Slopster card. You can then delete the folder.
+
+**Good to know**
+
+- Install either the Chrome Web Store version or a manual copy, not both, or you will see two Slopster icons.
+- Chrome may remind you that extensions are running in developer mode. That is expected for manually installed extensions.
 
 ## How to use
 
