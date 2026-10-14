@@ -1,19 +1,61 @@
-main.options {
-  max-width: 880px;
-  padding: 24px 16px;
+/* Settings inside the side panel: a single narrow column (about 320-600px). */
+
+.settings {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.personas {
-  display: grid;
-  grid-template-columns: minmax(160px, 220px) 1fr;
-  gap: 16px;
+.settings h2 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.settings .hint {
+  line-height: 1.4;
+}
+
+.settings label {
+  margin: 10px 0 4px;
+}
+
+.settings select {
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.settings label.check {
+  align-items: flex-start;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.settings label.check input {
+  flex: none;
+  margin: 2px 0 0;
+}
+
+.settings .actions {
   margin-top: 12px;
 }
 
-@media (max-width: 600px) {
-  .personas {
-    grid-template-columns: 1fr;
-  }
+.settings .actions button {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings .actions button.primary {
+  flex-basis: 100%;
+}
+
+.settings .actions button.danger {
+  border-color: var(--danger);
+}
+
+/* Personas: a wrapping row of chips above a full-width editor. */
+
+.personas {
+  margin-top: 10px;
 }
 
 .persona-list {
@@ -21,35 +63,108 @@ main.options {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.persona-list li {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .persona-list button {
-  width: 100%;
-  text-align: left;
-  border-color: transparent;
+  display: flex;
+  align-items: baseline;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 0.95em;
 }
 
 .persona-list button[aria-current='true'] {
   border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface);
+  font-weight: 600;
 }
 
-.persona-editor label:first-child {
+.persona-list .persona-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona-list .badge {
+  flex: none;
+  font-weight: normal;
+}
+
+.persona-list .persona-add {
+  border-style: dashed;
+  color: var(--muted);
+  background: none;
+}
+
+.persona-editor {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.persona-editor > label:first-child {
   margin-top: 0;
+}
+
+/* API keys: label above, input and Show/Hide on one row. */
+
+.key-field {
+  min-width: 0;
+}
+
+.settings .key-field > label:first-child {
+  margin-top: 10px;
 }
 
 .key-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .key-row input {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
 }
 
 .key-row button {
   flex: none;
   min-width: 4.5em;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+/* Engines: the per-engine model selects form one compact sub-group. */
+
+.model-group {
+  min-width: 0;
+  margin: 14px 0 0;
+  padding: 2px 10px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.model-group legend {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.settings .model-group label:first-child {
+  margin: 6px 0 2px;
+  font-weight: normal;
+  font-size: 0.9em;
 }
