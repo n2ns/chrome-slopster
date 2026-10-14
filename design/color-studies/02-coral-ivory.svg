@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Parallel: two offset language panels">
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#F2674B"/>
+  <path fill="#FFF7EB" d="M31 30h26v58H39c-5 0-8-3-8-8Zm40 10h18c5 0 8 3 8 8v50H71Z"/>
+  <path fill="#F2674B" d="M31 48h15v10H31Zm51 23h15v10H82Z"/>
+  <path fill="#FFF7EB" d="M52 91h24l-12 13Z"/>
+</svg>

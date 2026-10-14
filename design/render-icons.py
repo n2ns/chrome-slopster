@@ -17,7 +17,7 @@ parts = [f'''<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" vi
 <text x="48" y="60" font-family="sans-serif" font-size="24" font-weight="bold" fill="#232A34">Slopster</text>
 <text x="912" y="58" text-anchor="end" font-family="sans-serif" font-size="13" fill="#707784">ICON / PARALLEL</text>
 <svg x="80" y="130" width="280" height="280" viewBox="0 0 128 128">{mark}</svg>
-<text x="220" y="474" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#707784">RED #F04444 · BLACK #17191E</text>
+<text x="220" y="474" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#707784">RED #EF3F43 · WHITE #FFFFFF</text>
 <rect x="440" y="100" width="472" height="192" rx="16" fill="#FFFFFF"/>
 <rect x="440" y="308" width="472" height="192" rx="16" fill="#202530"/>
 ''']
