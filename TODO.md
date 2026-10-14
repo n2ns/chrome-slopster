@@ -6,7 +6,7 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 - [ ] **Show the provider's reason on errors.** The side panel shows only "The service returned an error" for HTTP failures. Add the provider's own message below it (e.g. "API key not valid", "IP address restriction … 123.20.121.39") so operators can fix keys themselves. The message is already in `AppError.message` (`src/providers/http.ts`); keep keys out of it.
 - [ ] **Replies should address the commenter directly.** A real Facebook draft read "probably better for them to look into bookings…", talking about the commenter in the third person. Tell the model in `src/prompt/` to write to the person being replied to.
-- [ ] **Version.** Still 0.0.1. The product name is Slopster (English and Chinese UI); the project directory and npm package are `chrome-slopster`. The icons in `public/icon/` (an orange S with a lightning bolt) are rendered from `design/icon.svg`.
+- [ ] **Version.** Still 0.0.1. The product name is Slopster (English and Chinese UI); the project directory and npm package are `chrome-slopster`. The icons in `public/icon/` (an italic orange S with a large lightning bolt) are rendered from `design/icon.svg`.
 
 ## Decisions pending
 
