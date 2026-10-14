@@ -461,6 +461,8 @@ describe('pages', () => {
     await settle();
     const survivor = (await listPersonas()).find((persona) => persona.name === 'Survivor')!;
     expect(survivor.tone).toBe('typed before delete');
+    // The delete error stays visible after the dropped edits are saved.
+    expect(container.querySelector('.error')).not.toBeNull();
   });
 
   it('saving a persona keeps fields another window changed meanwhile', async () => {
