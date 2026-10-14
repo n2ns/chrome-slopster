@@ -1,6 +1,6 @@
 # Slopster icon
 
-The selected Parallel mark uses two offset language panels and a downward connector. A red (`#F04444`) tile and black (`#17191E`) shapes express side-by-side translation. The SVG uses vector geometry only, with no font or external asset dependency.
+The selected Parallel mark uses two offset language panels and a downward connector. A bright red (`#EF3F43`) tile and white (`#FFFFFF`) shapes express side-by-side translation. The SVG uses vector geometry only, with no font or external asset dependency.
 
 - Source: `icon.svg`
 - Extension PNGs: `../public/icon/{16,32,48,128}.png`
