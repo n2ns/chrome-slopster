@@ -1,6 +1,6 @@
 {
   "name": "chrome-slopster",
-  "description": "Translate posts and draft operator-reviewed replies on Reddit, X, and Facebook.",
+  "description": "Translate posts and draft replies and new posts on Reddit, X, and Facebook. You review and send everything.",
   "private": true,
   "version": "0.1.0",
   "type": "module",
