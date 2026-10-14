@@ -75,10 +75,10 @@ describe('pages', () => {
     const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
     const toggle = container.querySelector<HTMLButtonElement>('button[aria-controls="key-gemini"]')!;
     expect(input.type).toBe('password');
-    expect(toggle.textContent).toBe('showKey');
+    expect(toggle.getAttribute('aria-label')).toBe('showKey');
     await act(async () => toggle.click());
     expect(input.type).toBe('text');
-    expect(toggle.textContent).toBe('hideKey');
+    expect(toggle.getAttribute('aria-label')).toBe('hideKey');
     expect(container.querySelector<HTMLInputElement>('#key-openai')!.type).toBe('password');
     await act(async () => toggle.click());
     expect(input.type).toBe('password');

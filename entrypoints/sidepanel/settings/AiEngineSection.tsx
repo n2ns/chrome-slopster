@@ -1,3 +1,4 @@
+import { CircleAlert, Cpu } from 'lucide-react';
 import { useState } from 'react';
 import { t } from '@/src/i18n';
 import { getModelOptions, resolveModel } from '@/src/models/registry';
@@ -26,7 +27,10 @@ export function AiEngineSection() {
   const shownError = error ?? loadError;
   return (
     <section>
-      <h2>{t('enginesHeading')}</h2>
+      <h2>
+        <Cpu className="icon" size={18} aria-hidden />
+        {t('enginesHeading')}
+      </h2>
       {settings ? (
         <>
           <label htmlFor="translation-engine">{t('translationEngine')}</label>
@@ -77,13 +81,18 @@ export function AiEngineSection() {
 
           <label className="check">
             <input type="checkbox" checked={settings.aiFallback} onChange={(event) => save({ aiFallback: event.target.checked })} />
-            {t('aiFallback')}
+            <span>{t('aiFallback')}</span>
           </label>
         </>
       ) : (
         !shownError && <p className="hint">{t('loading')}</p>
       )}
-      {shownError !== undefined && <p className="error">{errorMessage(shownError)}</p>}
+      {shownError !== undefined && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {errorMessage(shownError)}
+        </p>
+      )}
     </section>
   );
 }

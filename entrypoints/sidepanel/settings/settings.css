@@ -6,16 +6,24 @@
 }
 
 .settings h2 {
-  font-size: 1.05rem;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
-.settings .hint {
-  line-height: 1.4;
+/* The heading icon sits on a soft accent tile. */
+.settings h2 .icon {
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+
+.settings h2 + .hint {
+  margin: 4px 0 4px;
 }
 
 .settings label {
-  margin: 10px 0 4px;
+  margin: 14px 0 6px;
 }
 
 .settings select {
@@ -24,38 +32,115 @@
   text-overflow: ellipsis;
 }
 
-.settings label.check {
-  align-items: flex-start;
-  margin-top: 10px;
-  line-height: 1.4;
-}
-
-.settings label.check input {
-  flex: none;
-  margin: 2px 0 0;
+.settings .hint {
+  margin-top: 6px;
 }
 
 .settings .actions {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .settings .actions button {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 40px;
 }
 
 .settings .actions button.primary {
   flex-basis: 100%;
 }
 
-.settings .actions button.danger {
-  border-color: var(--danger);
+.settings .status,
+.settings .error {
+  font-size: var(--text-sm);
 }
 
-/* Personas: a wrapping row of chips above a full-width editor. */
+.settings .error .icon {
+  margin-top: 0.15em;
+}
+
+/* Checkbox rows look like a settings switch: text left, a switch right.
+   The control stays a native checkbox. */
+
+.settings label.check {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin: 10px 0 0;
+  padding: 8px 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.settings label.check > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings label.check input {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 1.45rem;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--border-strong);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.settings label.check input::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(1.45rem - 6px);
+  height: calc(1.45rem - 6px);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.25);
+  transition: transform 0.15s;
+}
+
+.settings label.check input:checked {
+  background: var(--accent);
+}
+
+.settings label.check input:checked::before {
+  transform: translateX(calc(2.5rem - 1.45rem));
+}
+
+.settings label.check input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+/* Several switches in a row form one bordered list. */
+
+.toggle-list {
+  margin-top: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.settings .toggle-list label.check {
+  margin: 0;
+}
+
+.toggle-list label.check + label.check {
+  border-top: 1px solid var(--border);
+}
+
+/* Personas: a wrapping row of chips above the editor card. */
 
 .personas {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .persona-list {
@@ -64,7 +149,7 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .persona-list li {
@@ -73,20 +158,24 @@
 }
 
 .persona-list button {
-  display: flex;
-  align-items: baseline;
   max-width: 100%;
-  padding: 3px 10px;
+  min-height: 34px;
+  padding: 5px 14px;
   border-radius: 999px;
-  background: var(--bg);
-  font-size: 0.95em;
+  background: var(--surface);
+  font-weight: 500;
 }
 
 .persona-list button[aria-current='true'] {
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-  background: var(--surface);
-  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.persona-list button[aria-current='true']:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .persona-list .persona-name {
@@ -98,33 +187,47 @@
 
 .persona-list .badge {
   flex: none;
-  font-weight: normal;
+  margin-left: 0;
+}
+
+.persona-list button[aria-current='true'] .badge {
+  background: var(--surface);
 }
 
 .persona-list .persona-add {
+  padding-left: 10px;
   border-style: dashed;
   color: var(--muted);
   background: none;
 }
 
-.persona-editor {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
+.persona-list .persona-add:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
-.persona-editor > label:first-child {
+.persona-editor {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.settings .persona-editor > label:first-child {
   margin-top: 0;
 }
 
-/* API keys: label above, input and Show/Hide on one row. */
+/* API keys: label above, input and the show/hide toggle on one row. */
 
 .key-field {
   min-width: 0;
 }
 
+/* Higher specificity than the side panel's `label:first-child` reset. */
 .settings .key-field > label:first-child {
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .key-row {
@@ -136,35 +239,47 @@
   flex: 1 1 auto;
   min-width: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9em;
+  font-size: var(--text-sm);
 }
 
-.key-row button {
+.settings .key-row button.icon-button {
   flex: none;
-  min-width: 4.5em;
-  padding: 6px 10px;
-  white-space: nowrap;
+  width: 2.75rem;
+  height: auto;
+  border-color: var(--border-strong);
+  background: var(--field);
 }
 
-/* Engines: the per-engine model selects form one compact sub-group. */
+.settings .key-row button.icon-button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Engines: the per-engine model selects form one sub-group. */
 
 .model-group {
   min-width: 0;
-  margin: 14px 0 0;
-  padding: 2px 10px 10px;
+  margin: 18px 0 0;
+  padding: 4px 12px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
 }
 
 .model-group legend {
-  padding: 0 4px;
+  padding: 0 6px;
   color: var(--muted);
-  font-size: 0.85em;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 650;
 }
 
-.settings .model-group label:first-child {
-  margin: 6px 0 2px;
-  font-weight: normal;
-  font-size: 0.9em;
+.settings .model-group div > label:first-child {
+  margin: 10px 0 4px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.settings .model-group div:first-of-type > label:first-child {
+  margin-top: 4px;
 }
