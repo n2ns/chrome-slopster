@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Relay: two interlocking conversation turns">
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="#FFFDF9"/>
+  <path fill="#F06445" d="M30 12h45c12 0 21 9 21 21v15H73V36H35v29H12V30c0-10 8-18 18-18Z"/>
+  <path fill="#232E45" d="M98 116H53c-12 0-21-9-21-21V80h23v12h38V63h23v35c0 10-8 18-18 18Z"/>
+  <path fill="#F06445" d="M12 55h23v10L12 85Z"/>
+  <path fill="#232E45" d="M116 73H93V63l23-20Z"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Inkfold: a folded page becoming a pen tip">
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="#FFFDF9"/>
+  <path fill="#203B45" d="M28 12h51l29 29v45c0 7-3 13-9 17l-24 15-9-29-38-1c-8 0-13-5-13-13V25c0-8 5-13 13-13Z"/>
+  <path fill="#F4B860" d="M79 12v22c0 5 3 7 8 7h21Z"/>
+  <path fill="none" stroke="#FFF9EE" stroke-width="10" stroke-linecap="round" d="M36 43h25M36 64h47"/>
+  <path fill="#F4B860" d="m66 89 20-20 13 34-24 15Z"/>
+  <path fill="none" stroke="#203B45" stroke-width="6" stroke-linecap="round" d="m75 110 6-20"/>
+</svg>
