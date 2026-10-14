@@ -61,6 +61,19 @@ describe('pages', () => {
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
   });
 
+  it('AI settings show only the model select of the selected AI engine', async () => {
+    await render(<AiSettingsView />);
+    const modelSelects = () => [...container.querySelectorAll<HTMLSelectElement>('select[id^="model-"]')].map((select) => select.id);
+    expect(modelSelects()).toEqual(['model-gemini']);
+    const engine = container.querySelector<HTMLSelectElement>('#ai-engine')!;
+    await act(async () => {
+      engine.value = 'claude';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect(modelSelects()).toEqual(['model-claude']);
+  });
+
   it('general settings view renders language, font size, and ad blocking', async () => {
     await render(<GeneralSettingsView />);
     const text = container.textContent ?? '';

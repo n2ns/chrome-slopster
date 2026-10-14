@@ -110,9 +110,6 @@
   "aiEngine": {
     "message": "AI engine"
   },
-  "modelsHeading": {
-    "message": "Model for each engine"
-  },
   "modelFor": {
     "message": "$1 model"
   },
