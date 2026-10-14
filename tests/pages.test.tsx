@@ -58,7 +58,38 @@ describe('pages', () => {
       expect(text).toContain(key);
     }
     expect(text).not.toContain('adBlockHeading');
-    expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
+    expect(container.querySelectorAll('input[type="password"]')).toHaveLength(1);
+  });
+
+  it('AI settings show the selected engine API key between the engine and the model', async () => {
+    await render(<AiSettingsView />);
+    const keyIds = () => [...container.querySelectorAll('input[id^="key-"]')].map((input) => input.id);
+    expect(keyIds()).toEqual(['key-gemini']);
+    const engine = container.querySelector<HTMLSelectElement>('#ai-engine')!;
+    const key = container.querySelector('#key-gemini')!;
+    const model = container.querySelector('#model-gemini')!;
+    expect(engine.compareDocumentPosition(key) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(key.compareDocumentPosition(model) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-gemini')!, 'unsaved-gemini'));
+    await act(async () => {
+      engine.value = 'openai';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect(keyIds()).toEqual(['key-openai']);
+    await act(async () => {
+      engine.value = 'gemini';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect(container.querySelector<HTMLInputElement>('#key-gemini')!.value).toBe('unsaved-gemini');
+  });
+
+  it('the translation engine is Google or the selected AI engine', async () => {
+    await render(<AiSettingsView />);
+    const options = [...container.querySelector<HTMLSelectElement>('#translation-engine')!.options].map((option) => option.value);
+    expect(options).toEqual(['google-free', 'ai']);
   });
 
   it('AI settings show only the model select of the selected AI engine', async () => {
@@ -92,7 +123,7 @@ describe('pages', () => {
     await act(async () => toggle.click());
     expect(input.type).toBe('text');
     expect(toggle.getAttribute('aria-label')).toBe('hideKey');
-    expect(container.querySelector<HTMLInputElement>('#key-openai')!.type).toBe('password');
+    expect(container.querySelector('#key-openai')).toBeNull();
     await act(async () => toggle.click());
     expect(input.type).toBe('password');
   });
@@ -100,10 +131,10 @@ describe('pages', () => {
   it('saving API keys does not overwrite a key another window changed meanwhile', async () => {
     await render(<AiSettingsView />);
     await act(async () => void (await saveApiKeys({ claude: 'claude-from-other-window' })));
-    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'openai-here'));
-    await act(async () => container.querySelector('#key-openai')!.closest('form')!.requestSubmit());
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-gemini')!, 'gemini-here'));
+    await act(async () => container.querySelector('#key-gemini')!.closest('form')!.requestSubmit());
     await settle();
-    expect(await getApiKeys()).toMatchObject({ openai: 'openai-here', claude: 'claude-from-other-window' });
+    expect(await getApiKeys()).toMatchObject({ gemini: 'gemini-here', claude: 'claude-from-other-window' });
   });
 
   it('saving a persona keeps fields another window changed meanwhile', async () => {
@@ -146,7 +177,7 @@ describe('pages', () => {
     await act(async () => headerButton('aiSettingsButton').click());
     await settle();
     expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
-    expect(visible('#key-openai')).toBe(true);
+    expect(visible('#key-gemini')).toBe(true);
     expect(visible('#translate-input')).toBe(false);
     expect(container.querySelector('#font-size')).toBeNull();
 
@@ -155,7 +186,7 @@ describe('pages', () => {
     await settle();
     expect(container.querySelector('header h1')!.textContent).toBe('optionsTitle');
     expect(visible('#font-size')).toBe(true);
-    expect(visible('#key-openai')).toBe(false);
+    expect(visible('#key-gemini')).toBe(false);
 
     await act(async () => headerButton('backButton').click());
     expect(container.querySelector('header h1')!.textContent).toBe('sidepanelTitle');
@@ -177,10 +208,10 @@ describe('pages', () => {
     const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => (button.getAttribute('aria-label') ?? button.textContent)?.includes(label))!;
     await act(async () => headerButton('aiSettingsButton').click());
     await settle();
-    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'unsaved-key'));
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-gemini')!, 'unsaved-key'));
     await act(async () => headerButton('backButton').click());
     await act(async () => headerButton('aiSettingsButton').click());
-    expect(container.querySelector<HTMLInputElement>('#key-openai')!.value).toBe('unsaved-key');
+    expect(container.querySelector<HTMLInputElement>('#key-gemini')!.value).toBe('unsaved-key');
   });
 
   it('side panel opens the AI settings when an API key is missing', async () => {
@@ -197,7 +228,7 @@ describe('pages', () => {
     await act(async () => link.click());
     await settle();
     expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
-    expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
+    expect(container.querySelectorAll('input[type="password"]')).toHaveLength(1);
   });
 
   it('side panel shows a localized error when translation fails', async () => {

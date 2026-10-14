@@ -18,7 +18,7 @@ The extension never sends or publishes anything. You review every draft and post
 4. Edit the draft if needed. Open the site's own reply box (or new-post form), then click **Fill**.
 5. Read it once more on the page and send it yourself.
 
-Settings open inside the side panel from the two icons at its top right, and **Back** returns to your draft. **AI settings**: persona profiles; API keys for OpenAI, DeepSeek, Gemini, and Claude; translation engine (free Google Translate or an AI engine, with optional AI fallback when Google is rate limited); AI engine and model. **Settings**: your language; auto-translate; font size of the side panel; ad blocking per site. The interface is available in English and Simplified Chinese and follows the browser language.
+Settings open inside the side panel from the two icons at its top right, and **Back** returns to your draft. **AI settings**: persona profiles; the AI engine (OpenAI, DeepSeek, Gemini, or Claude), used everywhere, with its API key and model shown below it; translation engine (free Google Translate or the selected AI engine, with optional AI fallback when Google is rate limited). **Settings**: your language; auto-translate; font size of the side panel; ad blocking per site. The interface is available in English and Simplified Chinese and follows the browser language.
 
 See [PRIVACY.md](PRIVACY.md) for what is stored and what is sent where, and [SECURITY.md](SECURITY.md) for how keys and drafts are handled.
 

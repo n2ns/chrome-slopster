@@ -1,7 +1,8 @@
 // Shared data types and defaults for everything persisted in chrome.storage.
 
 export type AiEngine = 'openai' | 'deepseek' | 'gemini' | 'claude';
-export type TranslationEngine = 'google-free' | AiEngine;
+/** Free Google Translate, or the selected AI engine (`aiEngine`), which is global. */
+export type TranslationEngine = 'google-free' | 'ai';
 export type PlatformId = 'reddit' | 'x' | 'facebook';
 
 export const AI_ENGINES: readonly AiEngine[] = ['openai', 'deepseek', 'gemini', 'claude'];

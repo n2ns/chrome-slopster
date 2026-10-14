@@ -1,7 +1,7 @@
 import { t, type MessageKey } from '@/src/i18n';
-import type { TranslationEngine } from '@/src/storage/types';
+import type { AiEngine } from '@/src/storage/types';
 
-const ENGINE_KEYS: Record<TranslationEngine, MessageKey> = {
+const ENGINE_KEYS: Record<'google-free' | AiEngine, MessageKey> = {
   'google-free': 'engineGoogleFree',
   openai: 'engineOpenai',
   deepseek: 'engineDeepseek',
@@ -9,7 +9,7 @@ const ENGINE_KEYS: Record<TranslationEngine, MessageKey> = {
   claude: 'engineClaude',
 };
 
-export function engineLabel(engine: TranslationEngine): string {
+export function engineLabel(engine: 'google-free' | AiEngine): string {
   return t(ENGINE_KEYS[engine]);
 }
 

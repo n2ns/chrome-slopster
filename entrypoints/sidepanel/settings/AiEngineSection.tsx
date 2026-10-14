@@ -7,8 +7,7 @@ import { AI_ENGINES, isAiEngine, type Settings, type TranslationEngine } from '@
 import { errorMessage } from '@/src/ui/errors';
 import { useSettings } from '@/src/ui/hooks';
 import { engineLabel } from '@/src/ui/labels';
-
-const TRANSLATION_ENGINES: TranslationEngine[] = ['google-free', ...AI_ENGINES];
+import { ApiKeyField } from './ApiKeyField';
 
 export function AiEngineSection() {
   const { value: settings, error: loadError, setValue } = useSettings();
@@ -33,19 +32,6 @@ export function AiEngineSection() {
       </h2>
       {settings ? (
         <>
-          <label htmlFor="translation-engine">{t('translationEngine')}</label>
-          <select
-            id="translation-engine"
-            value={settings.translationEngine}
-            onChange={(event) => save({ translationEngine: event.target.value as TranslationEngine })}
-          >
-            {TRANSLATION_ENGINES.map((engine) => (
-              <option key={engine} value={engine}>
-                {engineLabel(engine)}
-              </option>
-            ))}
-          </select>
-
           <label htmlFor="ai-engine">{t('aiEngine')}</label>
           <select
             id="ai-engine"
@@ -59,6 +45,8 @@ export function AiEngineSection() {
             ))}
           </select>
 
+          <ApiKeyField engine={settings.aiEngine} />
+
           {/* Only the selected engine's model is shown; it follows the AI engine select. */}
           <label htmlFor={`model-${settings.aiEngine}`}>{t('modelFor', engineLabel(settings.aiEngine))}</label>
           <select
@@ -71,6 +59,16 @@ export function AiEngineSection() {
                 {option.label}
               </option>
             ))}
+          </select>
+
+          <label htmlFor="translation-engine">{t('translationEngine')}</label>
+          <select
+            id="translation-engine"
+            value={settings.translationEngine}
+            onChange={(event) => save({ translationEngine: event.target.value as TranslationEngine })}
+          >
+            <option value="google-free">{engineLabel('google-free')}</option>
+            <option value="ai">{t('translationUseAi', engineLabel(settings.aiEngine))}</option>
           </select>
 
           <label className="check">

@@ -107,6 +107,9 @@
   "translationEngine": {
     "message": "Translation engine"
   },
+  "translationUseAi": {
+    "message": "AI engine ($1)"
+  },
   "aiEngine": {
     "message": "AI engine"
   },
