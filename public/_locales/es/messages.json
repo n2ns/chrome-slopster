@@ -379,5 +379,26 @@
   },
   "hideKey": {
     "message": "Ocultar"
+  },
+  "translationColor": {
+    "message": "Color de la traducción"
+  },
+  "translationColorCustom": {
+    "message": "Color personalizado"
+  },
+  "colorBlue": {
+    "message": "Azul"
+  },
+  "colorGreen": {
+    "message": "Verde"
+  },
+  "colorOrange": {
+    "message": "Naranja"
+  },
+  "colorRed": {
+    "message": "Rojo"
+  },
+  "colorGray": {
+    "message": "Gris"
   }
 }

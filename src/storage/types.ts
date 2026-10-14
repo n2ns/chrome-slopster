@@ -40,7 +40,18 @@ export interface Settings {
   /** Fall back to the selected AI engine when Google free translation fails or is cooling down. */
   aiFallback: boolean;
   fontSize: 'small' | 'medium' | 'large';
+  /** Accent color of translations shown on pages, as #rrggbb: one of TRANSLATION_COLOR_PRESETS or a custom color. */
+  translationColor: string;
 }
+
+/** Preset translation colors, with the i18n key of each name. The first one is the default. */
+export const TRANSLATION_COLOR_PRESETS = [
+  { color: '#5b8def', label: 'colorBlue' },
+  { color: '#2e9d5b', label: 'colorGreen' },
+  { color: '#f08c00', label: 'colorOrange' },
+  { color: '#e5484d', label: 'colorRed' },
+  { color: '#8a94a6', label: 'colorGray' },
+] as const;
 
 export type AdBlockSettings = Record<PlatformId, boolean>;
 
@@ -55,6 +66,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoTranslate: false,
   aiFallback: false,
   fontSize: 'medium',
+  translationColor: TRANSLATION_COLOR_PRESETS[0].color,
 };
 
 export const DEFAULT_AD_BLOCK: AdBlockSettings = { reddit: false, x: false, facebook: false };

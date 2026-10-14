@@ -379,5 +379,26 @@
   },
   "hideKey": {
     "message": "Hide"
+  },
+  "translationColor": {
+    "message": "Translation color"
+  },
+  "translationColorCustom": {
+    "message": "Custom color"
+  },
+  "colorBlue": {
+    "message": "Blue"
+  },
+  "colorGreen": {
+    "message": "Green"
+  },
+  "colorOrange": {
+    "message": "Orange"
+  },
+  "colorRed": {
+    "message": "Red"
+  },
+  "colorGray": {
+    "message": "Gray"
   }
 }
