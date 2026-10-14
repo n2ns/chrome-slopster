@@ -1,12 +1,12 @@
 {
   "extName": {
-    "message": "Social Reply Assistant"
+    "message": "Slopster"
   },
   "extDescription": {
-    "message": "Translate posts and draft operator-reviewed replies on Reddit, X, and Facebook."
+    "message": "Translate posts and draft operator-reviewed replies and new posts on Reddit, X, and Facebook."
   },
   "sidepanelTitle": {
-    "message": "Reply Assistant"
+    "message": "Slopster"
   },
   "loading": {
     "message": "Loading…"

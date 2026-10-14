@@ -1,6 +1,6 @@
 # Privacy
 
-Social Reply Assistant runs entirely in your browser. It has no server of its own, collects no analytics, and sends nothing anywhere until you use a feature that needs a third-party service (listed below).
+Slopster runs entirely in your browser. It has no server of its own, collects no analytics, and sends nothing anywhere until you use a feature that needs a third-party service (listed below).
 
 ## What is stored, and where
 
