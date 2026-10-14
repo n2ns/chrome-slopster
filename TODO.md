@@ -10,7 +10,7 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 ## Decisions pending
 
-- [ ] **First Chrome Web Store release.** Listing, permission justifications, CI and tag-triggered publish workflows, and store assets are ready ([docs/PUBLISHING.md](docs/PUBLISHING.md)). Still to do by hand: pick the first version, make the privacy policy reachable (public repository or n2ns.com), create the store item and upload the first zip, then add the `chrome-web-store` environment secrets.
+- [ ] **First Chrome Web Store release.** 0.1.0 is submitted for review (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)). After approval: put the store link in README.md and on n2ns.com, add the `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN` secrets, and create the `v0.1.0` GitHub Release with the zip.
 - [ ] License. The repository has none yet.
 
 ## Known gaps
