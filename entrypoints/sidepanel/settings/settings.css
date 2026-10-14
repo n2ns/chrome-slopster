@@ -110,6 +110,19 @@
   background: var(--accent);
 }
 
+/* Forced colors drop backgrounds, which would hide the switch; fall back to the native checkbox. */
+@media (forced-colors: active) {
+  .settings label.check input {
+    appearance: auto;
+    width: auto;
+    height: auto;
+  }
+
+  .settings label.check input::before {
+    content: none;
+  }
+}
+
 .settings label.check input:checked::before {
   transform: translateX(calc(2.5rem - 1.45rem));
 }
