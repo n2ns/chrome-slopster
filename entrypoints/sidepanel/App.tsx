@@ -1,4 +1,4 @@
-import { ArrowLeft, Settings as SettingsIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Languages, LoaderCircle, Settings as SettingsIcon, Sparkles } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
@@ -99,9 +99,12 @@ function TranslateSection() {
   }
 
   return (
-    <section>
+    <section className="translate">
       <form onSubmit={submit}>
-        <label htmlFor="translate-input">{t('translateHeading')}</label>
+        <label htmlFor="translate-input" className="section-heading">
+          <Languages className="icon" size={18} aria-hidden />
+          {t('translateHeading')}
+        </label>
         <textarea
           id="translate-input"
           value={text}
@@ -110,6 +113,7 @@ function TranslateSection() {
         />
         <div className="actions">
           <button type="submit" disabled={busy || !text.trim()}>
+            {busy ? <LoaderCircle className="icon spin" size={16} aria-hidden /> : <Languages className="icon" size={16} aria-hidden />}
             {busy ? t('translating') : t('translateButton')}
           </button>
         </div>

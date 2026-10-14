@@ -1,3 +1,4 @@
+import { Crosshair, LoaderCircle, MessageSquareReply, SquarePen, WandSparkles, X } from 'lucide-react';
 import { useState } from 'react';
 import type { ThreadContext } from '@/src/adapters/types';
 import { t, type MessageKey } from '@/src/i18n';
@@ -65,6 +66,7 @@ export function ReplySection() {
       <div className="mode-switch" role="group" aria-label={t('draftModeLabel')}>
         {(['reply', 'post'] as const).map((option) => (
           <button key={option} type="button" aria-pressed={mode === option} onClick={() => setMode(option)}>
+            {option === 'reply' ? <MessageSquareReply className="icon" size={16} aria-hidden /> : <SquarePen className="icon" size={16} aria-hidden />}
             {t(option === 'reply' ? 'modeReply' : 'modePost')}
           </button>
         ))}
@@ -192,10 +194,11 @@ function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps)
       <div className="actions">
         <button
           type="button"
-          className="primary"
+          className="primary generate"
           disabled={busy !== undefined || !persona || operatorLanguage === undefined}
           onClick={generate}
         >
+          {busy === 'generate' ? <LoaderCircle className="icon spin" size={16} aria-hidden /> : <WandSparkles className="icon" size={16} aria-hidden />}
           {busy === 'generate' ? t('generating') : t('generate')}
         </button>
       </div>
@@ -234,9 +237,12 @@ function TargetPreview({ thread, onClear }: { thread: ThreadContext; onClear: ()
   return (
     <div className="target">
       <div className="target-header">
-        <span className="target-heading">{t('replyTargetHeading')}</span>
-        <button type="button" onClick={onClear}>
-          {t('replyTargetClear')}
+        <span className="target-heading">
+          <Crosshair className="icon" size={14} aria-hidden />
+          {t('replyTargetHeading')}
+        </span>
+        <button type="button" className="icon-button" aria-label={t('replyTargetClear')} title={t('replyTargetClear')} onClick={onClear}>
+          <X className="icon" size={16} aria-hidden />
         </button>
       </div>
       <p className="target-meta">{meta}</p>

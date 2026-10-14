@@ -59,7 +59,7 @@ function setValue(element: HTMLTextAreaElement, value: string) {
 }
 
 function button(label: string): HTMLButtonElement {
-  const found = [...container.querySelectorAll('button')].find((candidate) => candidate.textContent === label);
+  const found = [...container.querySelectorAll('button')].find((candidate) => (candidate.getAttribute('aria-label') ?? candidate.textContent) === label);
   if (!found) throw new Error(`No button "${label}"`);
   return found;
 }
