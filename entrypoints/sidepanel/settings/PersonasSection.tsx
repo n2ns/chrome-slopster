@@ -110,7 +110,7 @@ export function PersonasSection() {
             isActive={selected.id === activeId}
             onSave={(patch) => run(async () => void (await updatePersona(selected.id, patch)))}
             onSetActive={() => run(() => setActivePersona(selected.id))}
-            onDelete={() => void run(() => deletePersona(selected.id))}
+            onDelete={() => run(() => deletePersona(selected.id))}
           />
         )}
       </div>
@@ -130,8 +130,8 @@ interface EditorProps {
   /** Receives only the fields changed in this form, so edits made elsewhere are kept. */
   onSave: (patch: Partial<PersonaFields>) => Promise<boolean>;
   onSetActive: () => void;
-  /** Called after the operator confirmed the deletion. */
-  onDelete: () => void;
+  /** Called after the operator confirmed the deletion; resolves to whether it succeeded. */
+  onDelete: () => Promise<boolean>;
 }
 
 /** Form for one persona. Mounted per persona ID, so edits elsewhere never clobber an open draft. */
@@ -158,6 +158,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
   // Set once deletion is confirmed; saves still queued are dropped.
   const deletedRef = useRef(false);
   const [saved, setSaved] = useState(false);
+  // A blur save was skipped because the name is empty.
+  const [nameMissing, setNameMissing] = useState(false);
   const field = (id: string) => `persona-${id}`;
 
   function edit(patch: Partial<typeof draft>) {
@@ -191,7 +193,11 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
       if (!onBlur) setSaved(true);
       return;
     }
-    if (!values.name) return;
+    if (!values.name) {
+      setNameMissing(true);
+      return;
+    }
+    setNameMissing(false);
     const ok = await onSave(patch);
     if (ok) baselineRef.current = values;
     // "Saved" only when nothing was typed while the save ran.
@@ -258,12 +264,21 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
           onClick={() => {
             if (!window.confirm(t('personaDeleteConfirm', persona.name))) return;
             deletedRef.current = true;
-            onDelete();
+            // When the deletion fails the persona stays, and so do its saves.
+            void onDelete().then((ok) => {
+              if (!ok) deletedRef.current = false;
+            });
           }}
         >
           <Trash2 className="icon" size={16} aria-hidden />
         </button>
       </div>
+      {nameMissing && (
+        <p className="error">
+          <CircleAlert className="icon" size={16} aria-hidden />
+          {t('personaNameRequired')}
+        </p>
+      )}
       {saved && (
         <p className="status">
           <CircleCheck className="icon" size={16} aria-hidden />
