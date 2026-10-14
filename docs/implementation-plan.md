@@ -1,4 +1,4 @@
-# social-reply-assistant Implementation Plan
+# chrome-slopster (Slopster) Implementation Plan
 
 > Status: phases 0–6 implemented; replies and new posts checked end to end on the real sites on 2026-10-12. Open work is tracked in [TODO.md](../TODO.md). The project name is provisional.
 > Reference project: `/home/deploy/_projects/chrome-smart-readit` (used only for design ideas; individual modules are ported by hand as needed, the codebase is not copied wholesale).
@@ -34,7 +34,7 @@ Exact dependency versions are determined from the official docs during Phase 0 s
 ## 3. Directory Structure
 
 ```
-social-reply-assistant/
+chrome-slopster/
 ├─ entrypoints/
 │  ├─ background.ts                # Message routing, translation queue, provider calls, opening the side panel
 │  ├─ sidepanel/                   # React: drafting, translation, filling
@@ -208,7 +208,7 @@ During development, Claude runs the tests automatically, instead of relying on m
 **Layer 3 environment**:
 - Uses this machine's shared test Chrome (shared by all projects, not part of this project): `~/.local/bin/chrome-test` launches Chrome on Windows with the separate data directory `C:\Users\James\AppData\Local\ChromeTest\UserData`, with `--remote-debugging-port=9222 --enable-unsafe-extension-debugging`.
 - The chrome-devtools MCP launch command is `~/.local/bin/chrome-devtools-mcp-test`: it first ensures the test Chrome is running, then connects via `--browserUrl http://127.0.0.1:9222` (relies on WSL mirrored networking).
-- The extension is loaded directly from `\\wsl.localhost\Ubuntu_26\home\deploy\_projects\social-reply-assistant\.output\chrome-mv3`. Verified on 2026-10-12: CDP `Extensions.loadUnpacked` can load an extension from a `\\wsl.localhost` path, so no sync to Windows is needed.
+- The extension is loaded directly from `\\wsl.localhost\Ubuntu_26\home\deploy\_projects\chrome-slopster\.output\chrome-mv3`. Verified on 2026-10-12: CDP `Extensions.loadUnpacked` can load an extension from a `\\wsl.localhost` path, so no sync to Windows is needed.
 - The operator logs in to the test accounts once in this profile by hand; the login state persists in the profile directory.
 
 **Layer 3 hard rules**:
