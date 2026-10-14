@@ -1,6 +1,7 @@
 // New-post drafting for the active tab: read where the open new-post form
 // would publish, generate a draft for it, and fill the form. Never publishes.
 
+import { LoaderCircle, SquarePen, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { ThreadContext } from '@/src/adapters/types';
 import { t, type MessageKey } from '@/src/i18n';
@@ -102,10 +103,11 @@ export function PostFlow({ tabId, url, persona, intent, operatorLanguage }: Flow
       <div className="actions">
         <button
           type="button"
-          className="primary"
+          className="primary generate"
           disabled={busy !== undefined || !persona || operatorLanguage === undefined}
           onClick={generate}
         >
+          {busy === 'generate' ? <LoaderCircle className="icon spin" size={16} aria-hidden /> : <WandSparkles className="icon" size={16} aria-hidden />}
           {busy === 'generate' ? t('generating') : t('generate')}
         </button>
       </div>
@@ -144,7 +146,12 @@ function PostTargetPreview({ target }: { target: ThreadContext }) {
   const meta = [t(PLATFORM_KEYS[target.platform]), target.community].filter(Boolean).join(' · ');
   return (
     <div className="target">
-      <span className="target-heading">{t('postTargetHeading')}</span>
+      <div className="target-header">
+        <span className="target-heading">
+          <SquarePen className="icon" size={14} aria-hidden />
+          {t('postTargetHeading')}
+        </span>
+      </div>
       <p className="target-meta">{meta}</p>
     </div>
   );

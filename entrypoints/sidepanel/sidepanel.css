@@ -1,89 +1,229 @@
 main.sidepanel {
-  padding: 12px;
+  padding: 0 0.875rem 1rem;
 }
 
+/* Header: sticks to the top while the panel scrolls. */
 main.sidepanel .sidepanel-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  margin: 0 -0.875rem 0.875rem;
+  padding: 0.5rem 0.625rem 0.5rem 0.875rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
 main.sidepanel h1 {
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
   margin: 0;
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
 }
 
-main.sidepanel button.link {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--accent, #5b8def);
-  cursor: pointer;
-  text-decoration: underline;
+/* A small accent mark before the app title in the main view. */
+main.sidepanel .sidepanel-header h1:first-child::before {
+  content: '';
+  flex: none;
+  width: 0.625rem;
+  height: 1.125rem;
+  border-radius: 3px;
+  background: linear-gradient(160deg, var(--accent), var(--accent-hover));
+}
+
+main.sidepanel .header-actions {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+/* Settings views: back button, then the view title. */
+main.sidepanel .sidepanel-header button.back {
+  flex: none;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  font-size: var(--text-sm);
+}
+
+main.sidepanel .sidepanel-header button.back + h1 {
+  flex: 1;
+  padding-left: 0.625rem;
+  border-left: 1px solid var(--border);
 }
 
 main.sidepanel section {
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 1rem;
+  margin-bottom: 0.875rem;
 }
 
 main.sidepanel label:first-child {
   margin-top: 0;
 }
 
-main.sidepanel .target {
-  margin-top: 12px;
-  padding: 8px 10px;
+main.sidepanel .spin {
+  animation: sidepanel-spin 0.9s linear infinite;
+}
+
+@keyframes sidepanel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.sidepanel .spin {
+    animation: none;
+  }
+}
+
+/* Reply / New post segmented control. */
+main.sidepanel .mode-switch {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  margin-bottom: 0.25rem;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+main.sidepanel .mode-switch button {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.125rem;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+}
+
+main.sidepanel .mode-switch button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+main.sidepanel .mode-switch button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow), 0 0 0 1px var(--border);
+}
+
+main.sidepanel .mode-switch + label {
+  margin-top: 1rem;
+}
+
+/* The full-width primary action of a flow. */
+main.sidepanel button.generate {
+  flex: 1;
+  min-height: 2.5rem;
+}
+
+/* The reply / post target read from the page. */
+main.sidepanel .target {
+  margin-top: 1rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
 }
 
 main.sidepanel .target-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 main.sidepanel .target-heading {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+main.sidepanel .target-header button.icon-button {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.25rem -0.375rem -0.25rem 0;
 }
 
 main.sidepanel .target-meta {
   color: var(--muted);
-  font-size: 0.9em;
-  margin: 4px 0 0;
+  font-size: var(--text-sm);
+  margin: 0.25rem 0 0;
 }
 
 main.sidepanel .target-summary {
-  margin: 2px 0 0;
+  margin: 0.125rem 0 0;
+  font-weight: 550;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Generation result. */
 main.sidepanel .result {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 
 main.sidepanel .verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
   margin: 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--success-soft);
+  color: var(--text);
+  line-height: 1.45;
+}
+
+main.sidepanel .verdict .icon {
+  margin-top: 0.1em;
+  color: var(--success);
+}
+
+main.sidepanel .verdict strong {
+  color: var(--success);
 }
 
 main.sidepanel .verdict.warning {
-  color: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: 6px;
-  padding: 8px 10px;
+  background: var(--warning-soft);
+  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+main.sidepanel .verdict.warning .icon,
+main.sidepanel .verdict.warning strong {
+  color: var(--warning);
 }
 
 main.sidepanel textarea.draft {
-  min-height: 8em;
+  min-height: 9em;
+}
+
+main.sidepanel .output {
+  overflow-wrap: anywhere;
+}
+
+main.sidepanel .output.notes {
+  background: var(--accent-soft);
+  border-color: transparent;
+  font-size: var(--text-sm);
 }
 
 main.sidepanel .raw {
@@ -91,27 +231,35 @@ main.sidepanel .raw {
   overflow-wrap: anywhere;
 }
 
-main.sidepanel .mode-switch {
+main.sidepanel .result .actions {
+  margin-top: 1rem;
+}
+
+main.sidepanel .result .actions button {
+  flex: 1 1 8rem;
+  white-space: nowrap;
+}
+
+main.sidepanel .result .actions + .hint {
+  font-size: var(--text-xs);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Translate section: the label doubles as the section heading. */
+main.sidepanel label.section-heading {
   display: flex;
-  margin-bottom: 4px;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.625rem;
+  font-size: var(--text-lg);
+  font-weight: 650;
 }
 
-main.sidepanel .mode-switch button {
-  flex: 1;
-  border-radius: 0;
+main.sidepanel label.section-heading .icon {
+  color: var(--accent);
 }
 
-main.sidepanel .mode-switch button:first-child {
-  border-radius: 6px 0 0 6px;
-}
-
-main.sidepanel .mode-switch button:last-child {
-  border-radius: 0 6px 6px 0;
-  border-left: none;
-}
-
-main.sidepanel .mode-switch button[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
+main.sidepanel .translate .actions {
+  margin-top: 0.75rem;
 }
