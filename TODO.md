@@ -17,5 +17,5 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 - [ ] Ad detection on X (an "Ad" label outside the tweet text and author name) and on Facebook (a link to `/ads/about`) has not been checked against real ads; no ads appeared on the test accounts.
 - [ ] Facebook comment drafts are filled as one line, because a line break in a comment box can post the comment. Revisit only with a safe way to insert line breaks.
-- [ ] AI settings: when resetting unreadable personas fails (quota or rate limit), the failure is not shown (`entrypoints/sidepanel/settings/PersonasSection.tsx`, load-error branch).
+- [ ] Personas view: when resetting unreadable personas fails (quota or rate limit), the failure is not shown (`entrypoints/sidepanel/settings/PersonasSection.tsx`, load-error branch).
 - [ ] Site markup changes over time. When a site redesigns, refresh its fixtures in `tests/fixtures/` from the test Chrome and update its adapter in `src/adapters/`.

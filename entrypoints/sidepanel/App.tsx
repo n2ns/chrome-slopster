@@ -1,4 +1,4 @@
-import { ArrowLeft, Languages, LoaderCircle, Settings as SettingsIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Languages, LoaderCircle, Settings as SettingsIcon, Sparkles, UsersRound } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
@@ -8,8 +8,11 @@ import { SettingsNavContext, type SettingsView } from '@/src/ui/settings-nav';
 import { ReplySection } from './ReplySection';
 import { AiSettingsView } from './settings/AiSettingsView';
 import { GeneralSettingsView } from './settings/GeneralSettingsView';
+import { PersonasSettingsView } from './settings/PersonasSettingsView';
 
 type View = 'main' | SettingsView;
+
+const VIEW_TITLES = { personas: 'personasHeading', ai: 'aiSettingsTitle', general: 'optionsTitle' } as const;
 
 export default function App() {
   const [view, setView] = useState<View>('main');
@@ -37,6 +40,9 @@ export default function App() {
             <>
               <h1>{t('sidepanelTitle')}</h1>
               <div className="header-actions">
+                <button type="button" className="icon-button" aria-label={t('personasHeading')} title={t('personasHeading')} onClick={() => switchView('personas')}>
+                  <UsersRound className="icon" size={18} aria-hidden />
+                </button>
                 <button type="button" className="icon-button" aria-label={t('aiSettingsButton')} title={t('aiSettingsButton')} onClick={() => switchView('ai')}>
                   <Sparkles className="icon" size={18} aria-hidden />
                 </button>
@@ -51,7 +57,7 @@ export default function App() {
                 <ArrowLeft className="icon" size={16} aria-hidden />
                 {t('backButton')}
               </button>
-              <h1>{view === 'ai' ? t('aiSettingsTitle') : t('optionsTitle')}</h1>
+              <h1>{t(VIEW_TITLES[view])}</h1>
             </>
           )}
         </header>
@@ -60,6 +66,11 @@ export default function App() {
           <ReplySection />
           <TranslateSection />
         </div>
+        {opened.has('personas') && (
+          <div hidden={view !== 'personas'}>
+            <PersonasSettingsView />
+          </div>
+        )}
         {opened.has('ai') && (
           <div hidden={view !== 'ai'}>
             <AiSettingsView />

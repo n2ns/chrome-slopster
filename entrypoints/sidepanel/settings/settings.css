@@ -270,8 +270,10 @@
 }
 
 
-/* The key's Save button sits on the input row and must not wrap its label. */
-.settings .key-row button.primary {
+/* The key's Save button is an icon-only square on the input row, like the show/hide toggle. */
+.settings .key-row button.key-save {
   flex: none;
-  white-space: nowrap;
+  width: 2.75rem;
+  min-height: 0;
+  padding: 0;
 }
