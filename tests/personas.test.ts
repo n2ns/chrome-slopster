@@ -6,6 +6,7 @@ import { activePersonaIdItem } from '@/src/storage/items';
 import {
   createPersona,
   defaultPersonaFields,
+  DEFAULT_PERSONA_ID,
   deletePersona,
   getActivePersona,
   getPersona,
@@ -125,13 +126,12 @@ describe('personas', () => {
     expect(await activePersonaIdItem.getValue()).toBe(seeded!.id);
   });
 
-  it('seeds a fresh default after the last persona is deleted', async () => {
+  it('never deletes the built-in default persona', async () => {
     const [seeded] = await listPersonas();
-    await deletePersona(seeded!.id);
-    const personas = await listPersonas();
-    expect(personas).toHaveLength(1);
-    expect(personas[0]!.id).not.toBe(seeded!.id);
-    expect(await activePersonaIdItem.getValue()).toBe(personas[0]!.id);
+    expect(seeded!.id).toBe(DEFAULT_PERSONA_ID);
+    await expect(deletePersona(DEFAULT_PERSONA_ID)).rejects.toMatchObject({ code: 'invalid-request' });
+    expect((await listPersonas()).map((persona) => persona.id)).toEqual([DEFAULT_PERSONA_ID]);
+    expect(await activePersonaIdItem.getValue()).toBe(DEFAULT_PERSONA_ID);
   });
 
   it('does not lose updates from concurrent writes', async () => {
