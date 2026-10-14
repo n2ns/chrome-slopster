@@ -8,9 +8,6 @@
   "sidepanelTitle": {
     "message": "Reply Assistant"
   },
-  "optionsTitle": {
-    "message": "Settings"
-  },
   "loading": {
     "message": "Loading…"
   },
@@ -365,14 +362,8 @@
   "generalHeading": {
     "message": "General"
   },
-  "aiSettingsTitle": {
-    "message": "AI settings"
-  },
   "aiSettingsButton": {
     "message": "AI settings"
-  },
-  "backButton": {
-    "message": "Back"
   },
   "openSettingsLink": {
     "message": "Open settings"

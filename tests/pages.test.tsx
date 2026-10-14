@@ -193,38 +193,44 @@ describe('pages', () => {
     expect(container.querySelector('.output')!.textContent).toBe('T:hello\n\ntranslationTruncated');
   });
 
-  it('side panel opens each settings view in place and goes back with drafts kept', async () => {
+  it('side panel navigation: fixed header, highlighted button, same button or title returns home, drafts kept', async () => {
     await render(<SidepanelApp />);
     await act(async () => setValue(container.querySelector<HTMLTextAreaElement>('#translate-input')!, 'kept'));
-    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => (button.getAttribute('aria-label') ?? button.textContent)?.includes(label))!;
+    const nav = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => button.getAttribute('aria-label') === label)!;
+    const title = () => container.querySelector<HTMLButtonElement>('header button.home')!;
+    const pressed = () => [...container.querySelectorAll<HTMLButtonElement>('header button[aria-pressed="true"]')].map((button) => button.getAttribute('aria-label'));
     const visible = (selector: string) => container.querySelector<HTMLElement>(selector)!.closest('[hidden]') === null;
+    const headerText = () => container.querySelector('header')!.textContent;
 
-    await act(async () => headerButton('aiSettingsButton').click());
+    expect(pressed()).toEqual([]);
+    await act(async () => nav('aiSettingsButton').click());
     await settle();
-    expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
+    expect(pressed()).toEqual(['aiSettingsButton']);
+    expect(headerText()).toBe('sidepanelTitle');
+    expect(container.querySelector('[aria-label="backButton"], button.back')).toBeNull();
     expect(visible('#key-gemini')).toBe(true);
     expect(visible('#translate-input')).toBe(false);
-    expect(container.querySelector('#font-size')).toBeNull();
 
-    await act(async () => headerButton('backButton').click());
-    await act(async () => headerButton('settingsButton').click());
+    // Another nav button switches directly; the same button again goes home.
+    await act(async () => nav('settingsButton').click());
     await settle();
-    expect(container.querySelector('header h1')!.textContent).toBe('optionsTitle');
+    expect(pressed()).toEqual(['settingsButton']);
     expect(visible('#font-size')).toBe(true);
     expect(visible('#key-gemini')).toBe(false);
+    await act(async () => nav('settingsButton').click());
+    expect(pressed()).toEqual([]);
+    expect(visible('#translate-input')).toBe(true);
 
-    await act(async () => headerButton('backButton').click());
-    await act(async () => headerButton('personasHeading').click());
+    // The title goes home too.
+    await act(async () => nav('personasHeading').click());
     await settle();
-    expect(container.querySelector('header h1')!.textContent).toBe('personasHeading');
+    expect(pressed()).toEqual(['personasHeading']);
     expect(visible('#persona-name')).toBe(true);
-    expect(visible('#font-size')).toBe(false);
-
-    await act(async () => headerButton('backButton').click());
-    expect(container.querySelector('header h1')!.textContent).toBe('sidepanelTitle');
+    await act(async () => title().click());
+    expect(pressed()).toEqual([]);
     expect(container.querySelector<HTMLTextAreaElement>('#translate-input')!.value).toBe('kept');
     expect(visible('#translate-input')).toBe(true);
-    expect(visible('#font-size')).toBe(false);
+    expect(visible('#persona-name')).toBe(false);
   });
 
   it('side panel applies the font size setting to the whole panel', async () => {
@@ -241,7 +247,7 @@ describe('pages', () => {
     await act(async () => headerButton('aiSettingsButton').click());
     await settle();
     await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-gemini')!, 'unsaved-key'));
-    await act(async () => headerButton('backButton').click());
+    await act(async () => headerButton('aiSettingsButton').click());
     await act(async () => headerButton('aiSettingsButton').click());
     expect(container.querySelector<HTMLInputElement>('#key-gemini')!.value).toBe('unsaved-key');
   });
@@ -259,7 +265,7 @@ describe('pages', () => {
     const link = [...container.querySelectorAll('button')].find((button) => button.textContent === 'openSettingsLink')!;
     await act(async () => link.click());
     await settle();
-    expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
+    expect(container.querySelector('header button[aria-pressed="true"]')!.getAttribute('aria-label')).toBe('aiSettingsButton');
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(1);
   });
 

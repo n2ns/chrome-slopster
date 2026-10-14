@@ -8,9 +8,6 @@
   "sidepanelTitle": {
     "message": "回帖助手"
   },
-  "optionsTitle": {
-    "message": "设置"
-  },
   "loading": {
     "message": "加载中…"
   },
@@ -365,14 +362,8 @@
   "generalHeading": {
     "message": "常规"
   },
-  "aiSettingsTitle": {
-    "message": "AI 设置"
-  },
   "aiSettingsButton": {
     "message": "AI 设置"
-  },
-  "backButton": {
-    "message": "返回"
   },
   "openSettingsLink": {
     "message": "打开设置"

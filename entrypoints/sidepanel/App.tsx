@@ -1,4 +1,4 @@
-import { ArrowLeft, Languages, LoaderCircle, Settings as SettingsIcon, Sparkles, UsersRound } from 'lucide-react';
+import { Languages, LoaderCircle, Settings as SettingsIcon, Sparkles, UsersRound } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
@@ -12,7 +12,11 @@ import { PersonasSettingsView } from './settings/PersonasSettingsView';
 
 type View = 'main' | SettingsView;
 
-const VIEW_TITLES = { personas: 'personasHeading', ai: 'aiSettingsTitle', general: 'optionsTitle' } as const;
+const NAV = [
+  { view: 'personas', label: 'personasHeading', Icon: UsersRound },
+  { view: 'ai', label: 'aiSettingsButton', Icon: Sparkles },
+  { view: 'general', label: 'settingsButton', Icon: SettingsIcon },
+] as const;
 
 export default function App() {
   const [view, setView] = useState<View>('main');
@@ -35,31 +39,28 @@ export default function App() {
   return (
     <SettingsNavContext value={switchView}>
       <main className="sidepanel">
+        {/* Fixed navigation on every view: the title goes home; a view's button is highlighted while open and goes home when clicked again. */}
         <header className="sidepanel-header">
-          {view === 'main' ? (
-            <>
-              <h1>{t('sidepanelTitle')}</h1>
-              <div className="header-actions">
-                <button type="button" className="icon-button" aria-label={t('personasHeading')} title={t('personasHeading')} onClick={() => switchView('personas')}>
-                  <UsersRound className="icon" size={18} aria-hidden />
-                </button>
-                <button type="button" className="icon-button" aria-label={t('aiSettingsButton')} title={t('aiSettingsButton')} onClick={() => switchView('ai')}>
-                  <Sparkles className="icon" size={18} aria-hidden />
-                </button>
-                <button type="button" className="icon-button" aria-label={t('settingsButton')} title={t('settingsButton')} onClick={() => switchView('general')}>
-                  <SettingsIcon className="icon" size={18} aria-hidden />
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <button type="button" className="link back" onClick={() => switchView('main')}>
-                <ArrowLeft className="icon" size={16} aria-hidden />
-                {t('backButton')}
+          <h1>
+            <button type="button" className="home" onClick={() => switchView('main')}>
+              {t('sidepanelTitle')}
+            </button>
+          </h1>
+          <nav className="header-actions">
+            {NAV.map(({ view: target, label, Icon }) => (
+              <button
+                key={target}
+                type="button"
+                className="icon-button"
+                aria-label={t(label)}
+                title={t(label)}
+                aria-pressed={view === target}
+                onClick={() => switchView(view === target ? 'main' : target)}
+              >
+                <Icon className="icon" size={18} aria-hidden />
               </button>
-              <h1>{t(VIEW_TITLES[view])}</h1>
-            </>
-          )}
+            ))}
+          </nav>
         </header>
         {/* The main view stays mounted while a settings view is open, so drafts in progress survive. */}
         <div hidden={view !== 'main'}>
