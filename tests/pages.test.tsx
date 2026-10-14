@@ -10,9 +10,10 @@ import { GeneralSettingsView } from '@/entrypoints/sidepanel/settings/GeneralSet
 import { PersonasSettingsView } from '@/entrypoints/sidepanel/settings/PersonasSettingsView';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
-import { getApiKeys } from '@/src/storage/items';
+import { getApiKeys, getSettings } from '@/src/storage/items';
 import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
 import { saveApiKeys, saveSettings } from '@/src/storage/settings';
+import { TRANSLATION_COLOR_PRESETS } from '@/src/storage/types';
 import { installLocksPolyfill, mockI18n } from './helpers/browser';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -129,6 +130,58 @@ describe('pages', () => {
       expect(text).toContain(key);
     }
     expect(text).not.toContain('apiKeysHeading');
+  });
+
+  it('general settings place the translation color between auto-translate and font size, with named presets', async () => {
+    await render(<GeneralSettingsView />);
+    const text = container.textContent ?? '';
+    expect(text.indexOf('autoTranslate')).toBeLessThan(text.indexOf('translationColor'));
+    expect(text.indexOf('translationColor')).toBeLessThan(text.indexOf('fontSize'));
+    const swatches = [...container.querySelectorAll<HTMLButtonElement>('.color-swatches button')];
+    expect(swatches.map((button) => button.getAttribute('aria-label'))).toEqual(TRANSLATION_COLOR_PRESETS.map((preset) => preset.label));
+    expect(swatches.map((button) => button.title)).toEqual(TRANSLATION_COLOR_PRESETS.map((preset) => preset.label));
+    expect(container.querySelector('input[type="color"]')!.getAttribute('aria-label')).toBe('translationColorCustom');
+  });
+
+  it('clicking a translation color preset saves it and marks it selected', async () => {
+    await render(<GeneralSettingsView />);
+    const swatch = (label: string) => container.querySelector<HTMLButtonElement>(`.color-swatches button[aria-label="${label}"]`)!;
+    expect(swatch('colorBlue').getAttribute('aria-pressed')).toBe('true');
+    expect(swatch('colorGreen').getAttribute('aria-pressed')).toBe('false');
+    await act(async () => swatch('colorGreen').click());
+    await settle();
+    expect((await getSettings()).translationColor).toBe('#2e9d5b');
+    expect(swatch('colorGreen').getAttribute('aria-pressed')).toBe('true');
+    expect(swatch('colorBlue').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('the custom translation color saves on change', async () => {
+    await render(<GeneralSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('input[type="color"]')!;
+    await act(async () => setValue(input, '#123456'));
+    await settle();
+    // Dragging in the picker fires input events only; nothing is written until change.
+    expect((await getSettings()).translationColor).toBe('#5b8def');
+    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })));
+    await settle();
+    expect((await getSettings()).translationColor).toBe('#123456');
+  });
+
+  it('the selected translation color follows the stored value, preset or custom', async () => {
+    await saveSettings({ translationColor: '#123456' });
+    await render(<GeneralSettingsView />);
+    const custom = () => container.querySelector<HTMLInputElement>('input[type="color"]')!;
+    const pressed = () => [...container.querySelectorAll('.color-swatches button[aria-pressed="true"]')].map((button) => button.getAttribute('aria-label'));
+    expect(pressed()).toEqual([]);
+    expect(custom().value).toBe('#123456');
+    expect(custom().closest('.swatch')!.classList.contains('selected')).toBe(true);
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#123456');
+
+    await act(async () => void (await saveSettings({ translationColor: '#e5484d' })));
+    await settle();
+    expect(pressed()).toEqual(['colorRed']);
+    expect(custom().closest('.swatch')!.classList.contains('selected')).toBe(false);
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#e5484d');
   });
 
   it('shows and hides each API key on request', async () => {
