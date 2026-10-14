@@ -14,14 +14,14 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 ## Status
 
 - 2026-10-15: 0.1.0 uploaded by hand and submitted for review under the Datafrog.io publisher (item ID `mmgmeicjkmabnhjedpinlnpddagpoend`; it publishes automatically once approved). The listing uses category Productivity > Tools, the five store screenshots, both promo tiles, homepage https://n2ns.com/projects/slopster, support https://github.com/n2ns/chrome-slopster/issues, and the privacy policy at https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md.
-- The `chrome-web-store` environment exists with `EXTENSION_ID`; `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN` are still missing, so tag-triggered publishing does not work yet.
+- The `chrome-web-store` environment exists with `EXTENSION_ID`. The upload uses Chrome Web Store API v2 with the shared n2ns organization secrets `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL` and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (set); `CWS_PUBLISHER_ID` is still missing, so tag-triggered publishing does not work yet.
 - No `v0.1.0` tag or GitHub Release yet: pushing the tag would run the publish workflow, whose store upload fails while the item is under review and the OAuth secrets are missing.
 
 ## One-time setup
 
 1. **First upload by hand.** The Web Store API can only update an existing item. Build the zip with `npm run zip`, create a new item in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) under the N2NS account, upload the zip, fill in the listing, privacy, and distribution tabs from the drafts below, and submit. The item ID shown in the dashboard is the `EXTENSION_ID`.
 2. **Privacy policy URL.** The store needs a public URL. This repository is private, so `PRIVACY.md` on GitHub is not reachable by reviewers. Either make the repository public and use `https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md` (as WideMark does), or publish the policy on n2ns.com.
-3. **GitHub environment and secrets.** Create the `chrome-web-store` environment in this repository and add the secrets `EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN`. The OAuth client and refresh token can be the same ones chrome-widemark uses (same publisher account); only `EXTENSION_ID` differs. GitHub never shows secret values again, so copy them from wherever they were recorded when WideMark was set up, or create a new OAuth client and refresh token for the Chrome Web Store API.
+3. **GitHub environment and secrets.** The `chrome-web-store` environment holds `EXTENSION_ID`. Store credentials are n2ns organization secrets shared with chrome-wtfaa and chrome-widemark: `CWS_PUBLISHER_ID`, `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL`, and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (service account `<service account>` in GCP project `<gcp project>`, which must be added to the publisher in the Developer Dashboard).
 4. **Store assets.** Screenshots and promo tiles are in [`store-assets/`](../store-assets/) (`npm run assets:store` regenerates them).
 
 ## Store listing draft
