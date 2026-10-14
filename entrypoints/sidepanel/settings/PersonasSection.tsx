@@ -67,7 +67,7 @@ export function PersonasSection() {
           {personas.map((persona) => (
             <li key={persona.id}>
               <button type="button" aria-current={persona.id === selected?.id} onClick={() => setSelectedId(persona.id)}>
-                {persona.name || '—'}
+                <span className="persona-name">{persona.name || '—'}</span>
                 {persona.id === activeId && <span className="badge">{t('personaActiveBadge')}</span>}
               </button>
             </li>
@@ -75,6 +75,7 @@ export function PersonasSection() {
           <li>
             <button
               type="button"
+              className="persona-add"
               onClick={() =>
                 run(async () => {
                   const created = await createPersona({ ...defaultPersonaFields(), name: t('personaNew') });

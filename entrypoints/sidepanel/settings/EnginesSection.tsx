@@ -61,22 +61,25 @@ export function EnginesSection() {
             ))}
           </select>
 
-          {AI_ENGINES.map((engine) => (
-            <div key={engine}>
-              <label htmlFor={`model-${engine}`}>{t('modelFor', engineLabel(engine))}</label>
-              <select
-                id={`model-${engine}`}
-                value={resolveModel(engine, settings.models[engine])}
-                onChange={(event) => save({ models: { ...settings.models, [engine]: event.target.value } })}
-              >
-                {getModelOptions(engine).map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+          <fieldset className="model-group">
+            <legend>{t('modelsHeading')}</legend>
+            {AI_ENGINES.map((engine) => (
+              <div key={engine}>
+                <label htmlFor={`model-${engine}`}>{t('modelFor', engineLabel(engine))}</label>
+                <select
+                  id={`model-${engine}`}
+                  value={resolveModel(engine, settings.models[engine])}
+                  onChange={(event) => save({ models: { ...settings.models, [engine]: event.target.value } })}
+                >
+                  {getModelOptions(engine).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </fieldset>
 
           <label htmlFor="operator-language">{t('operatorLanguage')}</label>
           <LanguageSelect

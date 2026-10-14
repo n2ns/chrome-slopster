@@ -53,7 +53,7 @@ export function ApiKeysSection() {
       {keys ? (
         <form onSubmit={submit}>
           {AI_ENGINES.map((engine) => (
-            <div key={engine}>
+            <div key={engine} className="key-field">
               <label htmlFor={`key-${engine}`}>{engineLabel(engine)}</label>
               <div className="key-row">
                 <input
