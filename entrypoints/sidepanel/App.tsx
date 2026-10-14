@@ -1,21 +1,47 @@
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { sendToBackground } from '@/src/messaging/protocol';
-import { ErrorNotice, openSettings } from '@/src/ui/ErrorNotice';
+import { ErrorNotice } from '@/src/ui/ErrorNotice';
+import { SettingsNavContext } from '@/src/ui/settings-nav';
 import { ReplySection } from './ReplySection';
+import { SettingsView } from './settings/SettingsView';
 
 export default function App() {
+  const [showSettings, setShowSettings] = useState(false);
+
+  function switchView(settings: boolean) {
+    setShowSettings(settings);
+    window.scrollTo(0, 0);
+  }
+
   return (
-    <main className="sidepanel">
-      <header className="sidepanel-header">
-        <h1>{t('sidepanelTitle')}</h1>
-        <button type="button" className="link" onClick={openSettings}>
-          {t('settingsButton')}
-        </button>
-      </header>
-      <ReplySection />
-      <TranslateSection />
-    </main>
+    <SettingsNavContext value={() => switchView(true)}>
+      <main className="sidepanel">
+        <header className="sidepanel-header">
+          {showSettings ? (
+            <>
+              <button type="button" className="link" onClick={() => switchView(false)}>
+                ← {t('backButton')}
+              </button>
+              <h1>{t('optionsTitle')}</h1>
+            </>
+          ) : (
+            <>
+              <h1>{t('sidepanelTitle')}</h1>
+              <button type="button" className="link" onClick={() => switchView(true)}>
+                {t('settingsButton')}
+              </button>
+            </>
+          )}
+        </header>
+        {/* The main view stays mounted while the settings are open, so drafts in progress survive. */}
+        <div hidden={showSettings}>
+          <ReplySection />
+          <TranslateSection />
+        </div>
+        {showSettings && <SettingsView />}
+      </main>
+    </SettingsNavContext>
   );
 }
 

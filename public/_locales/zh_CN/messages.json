@@ -359,6 +359,9 @@
   "settingsButton": {
     "message": "设置"
   },
+  "backButton": {
+    "message": "返回"
+  },
   "openSettingsLink": {
     "message": "打开设置"
   },

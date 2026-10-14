@@ -359,6 +359,9 @@
   "settingsButton": {
     "message": "Settings"
   },
+  "backButton": {
+    "message": "Back"
+  },
   "openSettingsLink": {
     "message": "Open settings"
   },

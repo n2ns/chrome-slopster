@@ -1,17 +1,17 @@
-import { t } from '@/src/i18n';
+import './settings.css';
 import { AdBlockSection } from './AdBlockSection';
 import { ApiKeysSection } from './ApiKeysSection';
 import { EnginesSection } from './EnginesSection';
 import { PersonasSection } from './PersonasSection';
 
-export default function App() {
+/** The settings, shown inside the side panel in place of the main view. */
+export function SettingsView() {
   return (
-    <main className="options">
-      <h1>{t('optionsTitle')}</h1>
+    <div className="settings">
       <PersonasSection />
       <ApiKeysSection />
       <EnginesSection />
       <AdBlockSection />
-    </main>
+    </div>
   );
 }
