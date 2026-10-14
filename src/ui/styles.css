@@ -74,6 +74,8 @@
 
 body {
   margin: 0;
+  /* Chrome's stylesheet for extension pages sets body to 75% and its own font family; undo it so text follows the root size. */
+  font: inherit;
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
