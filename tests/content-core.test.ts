@@ -6,8 +6,8 @@ import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { redditAdapter } from '@/src/adapters/reddit';
 import { runContentScript } from '@/src/content-core';
 import { registerHandlers, sendToTab, type BackgroundMessages } from '@/src/messaging/protocol';
-import { adBlockItem } from '@/src/storage/items';
-import { DEFAULT_AD_BLOCK } from '@/src/storage/types';
+import { adBlockItem, settingsItem } from '@/src/storage/items';
+import { DEFAULT_AD_BLOCK, DEFAULT_SETTINGS } from '@/src/storage/types';
 import { mockI18n } from './helpers/browser';
 
 type SelectHandler = (payload: BackgroundMessages['selectReplyTarget']['request']) => Promise<{ sidePanelOpened: boolean }>;
@@ -204,5 +204,55 @@ describe('content core on a Reddit post page', () => {
     await vi.waitFor(() => expect(ad.hasAttribute('data-sra-hidden-ad')).toBe(true));
     await adBlockItem.setValue({ ...DEFAULT_AD_BLOCK, reddit: false });
     await vi.waitFor(() => expect(ad.hasAttribute('data-sra-hidden-ad')).toBe(false));
+  });
+});
+
+describe('content core translation color', () => {
+  let ctx: ReturnType<typeof fakeContext> | undefined;
+  const accents = () => [...document.querySelectorAll<HTMLElement>('[data-sra-toolbar]')].map((host) => host.style.getPropertyValue('--slopster-accent'));
+
+  async function start(translationColor?: unknown): Promise<void> {
+    fakeBrowser.reset();
+    mockI18n();
+    vi.stubGlobal('IntersectionObserver', NoopIntersectionObserver);
+    if (translationColor !== undefined) await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor } as typeof DEFAULT_SETTINGS);
+    window.history.replaceState(null, '', '/r/selfhosted/comments/1x3m5xo/why_selfhost/');
+    document.body.innerHTML = FIXTURE;
+    ctx = fakeContext();
+    runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
+    await flush();
+  }
+  afterEach(() => {
+    ctx?.invalidate();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    document.body.innerHTML = '';
+  });
+
+  it('gives toolbars the stored color, including ones added later', async () => {
+    await start('#2e9d5b');
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#2e9d5b'])));
+    const unit = comment('t1_pfccwzm');
+    ownToolbar(unit).remove();
+    await vi.waitFor(() => expect(ownToolbar(unit)).toBeDefined());
+    expect((ownToolbar(unit) as HTMLElement).style.getPropertyValue('--slopster-accent')).toBe('#2e9d5b');
+  });
+
+  it('updates existing toolbars live when the setting changes', async () => {
+    await start();
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#5b8def'])));
+    const count = accents().length;
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: '#f08c00' });
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#f08c00'])));
+    expect(accents()).toHaveLength(count);
+  });
+
+  it('falls back to the default color for a missing or invalid value', async () => {
+    await start('red; background: url(x)');
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#5b8def'])));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: '#123abc' });
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#123abc'])));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: undefined } as unknown as typeof DEFAULT_SETTINGS);
+    await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#5b8def'])));
   });
 });

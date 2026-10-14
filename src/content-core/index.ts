@@ -8,11 +8,17 @@ import { t } from '@/src/i18n';
 import { registerHandlers, sendToBackground, type ContentMessages } from '@/src/messaging/protocol';
 import { adBlockItem, getSettings, settingsItem } from '@/src/storage/items';
 import { getAdBlock } from '@/src/storage/settings';
+import { TRANSLATION_COLOR_PRESETS } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { createToolbar, type Toolbar } from './toolbar';
 
 const SCAN_DELAY_MS = 250;
 const AD_ATTRIBUTE = 'data-sra-hidden-ad';
+
+/** The stored translation color, or the default preset when it is missing or not #rrggbb. */
+function accentColor(value: unknown): string {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : TRANSLATION_COLOR_PRESETS[0].color;
+}
 
 /** Innermost reply target that contains `unit`: walk up from the unit, O(depth). */
 function ownerTarget(unit: HTMLElement, targets: Set<HTMLElement>): HTMLElement | undefined {
@@ -28,11 +34,14 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   const translated = new WeakSet<HTMLElement>();
   const replyButtons = new Map<HTMLElement, HTMLButtonElement>();
   const observed = new Set<HTMLElement>();
+  /** Toolbars currently on the page, so a color change can restyle them. */
+  const liveToolbars = new Set<Toolbar>();
   /** Page key at the time the operator selected a target here; a different key clears the stored target. */
   let selectedPageKey: string | null = null;
   let hasSelection = false;
   let autoTranslate = false;
   let blockAds = false;
+  let accent = accentColor(undefined);
   let scanTimer: number | undefined;
 
   const adStyle = doc.createElement('style');
@@ -107,6 +116,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     }
     // Forget nodes the page removed (SPA navigation, collapsed threads).
     for (const [target, button] of replyButtons) if (!target.isConnected || !button.isConnected) replyButtons.delete(target);
+    for (const toolbar of liveToolbars) if (!toolbar.host.isConnected) liveToolbars.delete(toolbar);
     for (const unit of observed) {
       if (!unit.isConnected) {
         visibility.unobserve(unit);
@@ -126,6 +136,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       const existing = toolbars.get(unit);
       if (!existing || !existing.host.isConnected) {
         const created = createToolbar(unit, t('contentTranslate'));
+        created.setAccent(accent);
+        liveToolbars.add(created);
         created.translateButton.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -145,6 +157,11 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       replyButtons.set(target, button);
     }
     applyAds();
+  }
+
+  function applyAccent(value: unknown): void {
+    accent = accentColor(value);
+    for (const toolbar of liveToolbars) toolbar.setAccent(accent);
   }
 
   function clearStoredTarget(): void {
@@ -188,6 +205,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
 
   void getSettings().then((settings) => {
     autoTranslate = settings.autoTranslate;
+    applyAccent(settings.translationColor);
   });
   void getAdBlock().then((adBlock) => {
     blockAds = adBlock[adapter.id];
@@ -195,6 +213,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   });
   const unwatchSettings = settingsItem.watch((settings) => {
     autoTranslate = Boolean(settings?.autoTranslate);
+    applyAccent(settings?.translationColor);
   });
   const unwatchAds = adBlockItem.watch((adBlock) => {
     blockAds = Boolean(adBlock?.[adapter.id]);

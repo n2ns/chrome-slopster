@@ -9,7 +9,8 @@ button:hover { opacity: 1; }
 button:disabled { cursor: default; opacity: .45; }
 button[aria-pressed="true"] { opacity: 1; font-weight: 600; }
 .note { opacity: .7; }
-.output { white-space: pre-wrap; margin-top: 4px; padding: 6px 8px; border-left: 3px solid #5b8def; border-radius: 4px; background: rgba(91, 141, 239, .08); font-size: 14px; line-height: 1.5; }
+/* The accent comes from --slopster-accent on the host (see setAccent); the fallback is the default preset. */
+.output { white-space: pre-wrap; margin-top: 4px; padding: 6px 8px; border-left: 3px solid; border-left-color: var(--slopster-accent, #5b8def); border-radius: 4px; background: color-mix(in srgb, var(--slopster-accent, #5b8def) 10%, transparent); font-size: 14px; line-height: 1.5; }
 .output.error { border-left-color: #d9534f; background: rgba(217, 83, 79, .08); }
 `;
 
@@ -21,6 +22,8 @@ export interface Toolbar {
   /** Show text below the buttons, or hide the output when text is null. */
   setOutput(text: string | null, isError?: boolean): void;
   isOutputVisible(): boolean;
+  /** Set the accent color (#rrggbb) of the translation output. */
+  setAccent(color: string): void;
 }
 
 export const TOOLBAR_ATTRIBUTE = 'data-sra-toolbar';
@@ -66,6 +69,9 @@ export function createToolbar(unit: HTMLElement, translateLabel: string): Toolba
     },
     isOutputVisible() {
       return !output.hidden;
+    },
+    setAccent(color) {
+      host.style.setProperty('--slopster-accent', color);
     },
   };
 }
