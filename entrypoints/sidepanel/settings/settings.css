@@ -48,6 +48,19 @@
   font-size: var(--text-sm);
 }
 
+/* The persona editor's actions stay on one row; "Set active" shrinks first. */
+.settings .persona-editor .actions {
+  flex-wrap: nowrap;
+}
+
+.settings .persona-editor .actions button:not(.primary):not(.delete) {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* Delete is icon-only and set apart at the end of the row. */
 .settings .actions button.delete {
   margin-left: auto;

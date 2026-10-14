@@ -1,7 +1,7 @@
 import { CircleAlert, CircleCheck, Plus, Save, Star, Trash2, UsersRound } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
-import { createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
+import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
 import { AppError } from '@/src/providers/types';
 import type { Persona } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
@@ -224,7 +224,14 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
           <Star className="icon" size={16} aria-hidden />
           {t('personaSetActive')}
         </button>
-        <button type="button" className="danger delete" aria-label={t('personaDelete')} title={t('personaDelete')} onClick={onDelete}>
+        <button
+          type="button"
+          className="danger delete"
+          aria-label={t('personaDelete')}
+          title={persona.id === DEFAULT_PERSONA_ID ? t('personaDefaultUndeletable') : t('personaDelete')}
+          disabled={persona.id === DEFAULT_PERSONA_ID}
+          onClick={onDelete}
+        >
           <Trash2 className="icon" size={16} aria-hidden />
         </button>
       </div>

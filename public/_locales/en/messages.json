@@ -80,6 +80,9 @@
   "personaSetActive": {
     "message": "Set as active"
   },
+  "personaDefaultUndeletable": {
+    "message": "The default persona cannot be deleted"
+  },
   "personaDelete": {
     "message": "Delete"
   },

@@ -162,6 +162,17 @@ describe('pages', () => {
     expect(text).not.toContain('apiKeysHeading');
   });
 
+  it('the delete button is disabled for the built-in default persona only', async () => {
+    await render(<PersonasSettingsView />);
+    const deleteButton = () => container.querySelector<HTMLButtonElement>('button[aria-label="personaDelete"]')!;
+    expect(deleteButton().disabled).toBe(true);
+    await act(async () => void (await createPersona({ ...defaultPersonaFields(), name: 'Second' })));
+    await settle();
+    const chip = [...container.querySelectorAll<HTMLButtonElement>('.persona-list button')].find((button) => button.textContent?.includes('Second'))!;
+    await act(async () => chip.click());
+    expect(deleteButton().disabled).toBe(false);
+  });
+
   it('saving a persona keeps fields another window changed meanwhile', async () => {
     await render(<PersonasSettingsView />);
     const [persona] = await listPersonas();

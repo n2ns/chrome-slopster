@@ -80,6 +80,9 @@
   "personaSetActive": {
     "message": "设为当前人设"
   },
+  "personaDefaultUndeletable": {
+    "message": "默认人设不能删除"
+  },
   "personaDelete": {
     "message": "删除"
   },

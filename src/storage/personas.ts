@@ -101,9 +101,12 @@ async function setActiveId(id: string): Promise<void> {
   }
 }
 
+/** ID of the built-in default persona; it can be edited but never deleted. */
+export const DEFAULT_PERSONA_ID = 'default';
+
 /** Store the default persona and make it active. Call inside the lock. */
 async function seed(): Promise<Persona[]> {
-  const personas = [{ id: crypto.randomUUID(), ...defaultPersonaFields() }];
+  const personas = [{ id: DEFAULT_PERSONA_ID, ...defaultPersonaFields() }];
   await writeStored(personas);
   await setActiveId(personas[0]!.id);
   return personas;
@@ -153,10 +156,12 @@ export async function updatePersona(id: string, patch: Partial<PersonaFields>): 
 }
 
 /**
- * Delete a persona. When it was active, the first remaining one becomes active;
- * deleting the last one seeds a fresh default persona.
+ * Delete a persona. The built-in default persona is never deleted. When the
+ * deleted one was active, the first remaining one becomes active; deleting the
+ * last one seeds a fresh default persona.
  */
 export async function deletePersona(id: string): Promise<void> {
+  if (id === DEFAULT_PERSONA_ID) throw new AppError('invalid-request', 'The default persona cannot be deleted.');
   await withLock(async () => {
     const personas = await readStored();
     if (!personas.some((persona) => persona.id === id)) throw notFound(id);
