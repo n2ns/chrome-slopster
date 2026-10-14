@@ -13,6 +13,8 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
   // another window saved meanwhile is not overwritten.
   const [baseline, setBaseline] = useState<ApiKeys>();
   const [error, setError] = useState<unknown>();
+  // The engine whose key the save notice or save error is about, so neither shows under another engine.
+  const [resultFor, setResultFor] = useState<AiEngine>();
   const [saved, setSaved] = useState(false);
   // Keys the operator chose to show in plain text, to check what was pasted.
   const [shown, setShown] = useState<Set<AiEngine>>(new Set());
@@ -36,6 +38,7 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
     if (!keys || !baseline) return;
     setError(undefined);
     setSaved(false);
+    setResultFor(engine);
     try {
       const changed = Object.fromEntries(AI_ENGINES.filter((name) => keys[name] !== baseline[name]).map((name) => [name, keys[name]]));
       const stored = await saveApiKeys(changed);
@@ -82,7 +85,7 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
             </button>
           </div>
           <p className="hint">{t('apiKeysNote')}</p>
-          {saved && (
+          {saved && resultFor === engine && (
             <p className="status">
               <CircleCheck className="icon" size={16} aria-hidden />
               {t('saved')}
@@ -92,7 +95,7 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
       ) : (
         !error && <p className="hint">{t('loading')}</p>
       )}
-      {error !== undefined && (
+      {error !== undefined && (resultFor === undefined || resultFor === engine) && (
         <p className="error">
           <CircleAlert className="icon" size={16} aria-hidden />
           {errorMessage(error)}
