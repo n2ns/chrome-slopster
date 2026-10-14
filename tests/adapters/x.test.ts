@@ -144,4 +144,12 @@ describe('x adapter elsewhere', () => {
     expect(ads).toHaveLength(1);
     expect(ads[0]!.getAttribute('data-testid')).toBe('cellInnerDiv');
   });
+
+  it.each(['Anuncio', 'Promocionado'])('finds promoted tweets by the Spanish label %s', (label) => {
+    load('/home');
+    document.body.innerHTML = `
+      <div data-testid="cellInnerDiv"><article data-testid="tweet"><span>${label}</span><div data-testid="tweetText">Compra</div></article></div>
+      <div data-testid="cellInnerDiv"><article data-testid="tweet"><div data-testid="tweetText">Un ${label} cualquiera</div></article></div>`;
+    expect(xAdapter.findAds(document)).toHaveLength(1);
+  });
 });
