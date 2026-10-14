@@ -1,8 +1,8 @@
-import { CircleAlert, SlidersHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import { Check, CircleAlert, Pipette, SlidersHorizontal } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { t, type MessageKey } from '@/src/i18n';
 import { saveSettings } from '@/src/storage/settings';
-import type { Settings } from '@/src/storage/types';
+import { TRANSLATION_COLOR_PRESETS, type Settings } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { useSettings } from '@/src/ui/hooks';
 import { LanguageSelect } from '@/src/ui/LanguageSelect';
@@ -16,18 +16,36 @@ const FONT_SIZES: Record<Settings['fontSize'], MessageKey> = {
 export function GeneralSection() {
   const { value: settings, error: loadError, setValue } = useSettings();
   const [error, setError] = useState<unknown>();
+  // Color picked in the custom picker but not saved yet (the picker fires input continuously while dragging).
+  const [draftColor, setDraftColor] = useState<string>();
+  const customInput = useRef<HTMLInputElement>(null);
+  const loaded = settings !== undefined;
 
   // Settings save as soon as a control changes.
-  async function save(patch: Partial<Settings>) {
-    setError(undefined);
-    try {
-      setValue(await saveSettings(patch));
-    } catch (failure) {
-      setError(failure);
-    }
-  }
+  const save = useCallback(
+    async (patch: Partial<Settings>) => {
+      setError(undefined);
+      try {
+        setValue(await saveSettings(patch));
+      } catch (failure) {
+        setError(failure);
+      }
+    },
+    [setValue],
+  );
+
+  // React's onChange fires on every input event; write to sync storage only on the native change event.
+  useEffect(() => {
+    const input = customInput.current;
+    if (!input) return;
+    const commit = () => void save({ translationColor: input.value }).finally(() => setDraftColor(undefined));
+    input.addEventListener('change', commit);
+    return () => input.removeEventListener('change', commit);
+  }, [loaded, save]);
 
   const shownError = error ?? loadError;
+  const color = (draftColor ?? settings?.translationColor ?? '').toLowerCase();
+  const isCustom = !TRANSLATION_COLOR_PRESETS.some((preset) => preset.color === color);
   return (
     <section>
       <h2>
@@ -49,6 +67,44 @@ export function GeneralSection() {
             <input type="checkbox" checked={settings.autoTranslate} onChange={(event) => save({ autoTranslate: event.target.checked })} />
             <span>{t('autoTranslate')}</span>
           </label>
+
+          <label id="translation-color-label">{t('translationColor')}</label>
+          <div className="color-swatches" role="group" aria-labelledby="translation-color-label">
+            {TRANSLATION_COLOR_PRESETS.map((preset) => {
+              const selected = preset.color === color;
+              return (
+                <button
+                  key={preset.color}
+                  type="button"
+                  className={selected ? 'swatch selected' : 'swatch'}
+                  style={{ '--swatch-color': preset.color } as CSSProperties}
+                  aria-label={t(preset.label)}
+                  title={t(preset.label)}
+                  aria-pressed={selected}
+                  onClick={() => save({ translationColor: preset.color })}
+                >
+                  {selected && <Check size={16} strokeWidth={3} aria-hidden />}
+                </button>
+              );
+            })}
+            <span
+              className={isCustom ? 'swatch custom selected' : 'swatch custom'}
+              style={isCustom ? ({ '--swatch-color': color } as CSSProperties) : undefined}
+              title={t('translationColorCustom')}
+            >
+              <input
+                ref={customInput}
+                type="color"
+                aria-label={t('translationColorCustom')}
+                value={color || TRANSLATION_COLOR_PRESETS[0].color}
+                onChange={(event) => setDraftColor(event.target.value)}
+              />
+              {isCustom ? <Check size={16} strokeWidth={3} aria-hidden /> : <Pipette size={15} aria-hidden />}
+            </span>
+          </div>
+          <p className="color-preview" style={{ '--preview-color': color } as CSSProperties}>
+            {t('translateInputPlaceholder')}
+          </p>
 
           <label htmlFor="font-size">{t('fontSize')}</label>
           <select

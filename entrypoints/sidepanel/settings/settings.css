@@ -303,3 +303,91 @@
   min-height: 0;
   padding: 0;
 }
+
+/* Translation color: a wrapping row of round swatches, then a preview styled like the on-page translation. */
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.settings .color-swatches .swatch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  background: var(--swatch-color);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.settings .color-swatches .swatch:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.25);
+  background: var(--swatch-color);
+}
+
+/* Selected: a ring separated from the swatch by the surface color, readable in both themes. */
+.settings .color-swatches .swatch.selected {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--text);
+}
+
+.settings .color-swatches .swatch:focus-visible,
+.settings .color-swatches .swatch.custom:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+
+.settings .color-swatches .swatch svg {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+/* The custom color is a native color input stretched invisibly over the swatch. */
+.settings .color-swatches .swatch.custom {
+  background: conic-gradient(#e5484d, #f08c00, #f5d90a, #2e9d5b, #5b8def, #8e4ec6, #e5484d);
+}
+
+.settings .color-swatches .swatch.custom.selected {
+  background: var(--swatch-color);
+}
+
+.settings .color-swatches .swatch.custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.color-preview {
+  margin: 10px 0 0;
+  padding: 6px 8px;
+  border-left: 3px solid var(--preview-color);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--preview-color) 10%, transparent);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+@media (forced-colors: active) {
+  .settings .color-swatches .swatch.selected {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+}
