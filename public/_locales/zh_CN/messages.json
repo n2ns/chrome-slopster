@@ -83,6 +83,9 @@
   "personaDefaultUndeletable": {
     "message": "默认人设不能删除"
   },
+  "personaNameRequired": {
+    "message": "请填写名称，填写前修改不会保存。"
+  },
   "personaDelete": {
     "message": "删除"
   },

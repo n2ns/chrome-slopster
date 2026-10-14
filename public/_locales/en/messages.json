@@ -83,6 +83,9 @@
   "personaDefaultUndeletable": {
     "message": "The default persona cannot be deleted"
   },
+  "personaNameRequired": {
+    "message": "Enter a name; changes are not saved until then."
+  },
   "personaDelete": {
     "message": "Delete"
   },
