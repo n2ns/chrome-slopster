@@ -46,9 +46,12 @@ jobs:
       - name: Package Extension
         id: package
         run: |
-          npm run zip
+          # Zip the build from `npm run check` with the zip tool: `wxt zip` writes invalid entry dates
+          # (1980-00-00), which some unzip tools complain about when users install by hand.
           VERSION=$(node -p "require('./package.json').version")
           ZIP_FILE=".output/chrome-slopster-$VERSION-chrome.zip"
+          rm -f "$ZIP_FILE"
+          (cd .output/chrome-mv3 && zip -qrX "../chrome-slopster-$VERSION-chrome.zip" .)
           if [ ! -f "$ZIP_FILE" ]; then
             echo "Error: packaged zip $ZIP_FILE not found"
             exit 1
@@ -60,7 +63,9 @@ jobs:
           fi
           echo "zip_path=$ZIP_FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release with the zip
+      # A draft first, published only after the Chrome Web Store upload succeeds, so GitHub never lists
+      # a version that failed to reach the store. Re-running the workflow refreshes the zip and the notes.
+      - name: Create draft GitHub Release with the zip
         env:
           GH_TOKEN: ${{ github.token }}
           ZIP_FILE: ${{ steps.package.outputs.zip_path }}
@@ -69,6 +74,8 @@ jobs:
           # Release notes: this version's CHANGELOG section, plus manual install steps.
           awk -v v="$VERSION" '/^## \[/{p = index($0, "## [" v "]") == 1; next} p' CHANGELOG.md > release-notes.md
           [ -s release-notes.md ] || echo "See CHANGELOG.md for changes." > release-notes.md
+          # Relative links in the changelog would resolve against the release page; point them at the tagged files.
+          sed -E -i "s#\]\((\./)?([^)#:][^):]*)\)#](https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_REF_NAME/\2)#g" release-notes.md
           cat >> release-notes.md <<'NOTES'
 
           ## Install manually
@@ -81,8 +88,9 @@ jobs:
           NOTES
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" "$ZIP_FILE" --clobber
+            gh release edit "$GITHUB_REF_NAME" --notes-file release-notes.md
           else
-            gh release create "$GITHUB_REF_NAME" "$ZIP_FILE" --title "Slopster $GITHUB_REF_NAME" --notes-file release-notes.md
+            gh release create "$GITHUB_REF_NAME" "$ZIP_FILE" --draft --title "Slopster $GITHUB_REF_NAME" --notes-file release-notes.md
           fi
 
       - name: Upload & Submit for Review
@@ -94,3 +102,8 @@ jobs:
           client-secret: ${{ secrets.CLIENT_SECRET }}
           refresh-token: ${{ secrets.REFRESH_TOKEN }}
           publish: true
+
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false --latest

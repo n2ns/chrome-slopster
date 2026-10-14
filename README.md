@@ -34,11 +34,14 @@ Use this if you cannot use the Chrome Web Store, or want a specific version. A m
 
 **Update**
 
-1. Download the newer zip from the [Releases page](https://github.com/n2ns/chrome-slopster/releases).
-2. Unzip it into the same folder, replacing the old files.
+1. Download the newer `chrome-slopster-<version>-chrome.zip` from the Releases page.
+2. Replace the files in your existing folder with the new ones. Make sure they end up in that same folder, not in a new one next to it:
+   - Windows: right-click the zip, choose **Extract All…**, and set the destination to your existing folder. Confirm replacing the files.
+   - macOS: double-clicking the zip creates a new folder next to it. Open that folder, select all its files, and drag them into your existing folder, choosing **Replace**.
+   - Linux: `unzip -o chrome-slopster-<version>-chrome.zip -d <your folder>`.
 3. On `chrome://extensions`, click the reload arrow on the Slopster card.
 
-Keep using the same folder: Chrome ties a manually installed extension, and the settings it saved, to the folder it was loaded from. Loading it from a different folder installs a separate copy that starts with empty settings.
+Keep using the same folder: Chrome ties a manually installed extension, and the settings it saved (including your API keys), to the folder it was loaded from. Loading it from a different folder installs a separate copy that starts with empty settings.
 
 **Remove**
 
