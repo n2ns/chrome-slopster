@@ -1,23 +1,34 @@
 import { Check, CircleAlert, CircleCheck, Eye, EyeOff } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { getApiKeys } from '@/src/storage/items';
 import { saveApiKeys } from '@/src/storage/settings';
 import { AI_ENGINES, type AiEngine, type ApiKeys } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
+import { engineLabel } from '@/src/ui/labels';
 
 /** The API key of the selected AI engine. Edits to other engines' keys are kept while switching engines. */
 export function ApiKeyField({ engine }: { engine: AiEngine }) {
-  const [keys, setKeys] = useState<ApiKeys>();
+  const [keys, setKeysState] = useState<ApiKeys>();
+  // Latest keys for saves that run after a queued one finishes.
+  const keysRef = useRef<ApiKeys | undefined>(undefined);
   // Keys as last loaded or saved; only changed engines are written, so a key
   // another window saved meanwhile is not overwritten.
-  const [baseline, setBaseline] = useState<ApiKeys>();
+  const baselineRef = useRef<ApiKeys | undefined>(undefined);
+  // Saves run one after another, each against the baseline the previous one left.
+  const queueRef = useRef(Promise.resolve());
   const [error, setError] = useState<unknown>();
-  // The engine whose key the save notice or save error is about, so neither shows under another engine.
+  // The engine whose key the last save was about: the saved notice shows only under it,
+  // and a save error names it when another engine is selected.
   const [resultFor, setResultFor] = useState<AiEngine>();
   const [saved, setSaved] = useState(false);
   // Keys the operator chose to show in plain text, to check what was pasted.
   const [shown, setShown] = useState<Set<AiEngine>>(new Set());
+
+  function setKeys(next: ApiKeys) {
+    keysRef.current = next;
+    setKeysState(next);
+  }
 
   function toggleShown() {
     const next = new Set(shown);
@@ -28,30 +39,47 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
 
   useEffect(() => {
     getApiKeys().then((loaded) => {
+      baselineRef.current = loaded;
       setKeys(loaded);
-      setBaseline(loaded);
     }, setError);
   }, []);
 
-  async function save() {
-    if (!keys || !baseline) return;
+  async function saveNow(savedEngine: AiEngine, explicit: boolean) {
+    const sent = keysRef.current;
+    const baseline = baselineRef.current;
+    if (!sent || !baseline) return;
+    const changed = Object.fromEntries(AI_ENGINES.filter((name) => sent[name] !== baseline[name]).map((name) => [name, sent[name]]));
+    if (Object.keys(changed).length === 0) {
+      // Nothing to write; an explicit save still confirms.
+      if (explicit) {
+        setResultFor(savedEngine);
+        setSaved(true);
+      }
+      return;
+    }
     setError(undefined);
     setSaved(false);
-    setResultFor(engine);
+    setResultFor(savedEngine);
     try {
-      const changed = Object.fromEntries(AI_ENGINES.filter((name) => keys[name] !== baseline[name]).map((name) => [name, keys[name]]));
       const stored = await saveApiKeys(changed);
-      setKeys(stored);
-      setBaseline(stored);
+      baselineRef.current = stored;
+      // Keep anything typed while the save ran; take the stored (trimmed) value elsewhere.
+      const current = keysRef.current ?? stored;
+      setKeys(Object.fromEntries(AI_ENGINES.map((name) => [name, current[name] === sent[name] ? stored[name] : current[name]])) as ApiKeys);
       setSaved(true);
     } catch (failure) {
       setError(failure);
     }
   }
 
+  function save(explicit: boolean) {
+    const savedEngine = engine;
+    queueRef.current = queueRef.current.then(() => saveNow(savedEngine, explicit));
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
-    void save();
+    save(true);
   }
 
   const id = `key-${engine}`;
@@ -68,13 +96,11 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
               spellCheck={false}
               value={keys[engine]}
               onChange={(event) => {
-                setKeys({ ...keys, [engine]: event.target.value });
+                setKeys({ ...keysRef.current!, [engine]: event.target.value });
                 setSaved(false);
               }}
               // Leaving the field saves a changed key.
-              onBlur={() => {
-                if (keys[engine] !== baseline?.[engine]) void save();
-              }}
+              onBlur={() => save(false)}
             />
             <button
               type="button"
@@ -102,10 +128,10 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
       ) : (
         !error && <p className="hint">{t('loading')}</p>
       )}
-      {error !== undefined && (resultFor === undefined || resultFor === engine) && (
+      {error !== undefined && (
         <p className="error">
           <CircleAlert className="icon" size={16} aria-hidden />
-          {errorMessage(error)}
+          {resultFor && resultFor !== engine ? `${engineLabel(resultFor)}: ${errorMessage(error)}` : errorMessage(error)}
         </p>
       )}
     </div>

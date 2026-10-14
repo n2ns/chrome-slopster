@@ -212,6 +212,90 @@ describe('pages', () => {
     expect((await getApiKeys()).gemini).toBe('gemini-on-blur');
   });
 
+  it('blur followed by an immediate Save click writes the persona once', async () => {
+    await render(<PersonasSettingsView />);
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    const write = vi.spyOn(fakeBrowser.storage.sync, 'set');
+    await act(async () => setValue(tone, 'first'));
+    await act(async () => tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    const oneSave = write.mock.calls.length;
+    expect(oneSave).toBeGreaterThan(0);
+
+    write.mockClear();
+    await act(async () => setValue(tone, 'second'));
+    await act(async () => {
+      tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      tone.closest('form')!.requestSubmit();
+    });
+    await settle();
+    expect(write.mock.calls.length).toBe(oneSave);
+    expect((await getPersona(DEFAULT_PERSONA_ID))!.tone).toBe('second');
+  });
+
+  it('a persona field changed back while its blur save is running ends up stored as shown', async () => {
+    await render(<PersonasSettingsView />);
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    const original = tone.value;
+    // Hold the first storage write so the blur save is still running during the next edit.
+    const realSet = fakeBrowser.storage.sync.set.bind(fakeBrowser.storage.sync);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.sync, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    await act(async () => setValue(tone, 'temporary'));
+    await act(async () => void tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => setValue(tone, original));
+    await act(async () => void tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    release();
+    await settle();
+    await settle();
+    expect((await getPersona(DEFAULT_PERSONA_ID))!.tone).toBe(original);
+    expect(tone.value).toBe(original);
+  });
+
+  it('typing into the API key while its blur save runs is not overwritten', async () => {
+    await render(<AiSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    const realSet = fakeBrowser.storage.local.set.bind(fakeBrowser.storage.local);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const set = vi.spyOn(fakeBrowser.storage.local, 'set').mockImplementationOnce(async (items) => {
+      await held;
+      return realSet(items);
+    });
+    await act(async () => setValue(input, 'k1'));
+    await act(async () => void input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await vi.waitFor(() => expect(set).toHaveBeenCalled());
+    await act(async () => setValue(input, 'k12'));
+    release();
+    await settle();
+    expect(input.value).toBe('k12');
+    expect((await getApiKeys()).gemini).toBe('k1');
+  });
+
+  it('an API key save error stays visible after switching the AI engine', async () => {
+    await render(<AiSettingsView />);
+    vi.spyOn(fakeBrowser.storage.local, 'set').mockRejectedValue(new Error('quota'));
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    await act(async () => setValue(input, 'will-fail'));
+    await act(async () => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect(container.querySelector('.key-field .error')).not.toBeNull();
+    const engine = container.querySelector<HTMLSelectElement>('#ai-engine')!;
+    vi.spyOn(fakeBrowser.storage.sync, 'set');
+    await act(async () => {
+      engine.value = 'openai';
+      engine.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect(container.querySelector('#key-openai')).not.toBeNull();
+    expect(container.querySelector('.key-field .error')!.textContent).toContain('engineGemini');
+  });
+
   it('saving a persona keeps fields another window changed meanwhile', async () => {
     await render(<PersonasSettingsView />);
     const [persona] = await listPersonas();
