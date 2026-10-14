@@ -1,4 +1,4 @@
-# social-reply-assistant Implementation Plan
+# chrome-slopster (Slopster) Implementation Plan
 
 > Status: phases 0–6 implemented; replies and new posts checked end to end on the real sites on 2026-10-12. Open work is tracked in [TODO.md](../TODO.md). The project name is provisional.
 > Reference project: `../chrome-smart-readit` (used only for design ideas; individual modules are ported by hand as needed, the codebase is not copied wholesale).
@@ -34,7 +34,7 @@ Exact dependency versions are determined from the official docs during Phase 0 s
 ## 3. Directory Structure
 
 ```
-social-reply-assistant/
+chrome-slopster/
 ├─ entrypoints/
 │  ├─ background.ts                # Message routing, translation queue, provider calls, opening the side panel
 │  ├─ sidepanel/                   # React: drafting, translation, filling
