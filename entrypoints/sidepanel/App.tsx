@@ -43,6 +43,7 @@ export default function App() {
         <header className="sidepanel-header">
           <h1>
             <button type="button" className="home" onClick={() => switchView('main')}>
+              <img className="app-icon" src="/icon/48.png" alt="" />
               {t('sidepanelTitle')}
             </button>
           </h1>

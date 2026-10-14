@@ -45,14 +45,11 @@ main.sidepanel .sidepanel-header button.home:hover {
   color: var(--accent);
 }
 
-/* A small accent mark before the app title. */
-main.sidepanel .sidepanel-header button.home::before {
-  content: '';
+/* The extension icon before the app title. */
+main.sidepanel .sidepanel-header .app-icon {
   flex: none;
-  width: 0.625rem;
-  height: 1.125rem;
-  border-radius: 3px;
-  background: linear-gradient(160deg, var(--accent), var(--accent-hover));
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 main.sidepanel .header-actions {
