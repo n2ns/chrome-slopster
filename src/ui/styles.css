@@ -10,6 +10,9 @@
   --muted: #5f6b7a;
   --border: #dde2ea;
   --border-strong: #c5ccd8;
+  --button-bg: #ffffff;
+  --button-border: #c5ccd8;
+  --button-hover: #f3f5f8;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
   --accent-soft: #eaf1fe;
@@ -52,7 +55,10 @@
     --text: #e8eaee;
     --muted: #9aa4b2;
     --border: #2d323b;
-    --border-strong: #3c424d;
+    --border-strong: #464d59;
+    --button-bg: #272c35;
+    --button-border: #59616f;
+    --button-hover: #313742;
     --accent: #60a5fa;
     --accent-hover: #93c5fd;
     --accent-soft: rgba(96, 165, 250, 0.14);
@@ -185,9 +191,9 @@ button {
   gap: 6px;
   min-height: 36px;
   padding: 7px 14px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--button-border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--button-bg);
   color: var(--text);
   font: inherit;
   font-weight: 550;
@@ -200,7 +206,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--button-hover);
   border-color: var(--muted);
 }
 

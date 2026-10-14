@@ -110,9 +110,9 @@ main.sidepanel .mode-switch button:hover:not(:disabled) {
 }
 
 main.sidepanel .mode-switch button[aria-pressed='true'] {
-  background: var(--surface);
+  background: var(--button-bg);
   color: var(--accent);
-  box-shadow: var(--shadow), 0 0 0 1px var(--border);
+  box-shadow: var(--shadow), 0 0 0 1px var(--button-border);
 }
 
 main.sidepanel .mode-switch + label {
