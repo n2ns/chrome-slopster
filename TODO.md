@@ -10,7 +10,7 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 ## Decisions pending
 
-- [ ] Publish on the Chrome Web Store or not. If yes: store listing, permission justifications, and a hosted privacy policy based on `PRIVACY.md`.
+- [ ] **First Chrome Web Store release.** Listing, permission justifications, CI and tag-triggered publish workflows, and store assets are ready ([docs/PUBLISHING.md](docs/PUBLISHING.md)). Still to do by hand: pick the first version, make the privacy policy reachable (public repository or n2ns.com), create the store item and upload the first zip, then add the `chrome-web-store` environment secrets.
 - [ ] License. The repository has none yet.
 
 ## Known gaps
