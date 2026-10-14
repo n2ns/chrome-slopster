@@ -175,7 +175,7 @@
   min-height: 34px;
   padding: 5px 14px;
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--button-bg);
   font-weight: 500;
 }
 
@@ -259,8 +259,8 @@
   flex: none;
   width: 2.75rem;
   height: auto;
-  border-color: var(--border-strong);
-  background: var(--field);
+  border-color: var(--button-border);
+  background: var(--button-bg);
 }
 
 .settings .key-row button.icon-button[aria-pressed='true'] {
