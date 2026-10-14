@@ -2,7 +2,7 @@ import { Check, CircleAlert, Pipette, SlidersHorizontal } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { t, type MessageKey } from '@/src/i18n';
 import { saveSettings } from '@/src/storage/settings';
-import { TRANSLATION_COLOR_PRESETS, type Settings } from '@/src/storage/types';
+import { TRANSLATION_COLOR_PRESETS, normalizeTranslationColor, type Settings } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { useSettings } from '@/src/ui/hooks';
 import { LanguageSelect } from '@/src/ui/LanguageSelect';
@@ -17,7 +17,8 @@ export function GeneralSection() {
   const { value: settings, error: loadError, setValue } = useSettings();
   const [error, setError] = useState<unknown>();
   // Color picked in the custom picker but not saved yet (the picker fires input continuously while dragging).
-  const [draftColor, setDraftColor] = useState<string>();
+  // It remembers the stored color it was picked over, so a color saved elsewhere meanwhile replaces it.
+  const [draft, setDraft] = useState<{ color: string; over: string }>();
   const customInput = useRef<HTMLInputElement>(null);
   const loaded = settings !== undefined;
 
@@ -38,13 +39,21 @@ export function GeneralSection() {
   useEffect(() => {
     const input = customInput.current;
     if (!input) return;
-    const commit = () => void save({ translationColor: input.value }).finally(() => setDraftColor(undefined));
+    const commit = () => void save({ translationColor: input.value }).finally(() => setDraft(undefined));
+    // A picker closed without a change (e.g. cancelled) leaves no change event; drop the draft when leaving it.
+    const discard = () => setDraft(undefined);
     input.addEventListener('change', commit);
-    return () => input.removeEventListener('change', commit);
+    input.addEventListener('blur', discard);
+    return () => {
+      input.removeEventListener('change', commit);
+      input.removeEventListener('blur', discard);
+    };
   }, [loaded, save]);
 
+  // Same normalization as the pages, so an invalid stored value shows as the default here too.
+  const storedColor = normalizeTranslationColor(settings?.translationColor);
   const shownError = error ?? loadError;
-  const color = (draftColor ?? settings?.translationColor ?? '').toLowerCase();
+  const color = (draft && draft.over === storedColor ? draft.color : storedColor).toLowerCase();
   const isCustom = !TRANSLATION_COLOR_PRESETS.some((preset) => preset.color === color);
   return (
     <section>
@@ -95,9 +104,9 @@ export function GeneralSection() {
               <input
                 ref={customInput}
                 type="color"
-                aria-label={t('translationColorCustom')}
-                value={color || TRANSLATION_COLOR_PRESETS[0].color}
-                onChange={(event) => setDraftColor(event.target.value)}
+                aria-label={isCustom ? `${t('translationColorCustom')}, ${t('colorSelected')}` : t('translationColorCustom')}
+                value={color}
+                onChange={(event) => setDraft({ color: event.target.value, over: storedColor })}
               />
               {isCustom ? <Check size={16} strokeWidth={3} aria-hidden /> : <Pipette size={15} aria-hidden />}
             </span>

@@ -8,17 +8,12 @@ import { t } from '@/src/i18n';
 import { registerHandlers, sendToBackground, type ContentMessages } from '@/src/messaging/protocol';
 import { adBlockItem, getSettings, settingsItem } from '@/src/storage/items';
 import { getAdBlock } from '@/src/storage/settings';
-import { TRANSLATION_COLOR_PRESETS } from '@/src/storage/types';
+import { normalizeTranslationColor } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { createToolbar, type Toolbar } from './toolbar';
 
 const SCAN_DELAY_MS = 250;
 const AD_ATTRIBUTE = 'data-sra-hidden-ad';
-
-/** The stored translation color, or the default preset when it is missing or not #rrggbb. */
-function accentColor(value: unknown): string {
-  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : TRANSLATION_COLOR_PRESETS[0].color;
-}
 
 /** Innermost reply target that contains `unit`: walk up from the unit, O(depth). */
 function ownerTarget(unit: HTMLElement, targets: Set<HTMLElement>): HTMLElement | undefined {
@@ -41,7 +36,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   let hasSelection = false;
   let autoTranslate = false;
   let blockAds = false;
-  let accent = accentColor(undefined);
+  let accent = normalizeTranslationColor(undefined);
   let scanTimer: number | undefined;
 
   const adStyle = doc.createElement('style');
@@ -160,7 +155,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   }
 
   function applyAccent(value: unknown): void {
-    accent = accentColor(value);
+    accent = normalizeTranslationColor(value);
     for (const toolbar of liveToolbars) toolbar.setAccent(accent);
   }
 
