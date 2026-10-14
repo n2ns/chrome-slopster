@@ -19,17 +19,34 @@ main.sidepanel .sidepanel-header {
 }
 
 main.sidepanel h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   min-width: 0;
   margin: 0;
   font-size: var(--text-lg);
-  overflow-wrap: anywhere;
 }
 
-/* A small accent mark before the app title in the main view. */
-main.sidepanel .sidepanel-header h1:first-child::before {
+/* The app title is a button that returns to the home view. */
+main.sidepanel .sidepanel-header button.home {
+  justify-content: flex-start;
+  gap: 0.5rem;
+  min-height: 0;
+  max-width: 100%;
+  padding: 0.25rem 0.375rem 0.25rem 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: inherit;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+main.sidepanel .sidepanel-header button.home:hover {
+  background: none;
+  color: var(--accent);
+}
+
+/* A small accent mark before the app title. */
+main.sidepanel .sidepanel-header button.home::before {
   content: '';
   flex: none;
   width: 0.625rem;
@@ -41,20 +58,15 @@ main.sidepanel .sidepanel-header h1:first-child::before {
 main.sidepanel .header-actions {
   display: flex;
   flex: none;
-  gap: 2px;
+  gap: 4px;
 }
 
-/* Settings views: back button, then the view title. */
-main.sidepanel .sidepanel-header button.back {
-  flex: none;
-  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
-  font-size: var(--text-sm);
-}
-
-main.sidepanel .sidepanel-header button.back + h1 {
-  flex: 1;
-  padding-left: 0.625rem;
-  border-left: 1px solid var(--border);
+/* The open view's navigation button. */
+main.sidepanel .header-actions button[aria-pressed='true'],
+main.sidepanel .header-actions button[aria-pressed='true']:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 main.sidepanel section {
