@@ -48,6 +48,12 @@
   font-size: var(--text-sm);
 }
 
+/* Delete is icon-only and set apart at the end of the row. */
+.settings .actions button.delete {
+  margin-left: auto;
+  padding: 5px 9px;
+}
+
 .settings .status,
 .settings .error {
   font-size: var(--text-sm);

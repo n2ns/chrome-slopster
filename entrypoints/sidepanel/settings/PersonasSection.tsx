@@ -224,9 +224,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
           <Star className="icon" size={16} aria-hidden />
           {t('personaSetActive')}
         </button>
-        <button type="button" className="danger" onClick={onDelete}>
+        <button type="button" className="danger delete" aria-label={t('personaDelete')} title={t('personaDelete')} onClick={onDelete}>
           <Trash2 className="icon" size={16} aria-hidden />
-          {t('personaDelete')}
         </button>
       </div>
       {saved && (
