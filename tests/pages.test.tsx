@@ -11,7 +11,7 @@ import { PersonasSettingsView } from '@/entrypoints/sidepanel/settings/PersonasS
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
 import { getApiKeys } from '@/src/storage/items';
-import { createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
+import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
 import { saveApiKeys, saveSettings } from '@/src/storage/settings';
 import { installLocksPolyfill, mockI18n } from './helpers/browser';
 
@@ -171,6 +171,45 @@ describe('pages', () => {
     const chip = [...container.querySelectorAll<HTMLButtonElement>('.persona-list button')].find((button) => button.textContent?.includes('Second'))!;
     await act(async () => chip.click());
     expect(deleteButton().disabled).toBe(false);
+  });
+
+  it('save buttons show only an icon with an accessible name', async () => {
+    await render(<AiSettingsView />);
+    const keySave = container.querySelector<HTMLButtonElement>('.key-field button[type="submit"]')!;
+    expect(keySave.getAttribute('aria-label')).toBe('save');
+    expect(keySave.textContent).toBe('');
+    act(() => root.unmount());
+    await render(<PersonasSettingsView />);
+    const personaSave = container.querySelector<HTMLButtonElement>('.persona-editor button[type="submit"]')!;
+    expect(personaSave.getAttribute('aria-label')).toBe('save');
+    expect(personaSave.textContent).toBe('');
+  });
+
+  it('a persona field saves when it loses focus', async () => {
+    await render(<PersonasSettingsView />);
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    await act(async () => setValue(tone, 'tone saved on blur'));
+    await act(async () => tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect((await getPersona(DEFAULT_PERSONA_ID))!.tone).toBe('tone saved on blur');
+  });
+
+  it('a persona field that is blurred without changes writes nothing', async () => {
+    await render(<PersonasSettingsView />);
+    const write = vi.spyOn(fakeBrowser.storage.sync, 'set');
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    await act(async () => tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it('the API key saves when its input loses focus', async () => {
+    await render(<AiSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
+    await act(async () => setValue(input, 'gemini-on-blur'));
+    await act(async () => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect((await getApiKeys()).gemini).toBe('gemini-on-blur');
   });
 
   it('saving a persona keeps fields another window changed meanwhile', async () => {

@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, Plus, Save, Star, Trash2, UsersRound } from 'lucide-react';
+import { Check, CircleAlert, CircleCheck, Plus, Star, Trash2, UsersRound } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, deletePersona, resetPersonas, setActivePersona, updatePersona, type PersonaFields } from '@/src/storage/personas';
@@ -160,8 +160,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
     setSaved(false);
   }
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  /** Save the fields that differ from the baseline. On blur, nothing is written when nothing changed or the form is invalid. */
+  async function save(onBlur: boolean) {
     const values: PersonaFields = {
       ...baseline,
       name: draft.name.trim(),
@@ -177,13 +177,20 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
         .filter((key) => JSON.stringify(values[key]) !== JSON.stringify(baseline[key]))
         .map((key) => [key, values[key]]),
     ) as Partial<PersonaFields>;
+    if (onBlur && (Object.keys(patch).length === 0 || !values.name)) return;
     const ok = await onSave(patch);
     if (ok) setBaseline(values);
     setSaved(ok);
   }
 
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void save(false);
+  }
+
+  // Any field that loses focus saves its changes.
   return (
-    <form className="persona-editor" onSubmit={submit}>
+    <form className="persona-editor" onSubmit={submit} onBlur={() => void save(true)}>
       <label htmlFor={field('name')}>{t('personaName')}</label>
       <input id={field('name')} type="text" required value={draft.name} onChange={(event) => edit({ name: event.target.value })} />
 
@@ -216,9 +223,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
       </label>
 
       <div className="actions">
-        <button type="submit" className="primary">
-          <Save className="icon" size={16} aria-hidden />
-          {t('save')}
+        <button type="submit" className="primary icon-only" aria-label={t('save')} title={t('save')}>
+          <Check className="icon" size={18} aria-hidden />
         </button>
         <button type="button" className="set-active" title={t('personaSetActive')} disabled={isActive} onClick={onSetActive}>
           <Star className="icon" size={16} aria-hidden />

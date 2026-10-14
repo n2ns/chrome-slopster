@@ -65,10 +65,15 @@
   text-overflow: ellipsis;
 }
 
+/* Icon-only action buttons (Save, Delete). */
+.settings .actions button.icon-only,
+.settings .actions button.delete {
+  padding: 5px 9px;
+}
+
 /* Delete is icon-only and set apart at the end of the row. */
 .settings .actions button.delete {
   margin-left: auto;
-  padding: 5px 9px;
 }
 
 .settings .status,
