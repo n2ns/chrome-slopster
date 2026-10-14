@@ -21,8 +21,9 @@ export function PersonasSection() {
   const [error, setError] = useState<unknown>();
 
   // Run a storage action, show its error inline, and refresh the list afterwards.
-  async function run(action: () => Promise<void>): Promise<boolean> {
-    setError(undefined);
+  // `keepError` leaves an earlier error on screen, e.g. a failed delete followed by a save.
+  async function run(action: () => Promise<void>, keepError = false): Promise<boolean> {
+    if (!keepError) setError(undefined);
     let ok = true;
     try {
       await action();
@@ -108,7 +109,7 @@ export function PersonasSection() {
             key={selected.id}
             persona={selected}
             isActive={selected.id === activeId}
-            onSave={(patch) => run(async () => void (await updatePersona(selected.id, patch)))}
+            onSave={(patch, keepError) => run(async () => void (await updatePersona(selected.id, patch)), keepError)}
             onSetActive={() => run(() => setActivePersona(selected.id))}
             onDelete={() => run(() => deletePersona(selected.id))}
           />
@@ -128,7 +129,7 @@ interface EditorProps {
   persona: Persona;
   isActive: boolean;
   /** Receives only the fields changed in this form, so edits made elsewhere are kept. */
-  onSave: (patch: Partial<PersonaFields>) => Promise<boolean>;
+  onSave: (patch: Partial<PersonaFields>, keepError?: boolean) => Promise<boolean>;
   onSetActive: () => void;
   /** Called after the operator confirmed the deletion; resolves to whether it succeeded. */
   onDelete: () => Promise<boolean>;
@@ -169,7 +170,7 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
   }
 
   /** Save the fields that differ from the baseline. On blur, nothing is written when the name is empty. */
-  async function saveNow(onBlur: boolean) {
+  async function saveNow(onBlur: boolean, keepError = false) {
     if (deletedRef.current) return;
     const current = draftRef.current;
     const baseline = baselineRef.current;
@@ -198,14 +199,14 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
       if (!onBlur) setSaved(true);
       return;
     }
-    const ok = await onSave(patch);
+    const ok = await onSave(patch, keepError);
     if (ok) baselineRef.current = values;
     // "Saved" only when nothing was typed while the save ran.
     setSaved(ok && draftRef.current === current);
   }
 
-  function save(onBlur: boolean) {
-    queueRef.current = queueRef.current.then(() => saveNow(onBlur));
+  function save(onBlur: boolean, keepError = false) {
+    queueRef.current = queueRef.current.then(() => saveNow(onBlur, keepError));
   }
 
   function submit(event: FormEvent) {
@@ -268,8 +269,8 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
             void onDelete().then((ok) => {
               if (ok) return;
               deletedRef.current = false;
-              // Save what was dropped while the delete was pending.
-              save(true);
+              // Save what was dropped while the delete was pending, keeping the delete error on screen.
+              save(true, true);
             });
           }}
         >
