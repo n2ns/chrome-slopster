@@ -1,13 +1,13 @@
-import { CircleAlert, CircleCheck, Eye, EyeOff, KeyRound, Save } from 'lucide-react';
+import { CircleAlert, CircleCheck, Eye, EyeOff, Save } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '@/src/i18n';
 import { getApiKeys } from '@/src/storage/items';
 import { saveApiKeys } from '@/src/storage/settings';
 import { AI_ENGINES, type AiEngine, type ApiKeys } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
-import { engineLabel } from '@/src/ui/labels';
 
-export function ApiKeysSection() {
+/** The API key of the selected AI engine. Edits to other engines' keys are kept while switching engines. */
+export function ApiKeyField({ engine }: { engine: AiEngine }) {
   const [keys, setKeys] = useState<ApiKeys>();
   // Keys as last loaded or saved; only changed engines are written, so a key
   // another window saved meanwhile is not overwritten.
@@ -17,7 +17,7 @@ export function ApiKeysSection() {
   // Keys the operator chose to show in plain text, to check what was pasted.
   const [shown, setShown] = useState<Set<AiEngine>>(new Set());
 
-  function toggleShown(engine: AiEngine) {
+  function toggleShown() {
     const next = new Set(shown);
     if (next.has(engine)) next.delete(engine);
     else next.add(engine);
@@ -37,7 +37,7 @@ export function ApiKeysSection() {
     setError(undefined);
     setSaved(false);
     try {
-      const changed = Object.fromEntries(AI_ENGINES.filter((engine) => keys[engine] !== baseline[engine]).map((engine) => [engine, keys[engine]]));
+      const changed = Object.fromEntries(AI_ENGINES.filter((name) => keys[name] !== baseline[name]).map((name) => [name, keys[name]]));
       const stored = await saveApiKeys(changed);
       setKeys(stored);
       setBaseline(stored);
@@ -47,50 +47,41 @@ export function ApiKeysSection() {
     }
   }
 
+  const id = `key-${engine}`;
   return (
-    <section>
-      <h2>
-        <KeyRound className="icon" size={18} aria-hidden />
-        {t('apiKeysHeading')}
-      </h2>
-      <p className="hint">{t('apiKeysNote')}</p>
+    <div className="key-field">
+      <label htmlFor={id}>{t('apiKeysHeading')}</label>
       {keys ? (
         <form onSubmit={submit}>
-          {AI_ENGINES.map((engine) => (
-            <div key={engine} className="key-field">
-              <label htmlFor={`key-${engine}`}>{engineLabel(engine)}</label>
-              <div className="key-row">
-                <input
-                  id={`key-${engine}`}
-                  type={shown.has(engine) ? 'text' : 'password'}
-                  autoComplete="off"
-                  spellCheck={false}
-                  value={keys[engine]}
-                  onChange={(event) => {
-                    setKeys({ ...keys, [engine]: event.target.value });
-                    setSaved(false);
-                  }}
-                />
-                <button
-                  type="button"
-                  className="icon-button"
-                  aria-controls={`key-${engine}`}
-                  aria-pressed={shown.has(engine)}
-                  aria-label={shown.has(engine) ? t('hideKey') : t('showKey')}
-                  title={shown.has(engine) ? t('hideKey') : t('showKey')}
-                  onClick={() => toggleShown(engine)}
-                >
-                  {shown.has(engine) ? <EyeOff className="icon" size={18} aria-hidden /> : <Eye className="icon" size={18} aria-hidden />}
-                </button>
-              </div>
-            </div>
-          ))}
-          <div className="actions">
+          <div className="key-row">
+            <input
+              id={id}
+              type={shown.has(engine) ? 'text' : 'password'}
+              autoComplete="off"
+              spellCheck={false}
+              value={keys[engine]}
+              onChange={(event) => {
+                setKeys({ ...keys, [engine]: event.target.value });
+                setSaved(false);
+              }}
+            />
+            <button
+              type="button"
+              className="icon-button"
+              aria-controls={id}
+              aria-pressed={shown.has(engine)}
+              aria-label={shown.has(engine) ? t('hideKey') : t('showKey')}
+              title={shown.has(engine) ? t('hideKey') : t('showKey')}
+              onClick={toggleShown}
+            >
+              {shown.has(engine) ? <EyeOff className="icon" size={18} aria-hidden /> : <Eye className="icon" size={18} aria-hidden />}
+            </button>
             <button type="submit" className="primary">
               <Save className="icon" size={16} aria-hidden />
               {t('save')}
             </button>
           </div>
+          <p className="hint">{t('apiKeysNote')}</p>
           {saved && (
             <p className="status">
               <CircleCheck className="icon" size={16} aria-hidden />
@@ -107,6 +98,6 @@ export function ApiKeysSection() {
           {errorMessage(error)}
         </p>
       )}
-    </section>
+    </div>
   );
 }

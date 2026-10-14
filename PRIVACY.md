@@ -19,7 +19,7 @@ If you do not want persona profiles or settings to go through Chrome Sync, turn 
 
 Page content is sent only when you ask for it, or when you turned on auto-translate:
 
-- **Translation.** When you click **Translate**, or when auto-translate is on and a post or comment scrolls into view, its text is sent to the translation engine you chose: Google Translate (`translate.googleapis.com`, no account or key), or one of the AI providers below with your API key. Text you paste into the side panel's translation box is sent the same way.
+- **Translation.** When you click **Translate**, or when auto-translate is on and a post or comment scrolls into view, its text is sent to the translation engine you chose: Google Translate (`translate.googleapis.com`, no account or key), or the AI engine selected in the AI settings (one of the providers below) with your API key. Text you paste into the side panel's translation box is sent the same way.
 - **Drafting.** When you click **Generate**, the extension sends the selected post or comment, its surrounding context (parent comments, a few existing replies, the subreddit or group name, the page address), your active persona, and the intent you typed to the AI provider you chose, with your API key:
   - OpenAI (`api.openai.com`)
   - DeepSeek (`api.deepseek.com`)

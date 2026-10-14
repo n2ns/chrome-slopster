@@ -1,14 +1,12 @@
 import './settings.css';
 import { AiEngineSection } from './AiEngineSection';
-import { ApiKeysSection } from './ApiKeysSection';
 import { PersonasSection } from './PersonasSection';
 
-/** AI settings: personas, API keys, engines and models. */
+/** AI settings: personas, and the global AI engine with its API key and model, and translation. */
 export function AiSettingsView() {
   return (
     <div className="settings">
       <PersonasSection />
-      <ApiKeysSection />
       <AiEngineSection />
     </div>
   );

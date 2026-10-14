@@ -139,7 +139,7 @@ describe('translateText', () => {
   });
 
   it('uses the selected AI engine with an 8000-char cap', async () => {
-    await setSettings({ translationEngine: 'gemini' });
+    await setSettings({ translationEngine: 'ai', aiEngine: 'gemini' });
     const { calls } = stubFetch(GEMINI_OK('done'));
     const result = await settle(translateText('y'.repeat(AI_TRANSLATION_MAX_CHARS + 1)));
     expect(result).toEqual({ text: 'done', truncated: true });

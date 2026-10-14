@@ -5,7 +5,7 @@ import { resolveModel } from '@/src/models/registry';
 import { AI_PROVIDERS, translateGoogleFree } from '@/src/providers';
 import { AppError } from '@/src/providers/types';
 import { getApiKeys, getSettings, googleFreeCooldownAtItem } from '@/src/storage/items';
-import { isAiEngine, type AiEngine, type ApiKeys, type Settings } from '@/src/storage/types';
+import type { AiEngine, ApiKeys, Settings } from '@/src/storage/types';
 import { AI_TRANSLATION_MAX_CHARS, GOOGLE_FREE_MAX_CHARS, limitProviderText } from './limits';
 import { enqueueTranslation } from './queue';
 
@@ -63,8 +63,8 @@ export async function translateText(text: string, targetLanguage?: string): Prom
   const target = targetLanguage || resolveOperatorLanguage(settings.operatorLanguage);
 
   return enqueueTranslation(() =>
-    isAiEngine(settings.translationEngine)
-      ? translateWithAi(settings.translationEngine, text, target, settings, keys)
+    settings.translationEngine === 'ai'
+      ? translateWithAi(settings.aiEngine, text, target, settings, keys)
       : translateWithGoogleFree(text, target, settings, keys),
   );
 }
