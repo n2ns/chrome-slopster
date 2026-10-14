@@ -33,8 +33,7 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
     }, setError);
   }, []);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function save() {
     if (!keys || !baseline) return;
     setError(undefined);
     setSaved(false);
@@ -48,6 +47,11 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
     } catch (failure) {
       setError(failure);
     }
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void save();
   }
 
   const id = `key-${engine}`;
@@ -66,6 +70,10 @@ export function ApiKeyField({ engine }: { engine: AiEngine }) {
               onChange={(event) => {
                 setKeys({ ...keys, [engine]: event.target.value });
                 setSaved(false);
+              }}
+              // Leaving the field saves a changed key.
+              onBlur={() => {
+                if (keys[engine] !== baseline?.[engine]) void save();
               }}
             />
             <button
