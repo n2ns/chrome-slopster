@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Slopster icon: orange S with a lightning bolt">
-  <path d="M104 36C98 18 82 10 62 10 36 10 18 24 18 44c0 22 18 29 42 34 15 3 22 7 22 15 0 8-8 13-20 13-14 0-24-6-28-18L8 98c6 18 26 30 54 30 30 0 52-15 52-39 0-23-18-31-44-36-14-3-20-6-20-12 0-7 7-11 16-11 11 0 18 5 21 14z" fill="#ff4500"/>
-  <path d="M88 21L67 62h19L72 104l32-51H86l18-32H88z" fill="#0b7285" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Slopster icon: italic orange S with a large lightning bolt">
+  <g transform="skewX(-10) translate(12 0)">
+    <path d="M78 30 C 68 12 20 12 20 40 C 20 66 80 56 80 88 C 80 118 30 120 16 98" fill="none" stroke="#ff4500" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <path d="M100 2 L72 62 H92 L78 126 L124 50 H104 L118 2 Z" fill="#0b7285" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
 </svg>
