@@ -125,9 +125,20 @@ describe('pages', () => {
 
     await act(async () => headerButton('backButton').click());
     expect(container.querySelector('header h1')!.textContent).toBe('sidepanelTitle');
-    expect(container.textContent).not.toContain('apiKeysHeading');
     expect(container.querySelector<HTMLTextAreaElement>('#translate-input')!.value).toBe('kept');
     expect(container.querySelector<HTMLElement>('#translate-input')!.closest('[hidden]')).toBeNull();
+    expect(container.querySelector<HTMLElement>('#key-openai')!.closest('[hidden]')).not.toBeNull();
+  });
+
+  it('side panel keeps unsaved settings edits when going back and returning', async () => {
+    await render(<SidepanelApp />);
+    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => button.textContent?.includes(label))!;
+    await act(async () => headerButton('settingsButton').click());
+    await settle();
+    await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'unsaved-key'));
+    await act(async () => headerButton('backButton').click());
+    await act(async () => headerButton('settingsButton').click());
+    expect(container.querySelector<HTMLInputElement>('#key-openai')!.value).toBe('unsaved-key');
   });
 
   it('side panel opens the settings when an API key is missing', async () => {
