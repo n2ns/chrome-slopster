@@ -400,5 +400,8 @@
   },
   "colorGray": {
     "message": "灰色"
+  },
+  "colorSelected": {
+    "message": "已选中"
   }
 }

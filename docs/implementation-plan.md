@@ -38,7 +38,7 @@ chrome-slopster/
 ├─ entrypoints/
 │  ├─ background.ts                # Message routing, translation queue, provider calls, opening the side panel
 │  ├─ sidepanel/                   # React: drafting, translation, filling
-│  │  └─ settings/                 # React: personas, AI settings (engine, API key, model, translation) and general settings (language, font size, ad toggles), shown inside the side panel
+│  │  └─ settings/                 # React: personas, AI settings (engine, API key, model, translation) and general settings (language, auto-translate, translation color, font size, ad toggles), shown inside the side panel
 │  ├─ reddit.content.ts            # Composition only: core + Reddit adapter
 │  ├─ x.content.ts
 │  └─ facebook.content.ts

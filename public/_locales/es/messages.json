@@ -400,5 +400,8 @@
   },
   "colorGray": {
     "message": "Gris"
+  },
+  "colorSelected": {
+    "message": "seleccionado"
   }
 }

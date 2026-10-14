@@ -10,10 +10,10 @@ import { GeneralSettingsView } from '@/entrypoints/sidepanel/settings/GeneralSet
 import { PersonasSettingsView } from '@/entrypoints/sidepanel/settings/PersonasSettingsView';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
-import { getApiKeys, getSettings } from '@/src/storage/items';
+import { getApiKeys, getSettings, settingsItem } from '@/src/storage/items';
 import { DEFAULT_PERSONA_ID, createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
 import { saveApiKeys, saveSettings } from '@/src/storage/settings';
-import { TRANSLATION_COLOR_PRESETS } from '@/src/storage/types';
+import { DEFAULT_SETTINGS, TRANSLATION_COLOR_PRESETS } from '@/src/storage/types';
 import { installLocksPolyfill, mockI18n } from './helpers/browser';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -182,6 +182,34 @@ describe('pages', () => {
     expect(pressed()).toEqual(['colorRed']);
     expect(custom().closest('.swatch')!.classList.contains('selected')).toBe(false);
     expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#e5484d');
+  });
+
+  it('a custom color dragged but not committed does not hide a color chosen in another window', async () => {
+    await render(<GeneralSettingsView />);
+    const input = container.querySelector<HTMLInputElement>('input[type="color"]')!;
+    // Dragging, then cancelling the picker: input events but no change event.
+    await act(async () => setValue(input, '#123456'));
+    await act(async () => void (await saveSettings({ translationColor: '#2e9d5b' })));
+    await settle();
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#2e9d5b');
+    expect(container.querySelector('button[aria-label="colorGreen"]')!.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('an invalid stored translation color shows the default, like the pages do', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: 42 as unknown as string });
+    await render(<GeneralSettingsView />);
+    expect(container.querySelector('button[aria-label="colorBlue"]')!.getAttribute('aria-pressed')).toBe('true');
+    act(() => root.unmount());
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: 'red' });
+    await render(<GeneralSettingsView />);
+    expect(container.querySelector('button[aria-label="colorBlue"]')!.getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector<HTMLElement>('.color-preview')!.style.getPropertyValue('--preview-color')).toBe('#5b8def');
+  });
+
+  it('the custom color control tells screen readers when it is selected', async () => {
+    await saveSettings({ translationColor: '#123456' });
+    await render(<GeneralSettingsView />);
+    expect(container.querySelector('input[type="color"]')!.getAttribute('aria-label')).toBe('translationColorCustom, colorSelected');
   });
 
   it('shows and hides each API key on request', async () => {

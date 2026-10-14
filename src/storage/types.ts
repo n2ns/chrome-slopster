@@ -53,6 +53,11 @@ export const TRANSLATION_COLOR_PRESETS = [
   { color: '#8a94a6', label: 'colorGray' },
 ] as const;
 
+/** A stored translation color as lowercase #rrggbb; anything else (missing, malformed) becomes the default preset. */
+export function normalizeTranslationColor(value: unknown): string {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : TRANSLATION_COLOR_PRESETS[0].color;
+}
+
 export type AdBlockSettings = Record<PlatformId, boolean>;
 
 /** Secrets. Stored in chrome.storage.local only, never synced. */
