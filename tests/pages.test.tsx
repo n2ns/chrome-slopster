@@ -5,12 +5,13 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import SidepanelApp from '@/entrypoints/sidepanel/App';
-import { SettingsView } from '@/entrypoints/sidepanel/settings/SettingsView';
+import { AiSettingsView } from '@/entrypoints/sidepanel/settings/AiSettingsView';
+import { GeneralSettingsView } from '@/entrypoints/sidepanel/settings/GeneralSettingsView';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import { AppError } from '@/src/providers/types';
 import { getApiKeys } from '@/src/storage/items';
 import { createPersona, defaultPersonaFields, getPersona, listPersonas, updatePersona } from '@/src/storage/personas';
-import { saveApiKeys } from '@/src/storage/settings';
+import { saveApiKeys, saveSettings } from '@/src/storage/settings';
 import { installLocksPolyfill, mockI18n } from './helpers/browser';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -50,17 +51,27 @@ describe('pages', () => {
     vi.restoreAllMocks();
   });
 
-  it('settings view renders every section and the seeded persona', async () => {
-    await render(<SettingsView />);
+  it('AI settings view renders personas, API keys, and engines', async () => {
+    await render(<AiSettingsView />);
     const text = container.textContent ?? '';
-    for (const key of ['personasHeading', 'apiKeysHeading', 'enginesHeading', 'adBlockHeading', 'defaultPersonaName']) {
+    for (const key of ['personasHeading', 'apiKeysHeading', 'enginesHeading', 'aiFallback', 'defaultPersonaName']) {
       expect(text).toContain(key);
     }
+    expect(text).not.toContain('adBlockHeading');
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
   });
 
+  it('general settings view renders language, font size, and ad blocking', async () => {
+    await render(<GeneralSettingsView />);
+    const text = container.textContent ?? '';
+    for (const key of ['generalHeading', 'operatorLanguage', 'autoTranslate', 'fontSize', 'adBlockHeading']) {
+      expect(text).toContain(key);
+    }
+    expect(text).not.toContain('apiKeysHeading');
+  });
+
   it('shows and hides each API key on request', async () => {
-    await render(<SettingsView />);
+    await render(<AiSettingsView />);
     const input = container.querySelector<HTMLInputElement>('#key-gemini')!;
     const toggle = container.querySelector<HTMLButtonElement>('button[aria-controls="key-gemini"]')!;
     expect(input.type).toBe('password');
@@ -74,7 +85,7 @@ describe('pages', () => {
   });
 
   it('saving API keys does not overwrite a key another window changed meanwhile', async () => {
-    await render(<SettingsView />);
+    await render(<AiSettingsView />);
     await act(async () => void (await saveApiKeys({ claude: 'claude-from-other-window' })));
     await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'openai-here'));
     await act(async () => container.querySelector('#key-openai')!.closest('form')!.requestSubmit());
@@ -83,7 +94,7 @@ describe('pages', () => {
   });
 
   it('saving a persona keeps fields another window changed meanwhile', async () => {
-    await render(<SettingsView />);
+    await render(<AiSettingsView />);
     const [persona] = await listPersonas();
     await act(async () => void (await updatePersona(persona!.id, { tone: 'tone from other window' })));
     await settle();
@@ -113,35 +124,53 @@ describe('pages', () => {
     expect(container.querySelector('.output')!.textContent).toBe('T:hello\n\ntranslationTruncated');
   });
 
-  it('side panel opens the settings in place and goes back with drafts kept', async () => {
+  it('side panel opens each settings view in place and goes back with drafts kept', async () => {
     await render(<SidepanelApp />);
     await act(async () => setValue(container.querySelector<HTMLTextAreaElement>('#translate-input')!, 'kept'));
-    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => button.textContent?.includes(label))!;
+    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => (button.getAttribute('aria-label') ?? button.textContent)?.includes(label))!;
+    const visible = (selector: string) => container.querySelector<HTMLElement>(selector)!.closest('[hidden]') === null;
+
+    await act(async () => headerButton('aiSettingsButton').click());
+    await settle();
+    expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
+    expect(visible('#key-openai')).toBe(true);
+    expect(visible('#translate-input')).toBe(false);
+    expect(container.querySelector('#font-size')).toBeNull();
+
+    await act(async () => headerButton('backButton').click());
     await act(async () => headerButton('settingsButton').click());
     await settle();
     expect(container.querySelector('header h1')!.textContent).toBe('optionsTitle');
-    expect(container.textContent).toContain('apiKeysHeading');
-    expect(container.querySelector<HTMLElement>('#translate-input')!.closest('[hidden]')).not.toBeNull();
+    expect(visible('#font-size')).toBe(true);
+    expect(visible('#key-openai')).toBe(false);
 
     await act(async () => headerButton('backButton').click());
     expect(container.querySelector('header h1')!.textContent).toBe('sidepanelTitle');
     expect(container.querySelector<HTMLTextAreaElement>('#translate-input')!.value).toBe('kept');
-    expect(container.querySelector<HTMLElement>('#translate-input')!.closest('[hidden]')).toBeNull();
-    expect(container.querySelector<HTMLElement>('#key-openai')!.closest('[hidden]')).not.toBeNull();
+    expect(visible('#translate-input')).toBe(true);
+    expect(visible('#font-size')).toBe(false);
+  });
+
+  it('side panel applies the font size setting to the whole panel', async () => {
+    await render(<SidepanelApp />);
+    expect(document.documentElement.dataset.fontSize).toBe('medium');
+    await act(async () => void (await saveSettings({ fontSize: 'large' })));
+    await settle();
+    expect(document.documentElement.dataset.fontSize).toBe('large');
   });
 
   it('side panel keeps unsaved settings edits when going back and returning', async () => {
     await render(<SidepanelApp />);
-    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => button.textContent?.includes(label))!;
-    await act(async () => headerButton('settingsButton').click());
+    const headerButton = (label: string) => [...container.querySelectorAll<HTMLButtonElement>('header button')].find((button) => (button.getAttribute('aria-label') ?? button.textContent)?.includes(label))!;
+    await act(async () => headerButton('aiSettingsButton').click());
     await settle();
     await act(async () => setValue(container.querySelector<HTMLInputElement>('#key-openai')!, 'unsaved-key'));
     await act(async () => headerButton('backButton').click());
-    await act(async () => headerButton('settingsButton').click());
+    await act(async () => headerButton('aiSettingsButton').click());
     expect(container.querySelector<HTMLInputElement>('#key-openai')!.value).toBe('unsaved-key');
   });
 
-  it('side panel opens the settings when an API key is missing', async () => {
+  it('side panel opens the AI settings when an API key is missing', async () => {
     registerHandlers<BackgroundMessages>({
       translate: async () => {
         throw new AppError('missing-api-key', 'no key');
@@ -154,7 +183,7 @@ describe('pages', () => {
     const link = [...container.querySelectorAll('button')].find((button) => button.textContent === 'openSettingsLink')!;
     await act(async () => link.click());
     await settle();
-    expect(container.querySelector('header h1')!.textContent).toBe('optionsTitle');
+    expect(container.querySelector('header h1')!.textContent).toBe('aiSettingsTitle');
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(4);
   });
 

@@ -362,6 +362,15 @@
   "settingsButton": {
     "message": "Settings"
   },
+  "generalHeading": {
+    "message": "General"
+  },
+  "aiSettingsTitle": {
+    "message": "AI settings"
+  },
+  "aiSettingsButton": {
+    "message": "AI settings"
+  },
   "backButton": {
     "message": "Back"
   },

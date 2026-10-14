@@ -12,7 +12,7 @@ export function ErrorNotice({ error }: { error: unknown }) {
       <p className="error">{errorMessage(error)}</p>
       {needsKey && (
         <p>
-          <button type="button" className="link" onClick={openSettings}>
+          <button type="button" className="link" onClick={() => openSettings('ai')}>
             {t('openSettingsLink')}
           </button>
         </p>
