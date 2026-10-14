@@ -7,7 +7,7 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 1. Update `version` in `package.json` (WXT writes it into the manifest) and add the release to [CHANGELOG.md](../CHANGELOG.md).
 2. Run `npm run check` and `npm run zip`, then load `.output/chrome-mv3` unpacked and test it by hand (see the checklist below).
 3. Commit, then tag and push: `git tag v<version> && git push origin v<version>`.
-4. [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) runs in the `chrome-web-store` environment: it checks that the tag matches `package.json`, runs `npm run check`, packages `.output/chrome-slopster-<version>-chrome.zip`, checks the manifest version inside it, and uploads it with `mnao305/chrome-extension-upload` (`publish: true`, so it is submitted for review straight away).
+4. [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) runs in the `chrome-web-store` environment: it checks that the tag matches `package.json`, runs `npm run check`, packages `.output/chrome-slopster-<version>-chrome.zip`, checks the manifest version inside it, creates a GitHub Release for the tag with the zip attached (release notes are this version's CHANGELOG section plus manual install steps; users install it by hand as described in the README), and uploads it with `mnao305/chrome-extension-upload` (`publish: true`, so it is submitted for review straight away).
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `npm run check` and a test package on every push to `main` and on pull requests.
 
