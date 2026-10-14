@@ -7,7 +7,7 @@ import type { PlatformAdapter, PostComposer, ThreadContext } from './types';
 const TWEET = 'article[data-testid="tweet"]';
 const TEXT = '[data-testid="tweetText"]';
 const EDITOR = '[data-testid^="tweetTextarea_"][contenteditable="true"]';
-const AD_LABELS = new Set(['Ad', 'Promoted', '广告', '推广']);
+const AD_LABELS = new Set(['Ad', 'Promoted', '广告', '推广', 'Anuncio', 'Promocionado']);
 const MAX_LENGTH = 280;
 const MAX_COMMENTS = 5;
 
