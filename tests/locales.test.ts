@@ -12,8 +12,8 @@ describe('locales', () => {
   const locales = readdirSync(LOCALES_DIR);
   const englishKeys = Object.keys(loadMessages('en')).sort();
 
-  it('ships English and Simplified Chinese', () => {
-    expect(locales).toEqual(expect.arrayContaining(['en', 'zh_CN']));
+  it('ships English, Spanish, and Simplified Chinese', () => {
+    expect(locales).toEqual(expect.arrayContaining(['en', 'es', 'zh_CN']));
   });
 
   it.each(locales)('%s defines exactly the same keys as en', (locale) => {
