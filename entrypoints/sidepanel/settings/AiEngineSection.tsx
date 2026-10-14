@@ -1,21 +1,15 @@
 import { useState } from 'react';
-import { t, type MessageKey } from '@/src/i18n';
+import { t } from '@/src/i18n';
 import { getModelOptions, resolveModel } from '@/src/models/registry';
 import { saveSettings } from '@/src/storage/settings';
 import { AI_ENGINES, isAiEngine, type Settings, type TranslationEngine } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { useSettings } from '@/src/ui/hooks';
 import { engineLabel } from '@/src/ui/labels';
-import { LanguageSelect } from '@/src/ui/LanguageSelect';
 
 const TRANSLATION_ENGINES: TranslationEngine[] = ['google-free', ...AI_ENGINES];
-const FONT_SIZES: Record<Settings['fontSize'], MessageKey> = {
-  small: 'fontSizeSmall',
-  medium: 'fontSizeMedium',
-  large: 'fontSizeLarge',
-};
 
-export function EnginesSection() {
+export function AiEngineSection() {
   const { value: settings, error: loadError, setValue } = useSettings();
   const [error, setError] = useState<unknown>();
 
@@ -81,36 +75,10 @@ export function EnginesSection() {
             ))}
           </fieldset>
 
-          <label htmlFor="operator-language">{t('operatorLanguage')}</label>
-          <LanguageSelect
-            id="operator-language"
-            value={settings.operatorLanguage}
-            autoLabel={t('languageBrowserDefault')}
-            onChange={(operatorLanguage) => save({ operatorLanguage })}
-          />
-          <p className="hint">{t('operatorLanguageHint')}</p>
-
-          <label className="check">
-            <input type="checkbox" checked={settings.autoTranslate} onChange={(event) => save({ autoTranslate: event.target.checked })} />
-            {t('autoTranslate')}
-          </label>
           <label className="check">
             <input type="checkbox" checked={settings.aiFallback} onChange={(event) => save({ aiFallback: event.target.checked })} />
             {t('aiFallback')}
           </label>
-
-          <label htmlFor="font-size">{t('fontSize')}</label>
-          <select
-            id="font-size"
-            value={settings.fontSize}
-            onChange={(event) => save({ fontSize: event.target.value as Settings['fontSize'] })}
-          >
-            {(Object.keys(FONT_SIZES) as Settings['fontSize'][]).map((size) => (
-              <option key={size} value={size}>
-                {t(FONT_SIZES[size])}
-              </option>
-            ))}
-          </select>
         </>
       ) : (
         !shownError && <p className="hint">{t('loading')}</p>

@@ -362,6 +362,15 @@
   "settingsButton": {
     "message": "设置"
   },
+  "generalHeading": {
+    "message": "常规"
+  },
+  "aiSettingsTitle": {
+    "message": "AI 设置"
+  },
+  "aiSettingsButton": {
+    "message": "AI 设置"
+  },
   "backButton": {
     "message": "返回"
   },

@@ -1,8 +1,11 @@
 import { createContext, useContext } from 'react';
 
-/** Opens the settings view inside the side panel; provided by the side panel's root. */
-export const SettingsNavContext = createContext<() => void>(() => undefined);
+/** The two settings views shown inside the side panel. */
+export type SettingsView = 'ai' | 'general';
 
-export function useOpenSettings(): () => void {
+/** Opens a settings view inside the side panel; provided by the side panel's root. */
+export const SettingsNavContext = createContext<(view: SettingsView) => void>(() => undefined);
+
+export function useOpenSettings(): (view: SettingsView) => void {
   return useContext(SettingsNavContext);
 }
