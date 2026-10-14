@@ -427,6 +427,42 @@ describe('pages', () => {
     expect((await getPersona(DEFAULT_PERSONA_ID))!.name).toBe('Named again');
   });
 
+  it('the empty-name notice clears when the original name is typed back', async () => {
+    await render(<PersonasSettingsView />);
+    const name = container.querySelector<HTMLInputElement>('#persona-name')!;
+    const original = name.value;
+    await act(async () => setValue(name, ''));
+    await act(async () => name.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect(container.querySelector('.persona-editor .error')).not.toBeNull();
+    await act(async () => setValue(name, original));
+    await act(async () => name.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    await settle();
+    expect(container.querySelector('.persona-editor .error')).toBeNull();
+  });
+
+  it('edits dropped while a delete was pending are saved when the delete fails', async () => {
+    await act(async () => void (await createPersona({ ...defaultPersonaFields(), name: 'Survivor' })));
+    await render(<PersonasSettingsView />);
+    const chip = [...container.querySelectorAll<HTMLButtonElement>('.persona-list button')].find((button) => button.textContent?.includes('Survivor'))!;
+    await act(async () => chip.click());
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const tone = container.querySelector<HTMLTextAreaElement>('#persona-tone')!;
+    await act(async () => setValue(tone, 'typed before delete'));
+    // The delete fails; the blur save queued behind it is dropped while it is pending.
+    const failing = vi.spyOn(fakeBrowser.storage.sync, 'set').mockRejectedValueOnce(new Error('quota'));
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="personaDelete"]')!.click();
+      tone.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+    await settle();
+    await settle();
+    failing.mockRestore();
+    await settle();
+    const survivor = (await listPersonas()).find((persona) => persona.name === 'Survivor')!;
+    expect(survivor.tone).toBe('typed before delete');
+  });
+
   it('saving a persona keeps fields another window changed meanwhile', async () => {
     await render(<PersonasSettingsView />);
     const [persona] = await listPersonas();
