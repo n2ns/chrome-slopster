@@ -4,7 +4,7 @@ Slopster is a Chrome MV3 extension built with [WXT](https://wxt.dev), React, and
 
 ## Setup
 
-Requires Node 22 or later.
+Uses Node 24, the version CI runs.
 
 ```bash
 npm ci               # also runs `wxt prepare`
