@@ -188,16 +188,16 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
         .filter((key) => JSON.stringify(values[key]) !== JSON.stringify(baseline[key]))
         .map((key) => [key, values[key]]),
     ) as Partial<PersonaFields>;
-    if (Object.keys(patch).length === 0) {
-      // Nothing to write; an explicit save still confirms.
-      if (!onBlur) setSaved(true);
-      return;
-    }
     if (!values.name) {
       setNameMissing(true);
       return;
     }
     setNameMissing(false);
+    if (Object.keys(patch).length === 0) {
+      // Nothing to write; an explicit save still confirms.
+      if (!onBlur) setSaved(true);
+      return;
+    }
     const ok = await onSave(patch);
     if (ok) baselineRef.current = values;
     // "Saved" only when nothing was typed while the save ran.
@@ -266,7 +266,10 @@ function PersonaEditor({ persona, isActive, onSave, onSetActive, onDelete }: Edi
             deletedRef.current = true;
             // When the deletion fails the persona stays, and so do its saves.
             void onDelete().then((ok) => {
-              if (!ok) deletedRef.current = false;
+              if (ok) return;
+              deletedRef.current = false;
+              // Save what was dropped while the delete was pending.
+              save(true);
             });
           }}
         >
