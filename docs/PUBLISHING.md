@@ -9,50 +9,24 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 3. Commit, then tag and push: `git tag v<version> && git push origin v<version>`.
 4. [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) runs in the `chrome-web-store` environment: it checks that the tag matches `package.json`, runs `npm run check`, packages `.output/chrome-slopster-<version>-chrome.zip` from the build with the `zip` tool (not `wxt zip`, whose entry dates are invalid), checks the manifest version inside it, creates a draft GitHub Release for the tag with the zip attached (notes: this version's CHANGELOG section with relative links made absolute, plus manual install steps), uploads the zip with `publish-browser-extension` through Chrome Web Store API v2 (it is submitted for review straight away), and only then publishes the GitHub Release. Re-running the workflow refreshes the release zip and notes. If the store upload succeeded but publishing the release failed, a re-run cannot help (the store refuses the same version twice); publish the draft by hand with `gh release edit v<version> --draft=false`.
 
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `npm run check` and a test package on every push to `main` and on pull requests.
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `npm run check` and a test package, and in a separate job the Playwright end-to-end tests (`npm run test:e2e`), on every push to `main` and on pull requests.
 
 ## Status
 
-- 2026-10-15: 0.1.0 uploaded by hand and submitted for review under the Datafrog.io publisher (item ID `mmgmeicjkmabnhjedpinlnpddagpoend`; it publishes automatically once approved). The listing uses category Productivity > Tools, the five store screenshots, both promo tiles, homepage https://n2ns.com/projects/slopster, support https://github.com/n2ns/chrome-slopster/issues, and the privacy policy at https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md.
+- 2026-10-15: 0.1.0 uploaded by hand and submitted for review under the Datafrog.io publisher (item ID `mmgmeicjkmabnhjedpinlnpddagpoend`). It was approved and is live at https://chromewebstore.google.com/detail/slopster/mmgmeicjkmabnhjedpinlnpddagpoend (checked 2026-10-24). The listing uses category Productivity > Tools, the five store screenshots, both promo tiles, homepage https://n2ns.com/projects/slopster, support https://github.com/n2ns/chrome-slopster/issues, and the privacy policy at https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md. The detailed description is filled in English only: the Spanish and Chinese (Simplified) store pages show the English description under their localized summary. The Spanish and Chinese texts are ready in [STORE-LISTING.md](STORE-LISTING.md).
 - The `chrome-web-store` environment exists with `EXTENSION_ID`. The upload uses Chrome Web Store API v2 with the shared n2ns organization secrets `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL` and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` and `CWS_PUBLISHER_ID` (all set). The service account is added to the publisher and can read this item, so tag-triggered publishing works for versions after 0.1.0.
-- No `v0.1.0` tag or GitHub Release yet: pushing the tag would run the publish workflow, whose store upload fails while the item is under review.
+- No `v0.1.0` tag or GitHub Release yet. Pushing the tag runs the publish workflow: it creates the draft GitHub Release, then its store upload fails because 0.1.0 is already in the store, so publish the draft by hand with `gh release edit v0.1.0 --draft=false`.
 
 ## One-time setup
 
-1. **First upload by hand.** The Web Store API can only update an existing item. Build the zip with `npm run zip`, create a new item in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) under the N2NS account, upload the zip, fill in the listing, privacy, and distribution tabs from the drafts below, and submit. The item ID shown in the dashboard is the `EXTENSION_ID`.
+1. **First upload by hand.** The Web Store API can only update an existing item. Build the zip with `npm run zip`, create a new item in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) under the N2NS account, upload the zip, fill in the listing from [STORE-LISTING.md](STORE-LISTING.md) and the privacy and distribution tabs from the notes below, and submit. The item ID shown in the dashboard is the `EXTENSION_ID`.
 2. **Privacy policy URL.** The store needs a public URL. The repository is public, so the listing uses `https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md` (as WideMark does).
 3. **GitHub environment and secrets.** The `chrome-web-store` environment holds `EXTENSION_ID`. Store credentials are n2ns organization secrets shared with chrome-wtfaa and chrome-widemark: `CWS_PUBLISHER_ID`, `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL`, and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (service account `chrome-extension-publisher@datafrog-platform.iam.gserviceaccount.com` in GCP project `datafrog-platform`, which must be added to the publisher in the Developer Dashboard).
 4. **Store assets.** Screenshots and promo tiles are in [`store-assets/`](../store-assets/) (`npm run assets:store` regenerates them).
 
-## Store listing draft
+## Store listing
 
-### Name
-
-Slopster
-
-### Short description (max 132 characters)
-
-Translate posts on Reddit, X, and Facebook, and draft replies and new posts with your own AI key. You review and send everything.
-
-### Category and language
-
-- Category: Productivity (alternative: Social & Communication)
-- Languages: English, Spanish, Chinese (Simplified)
-
-### Detailed description
-
-Slopster helps you read and take part in conversations on Reddit, X, and Facebook, in any language.
-
-- Translate posts and comments in place, on demand or automatically as they scroll into view. Free Google Translate works without any setup; an AI engine can be used instead.
-- Draft a reply to a post or a comment, or a new post for a subreddit, your X timeline, or a Facebook group or page. Drafts follow a persona you define: who you are, your tone, the language you reply in, words to avoid, and your own rules.
-- Every draft comes with a copy in your own language and short review notes, so you know exactly what you are about to say.
-- Fill a reviewed draft into the site's reply or post box with one click. Slopster never sends or publishes anything: you read the text on the page and send it yourself.
-- Bring your own AI: OpenAI, DeepSeek, Google Gemini, or Anthropic Claude, with your own API key and the model you pick.
-- Optional ad hiding on each site, a translation color you choose, and a side panel in English, Spanish, or Chinese.
-
-Your API keys stay on your device. Text is sent only to the translation or AI service you use, and only when you ask for it (or turn on auto-translate). Slopster has no server and collects no analytics.
-
-Please use it responsibly: no spam, no bulk posting, and follow each site's rules.
+The title, summary, category, and the detailed description in English, Spanish, and Chinese (Simplified) are in [STORE-LISTING.md](STORE-LISTING.md). The title and summary come from the package; the detailed description is pasted into the dashboard per language.
 
 ## Privacy practices tab
 
@@ -84,8 +58,8 @@ Certify the three Limited Use statements in the form.
 
 ## Support links
 
-- Homepage and support: N2NS Lab, https://n2ns.com
-- Source and issues: https://github.com/n2ns/chrome-slopster (once public)
+- Homepage: https://n2ns.com/projects/slopster
+- Source and issues: https://github.com/n2ns/chrome-slopster
 
 ## Checklist before each release
 
@@ -93,4 +67,5 @@ Certify the three Limited Use statements in the form.
 - `unzip -l` shows only the runtime files: `manifest.json`, `background.js`, `sidepanel.html`, `chunks/`, `assets/`, `content-scripts/`, `icon/`, `_locales/`.
 - Load `.output/chrome-mv3` unpacked and check by hand: translate on Reddit, X, and Facebook; draft and fill a reply and a new post on each (fill only, never send); personas; AI settings (engine, key, model); settings (language, auto-translate, translation color, font size, ad blocking); English, Spanish, and Chinese UI.
 - Store screenshots still match the UI; regenerate with `npm run assets:store` if not.
+- The listing text in [STORE-LISTING.md](STORE-LISTING.md) still matches the features; after changing it, paste the detailed description into the dashboard for every language.
 - `CHANGELOG.md` has the release, and the tag equals `v` + `package.json` version.

@@ -1,6 +1,6 @@
 # chrome-slopster (Slopster) Implementation Plan
 
-> Status: phases 0–6 implemented; replies and new posts checked end to end on the real sites on 2026-10-12. Open work is tracked in [TODO.md](../TODO.md). The project name is provisional.
+> Status: phases 0–6 implemented; replies and new posts checked end to end on the real sites on 2026-10-12. Open work is tracked in [TODO.md](../TODO.md). 0.1.0 is live in the Chrome Web Store (see [PUBLISHING.md](PUBLISHING.md#status)).
 > Reference project: `/home/deploy/_projects/chrome-smart-readit` (used only for design ideas; individual modules are ported by hand as needed, the codebase is not copied wholesale).
 
 ## 1. Goals and Boundaries
@@ -98,17 +98,30 @@ interface PlatformAdapter {
   extractThread(target: HTMLElement): ThreadContext;
   /** Find the current reply box: prefer the focused one, then a visible one */
   findComposer(target?: HTMLElement): HTMLElement | null;
-  /** Write text without sending */
-  insertText(composer: HTMLElement, text: string): InsertResult;
+  /** Write text without sending; async because rich editors apply input asynchronously */
+  insertText(composer: HTMLElement, text: string): Promise<InsertResult>;
+  /** Identity of the conversation the page shows; a selected reply target is dropped when it changes */
+  pageKey(doc: Document): string | null;
+  /** Where a new post would be published while the new-post form is open; null otherwise */
+  postTarget(doc: Document): ThreadContext | null;
+  /** The open new-post form (body editor, plus a title field on Reddit), or null */
+  findPostComposer(doc: Document): PostComposer | null;
+  /** Fill the new-post form without publishing */
+  insertPost(composer: PostComposer, draft: PostDraft): Promise<InsertResult>;
   /** Ad nodes (called only when the corresponding toggle is on) */
   findAds(root: ParentNode): HTMLElement[];
   constraints: { maxReplyLength?: number };  // 280 for X
+  /** Optional page listeners (e.g. which Reply button opened a box); returns a cleanup */
+  attach?(doc: Document): () => void;
 }
+
+interface PostComposer { body: HTMLElement; title?: HTMLElement }
+interface PostDraft { title?: string; body: string }
 
 type InsertResult = { ok: true } | { ok: false; reason: 'not-found' | 'rejected' };
 ```
 
-Unified text insertion strategy: `focus` first, then `execCommand('insertText')`; on failure fall back to a simulated paste event (required by the Lexical / Draft.js editors used by Facebook and X); only as a last resort assign the value directly and dispatch an `input` event. Each platform may override this order.
+Unified text insertion strategy for rich editors (`insertIntoRichEditor` in `src/adapters/dom.ts`): `focus` and place the caret at the end, then dispatch a synthetic paste event carrying `text/plain` (Lexical and Draft.js, used by Reddit, X, and Facebook, ignore direct DOM edits); if the editor did not handle the paste, fall back to `execCommand('insertText')` line by line. Success is judged by the editor's DOM containing the text once it settles. Plain text fields (Reddit's title) use `execCommand('insertText')`, then the native value setter plus an `input` event as a last resort. Facebook comment boxes get the text as a single line, because a line break there can post the comment.
 
 ### 4.2 Message Protocol
 
@@ -116,13 +129,16 @@ All messages are defined in `src/messaging/protocol.ts` as typed request/respons
 
 | Direction | Message | Purpose |
 |---|---|---|
-| content → bg | `translate {text, targetLang}` | Translate a piece of text |
+| content → bg | `translate {text, targetLanguage?}` | Translate a piece of text; the response carries `truncated` when the source exceeded the engine's length cap |
 | content → bg | `selectReplyTarget {thread}` | A reply button on the page was clicked: write the reply target to `session` and open the side panel |
 | content → bg | `clearReplyTarget {}` | The selected target left the page, or the content script started on a new document: forget the tab's reply target. URL changes alone do not clear it, because X opens its reply dialog at `/compose/post` |
 | sidepanel → bg | `generate {mode, thread, persona, intent, operatorLanguage}` | Generate a reply or post; the side panel sends the full persona so the background does not read persona storage |
-| sidepanel → bg | `translate` | Translate the draft |
+| sidepanel → bg | `translate` | Translate text pasted into the side panel's translation box |
 | sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page |
 | sidepanel → content | `insertText {text, thread}` | Fill the reply box of the target the draft was generated for (matched by `thread.url`); not-found when it is not on the page |
+| sidepanel → content | `getPostTarget` | Where a new post would go while the page's new-post form is open; null otherwise |
+| sidepanel → content | `insertPost {title?, body, target}` | Fill the open new-post form with a draft generated for `target`; not-found when the form is closed or the page no longer matches `target.url`. Never publishes |
+| sidepanel → content | `replyTargetCleared {}` | The operator cleared the reply target in the side panel: the page drops its selection (Draft reply button state and note) |
 
 Risk: `chrome.sidePanel.open()` must be called within a user gesture. Whether the gesture still counts after a click in the content script is relayed to the background via a message must be tested in Phase 2. If it does not, fall back to: write only the reply target, show a hint on the extension icon, and let the operator click the icon to open the side panel.
 
@@ -177,7 +193,7 @@ Parsing must be lenient about field types ("boolean" fields may be strings, text
 - **models/registry.ts**: two tiers per vendor (flagship + budget). Model IDs are verified against each vendor's official docs at implementation time, never written from memory; retired IDs go into the alias table.
 - **translation**: concurrency cap of 3, with random staggering between tasks; Google free translation cools down for 5 minutes after a 429; optional fallback to AI; the truncation notice is appended after the translation and never concatenated into the source text.
 - **prompt**: platform rules live in one file per platform (Reddit / X / Facebook) and are always placed near the top of the prompt, outside the reach of length-budget truncation; anti-AI-voice rules govern tone only and are controlled by the persona's `antiAiVoice`; length-budget truncation preserves the trailing JSON format description; for X, the 280-character limit is written into the prompt and the length is checked again after generation.
-- **content-core**: throttled page scanning with MutationObserver; translate and reply buttons use Shadow DOM to isolate styles (WXT `createShadowRootUi`).
+- **content-core**: throttled page scanning with MutationObserver; translate and reply buttons live in a small toolbar inserted after each content unit, inside its own open shadow root to isolate styles (`src/content-core/toolbar.ts`).
 - **i18n**: all UI text goes through i18n, with no hard-coded Chinese or English in components; the same applies to error messages.
 
 ## 6. Permissions
@@ -230,7 +246,7 @@ At the end of each phase: `tsc` and ESLint pass, `npm test` passes in full, `npm
 | 5 New posts | Post composer adaptation for all three platforms; "post" mode in the side panel (Reddit with title and subreddit) | New posts can be drafted and filled on all three platforms, with no automatic sending | Tests + manual use |
 | 6 Release prep | PRIVACY, SECURITY, README, packaged zip | Docs clearly state where data goes (`sync` / `local`, third-party APIs) | Check docs and links |
 
-**Commit points**: commit once after all completion criteria of a phase are met. The repository has no remote yet; push once a remote is configured.
+**Commit points**: commit once after all completion criteria of a phase are met, and push to the GitHub remote (`n2ns/chrome-slopster`).
 
 **Review intensity** (per global rules):
 - Phase 1 storage, message protocol, and API key storage are high risk: review → fix → re-review.

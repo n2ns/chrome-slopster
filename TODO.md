@@ -10,7 +10,8 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 ## Decisions pending
 
-- [ ] **First Chrome Web Store release.** 0.1.0 is submitted for review (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)). After approval: put the store link in README.md and on n2ns.com, and push the `v0.1.0` tag. The publish workflow builds the zip and creates the draft GitHub Release, but its store upload step fails because 0.1.0 is already in the store; then publish the draft by hand with `gh release edit v0.1.0 --draft=false`. Later versions publish fully automatically.
+- [ ] **New store title and summary.** The manifest name is now "Slopster: Translate Posts & Draft AI Replies on Reddit, X & Facebook" (localized), with a new summary; both reach the store only with the next version. The Spanish and Chinese detailed descriptions in [docs/STORE-LISTING.md](docs/STORE-LISTING.md) can be pasted into the dashboard now.
+- [ ] **First Chrome Web Store release.** 0.1.0 is approved and live (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)); README.md links to the store. Still to do: put the store link on n2ns.com, and push the `v0.1.0` tag. The publish workflow builds the zip and creates the draft GitHub Release, but its store upload step fails because 0.1.0 is already in the store; then publish the draft by hand with `gh release edit v0.1.0 --draft=false`. Later versions publish fully automatically.
 - [ ] License. The repository has none yet.
 
 ## Known gaps

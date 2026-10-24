@@ -23,6 +23,8 @@ npm run test:e2e     # build, then Playwright tests of the built extension
 npm run zip          # packaged zip: .output/chrome-slopster-<version>-chrome.zip
 ```
 
+`npm run zip` (`wxt zip`) is for local checks. Release zips are packaged by CI with the `zip` tool instead, because `wxt zip` writes invalid entry dates (see [PUBLISHING.md](PUBLISHING.md)).
+
 Run a single test file: `npx vitest run tests/locales.test.ts`
 
 ## Loading a build in Chrome
@@ -49,7 +51,7 @@ Conventions and hard rules (never send, no promotion, keys in `chrome.storage.lo
 Tests come in three layers:
 
 1. **Unit and fixture tests** (Vitest, jsdom): platform adapters run against page fragments saved from the real sites in `tests/fixtures/`; storage, providers, prompts, and the side panel against fakes.
-2. **Extension end-to-end tests** (Playwright, `e2e/`): the built extension in Chromium, with every request answered by a route, so no login and no network.
+2. **Extension end-to-end tests** (Playwright, `e2e/`): the built extension in Chromium, with every request answered by a route, so no login and no network. CI runs them on every push to `main` and on pull requests. Locally, install the browser once with `npx playwright install chromium`.
 3. **Real-site checks** in a separate test Chrome profile, filling drafts and clearing them again without ever sending. See "Testing in a real browser" in [CLAUDE.md](../CLAUDE.md) for the shared test Chrome and how to load the build into it. Use test accounts only, at low frequency.
 
 ## Known limitations
@@ -61,4 +63,4 @@ Tests come in three layers:
 
 ## Releases
 
-Versioning, packaging, and Chrome Web Store publishing are described in [PUBLISHING.md](PUBLISHING.md).
+Versioning, packaging, and Chrome Web Store publishing are described in [PUBLISHING.md](PUBLISHING.md). The store listing text is in [STORE-LISTING.md](STORE-LISTING.md).
