@@ -134,6 +134,39 @@ describe('content core on a Reddit post page', () => {
     expect(insert.mock.calls[0]![0].closest('shreddit-comment')).toBe(target);
   });
 
+  it('drops the selection when the side panel clears the target', async () => {
+    const clearReplyTarget = vi.fn(async () => ({}));
+    registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }), clearReplyTarget });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    toolbarButton(host, 'reply')!.click();
+    await vi.waitFor(() => expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('contentReplySelected'));
+
+    await expect(sendToTab(1, 'replyTargetCleared', {})).resolves.toEqual({});
+    expect(toolbarButton(host, 'reply')!.getAttribute('aria-pressed')).toBe('false');
+    expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('');
+
+    // Nothing is selected any more, so navigating away has no target to clear.
+    clearReplyTarget.mockClear();
+    window.history.pushState(null, '', '/r/selfhosted/comments/zzz999/other_post/');
+    document.body.append(document.createElement('div'));
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(clearReplyTarget).not.toHaveBeenCalled();
+  });
+
+  it('keeps the note empty when the target is cleared while the selection is still being stored', async () => {
+    let answer!: (value: { sidePanelOpened: boolean }) => void;
+    registerHandlers<BackgroundMessages>({ selectReplyTarget: () => new Promise((resolve) => (answer = resolve)) });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    toolbarButton(host, 'reply')!.click();
+    await vi.waitFor(() => expect(answer).toBeDefined());
+
+    await sendToTab(1, 'replyTargetCleared', {});
+    answer({ sidePanelOpened: true });
+    await flush();
+    await flush();
+    expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('');
+  });
+
   it("fills a post draft into the main composer even after a comment with an open reply box was selected", async () => {
     registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }) });
     toolbarButton(ownToolbar(comment('t1_pfccwzm')), 'reply')!.click();

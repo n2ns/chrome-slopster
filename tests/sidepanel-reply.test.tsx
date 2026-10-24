@@ -147,6 +147,8 @@ describe('side panel reply flow', () => {
     await click('replyTargetClear');
     expect(container.querySelector('.target')).toBeNull();
     expect(await replyTargetItem(TAB_ID).getValue()).toBeNull();
+    // The page is told too, so its Draft reply button no longer shows the target as selected.
+    expect(sentToTab).toEqual([{ tabId: TAB_ID, type: 'replyTargetCleared', payload: {} }]);
   });
 
   it('falls back to the page thread from the content script', async () => {

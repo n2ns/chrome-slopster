@@ -157,7 +157,10 @@ function ReplyFlow({ tabId, url, persona, intent, operatorLanguage }: FlowProps)
         await replyTargetItem(tabId).removeValue();
       } catch (failure) {
         setError(failure);
+        return;
       }
+      // Let the page drop its selection too; a page without the content script has none.
+      sendToTab(tabId, 'replyTargetCleared', {}).catch(() => undefined);
     }
   }
 

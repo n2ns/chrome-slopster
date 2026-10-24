@@ -34,6 +34,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   /** Page key at the time the operator selected a target here; a different key clears the stored target. */
   let selectedPageKey: string | null = null;
   let hasSelection = false;
+  /** Toolbar of the selected target, whose note reports the selection. */
+  let selectedToolbar: Toolbar | null = null;
   let autoTranslate = false;
   let blockAds = false;
   let accent = normalizeTranslationColor(undefined);
@@ -73,12 +75,15 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     hasSelection = true;
     selectedPageKey = adapter.pageKey(doc);
     for (const [owner, button] of replyButtons) button.setAttribute('aria-pressed', String(owner === target));
+    selectedToolbar?.setNote('');
+    selectedToolbar = toolbar;
     toolbar.setNote('');
+    // The selection may have been cleared or moved while the background stored it; report only on the current one.
     try {
       const { sidePanelOpened } = await sendToBackground('selectReplyTarget', { thread: adapter.extractThread(target) });
-      toolbar.setNote(sidePanelOpened ? t('contentReplySelected') : t('contentOpenSidePanel'));
+      if (selectedToolbar === toolbar) toolbar.setNote(sidePanelOpened ? t('contentReplySelected') : t('contentOpenSidePanel'));
     } catch (error) {
-      toolbar.setNote(errorMessage(error));
+      if (selectedToolbar === toolbar) toolbar.setNote(errorMessage(error));
     }
   }
 
@@ -195,6 +200,14 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       const target = adapter.findReplyTargets(doc).find((candidate) => adapter.extractThread(candidate).url === thread.url);
       const composer = target ? adapter.findComposer(target) : null;
       return composer ? adapter.insertText(composer, text) : { ok: false, reason: 'not-found' };
+    },
+    replyTargetCleared: async () => {
+      hasSelection = false;
+      selectedPageKey = null;
+      for (const button of replyButtons.values()) button.setAttribute('aria-pressed', 'false');
+      selectedToolbar?.setNote('');
+      selectedToolbar = null;
+      return {};
     },
   });
 
