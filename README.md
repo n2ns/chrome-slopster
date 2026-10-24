@@ -12,7 +12,7 @@ Slopster is a Chrome extension that helps you read and join conversations on **R
 
 ## Getting started
 
-1. Install Slopster from the Chrome Web Store (link coming soon), or download it from GitHub and install it by hand (see [Install manually](#install-manually-download-from-github) below; the first release is on its way).
+1. Install Slopster from the [Chrome Web Store](https://chromewebstore.google.com/detail/slopster/mmgmeicjkmabnhjedpinlnpddagpoend), or download it from GitHub and install it by hand (see [Install manually](#install-manually-download-from-github) below; the first release is on its way).
 2. Pin it: click the puzzle-piece icon in Chrome's toolbar, then the pin next to Slopster.
 3. Click the Slopster icon to open the side panel.
 4. To draft replies and posts, open **AI settings** in the side panel, choose an AI engine, and paste your API key for it. You get the key from that company's website.

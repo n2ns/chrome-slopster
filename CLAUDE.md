@@ -23,7 +23,7 @@ npm run build     # wxt build -> .output/chrome-mv3
 npm run check     # all of the above; must pass before every commit
 npm run dev       # wxt dev mode with hot reload
 npm run test:e2e  # build, then Playwright tests of the built extension (e2e/, all network routed)
-npm run zip       # packaged zip in .output/
+npm run zip       # packaged zip in .output/ for local checks (release zips come from CI's zip tool)
 ```
 
 Run a single test file: `npx vitest run tests/locales.test.ts`
