@@ -1,9 +1,12 @@
 {
   "extName": {
+    "message": "Slopster：在 Reddit、X 和 Facebook 上翻译帖子、用 AI 起草回复"
+  },
+  "actionTitle": {
     "message": "Slopster"
   },
   "extDescription": {
-    "message": "在 Reddit、X 和 Facebook 上翻译帖子，起草回复和新帖。所有内容都由你审核后自己发送。"
+    "message": "免费翻译，无需注册。用你自己的 AI 密钥，按你的口吻起草回复，改好后由你亲自发出。"
   },
   "sidepanelTitle": {
     "message": "Slopster"
