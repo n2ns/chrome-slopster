@@ -4,10 +4,9 @@
 import { CircleCheck, ClipboardPaste, Copy, LoaderCircle, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { t, type MessageKey } from '@/src/i18n';
+import { X_MAX_CHARS } from '@/src/prompt/platforms/x';
 import type { GenerationMode, GenerationResult, ParsedGeneration } from '@/src/prompt/types';
 import type { Persona, PlatformId } from '@/src/storage/types';
-
-export const X_MAX_LENGTH = 280;
 
 /** Props of a per-tab drafting flow; persona and intent are shared by both modes. */
 export interface FlowProps {
@@ -71,7 +70,7 @@ function ParsedResult({ mode, parsed, platform, draft, onDraftChange, children }
   const text = MODE_TEXT[mode];
   // Code points, so emoji count once; X's own weighting may differ slightly.
   const length = [...draft].length;
-  const overLimit = platform === 'x' && length > X_MAX_LENGTH;
+  const overLimit = platform === 'x' && length > X_MAX_CHARS;
   return (
     <>
       <p className={parsed.shouldReply ? 'verdict' : 'verdict warning'}>
@@ -87,10 +86,10 @@ function ParsedResult({ mode, parsed, platform, draft, onDraftChange, children }
       <textarea id={`${mode}-draft`} className="draft" value={draft} onChange={(event) => onDraftChange(event.target.value)} />
       {platform === 'x' && (
         <p id={`${mode}-count`} className={overLimit ? 'error' : 'hint'}>
-          {t('replyCharCount', [String(length), String(X_MAX_LENGTH)])}
+          {t('replyCharCount', [String(length), String(X_MAX_CHARS)])}
         </p>
       )}
-      {overLimit && <p className="error">{t(text.overLimit, String(X_MAX_LENGTH))}</p>}
+      {overLimit && <p className="error">{t(text.overLimit, String(X_MAX_CHARS))}</p>}
 
       {parsed.replyNative && (
         <>
