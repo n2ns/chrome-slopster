@@ -34,6 +34,8 @@ export interface ContentMessages {
    * when the form is closed or the page no longer matches `target.url`. Never publishes.
    */
   insertPost: { request: PostDraft & { target: ThreadContext }; response: InsertResult };
+  /** The side panel cleared this tab's reply target: drop the page's selection. */
+  replyTargetCleared: { request: Record<string, never>; response: Record<string, never> };
 }
 
 type MessageMap = BackgroundMessages | ContentMessages;
