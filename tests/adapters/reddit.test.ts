@@ -94,6 +94,35 @@ describe('reddit adapter on a post page', () => {
   });
 });
 
+// A post on a user profile lives at /user/<name>/comments/<id>/ and renders the same
+// elements as a subreddit post (checked on the real site, 2026-10-24); /u/<name>/... and
+// /comments/<id>/ short links redirect there.
+describe('reddit adapter on a user profile post page', () => {
+  beforeEach(() => load('post-page.html', '/user/someone/comments/1x3m5xo/why_selfhost/'));
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('keys the page by post id', () => {
+    expect(redditAdapter.pageKey(document)).toBe('1x3m5xo');
+  });
+
+  it('offers the post and its comments as reply targets', () => {
+    const targets = redditAdapter.findReplyTargets(document).map((target) => target.tagName.toLowerCase());
+    expect(targets[0]).toBe('shreddit-post');
+    expect(targets).toContain('shreddit-comment');
+  });
+});
+
+describe('reddit adapter on a user profile', () => {
+  beforeEach(() => load('feed.html', '/user/someone/submitted/'));
+
+  it('has no page key and no reply targets', () => {
+    expect(redditAdapter.pageKey(document)).toBeNull();
+    expect(redditAdapter.findReplyTargets(document)).toEqual([]);
+  });
+});
+
 describe('reddit adapter on a feed', () => {
   beforeEach(() => load('feed.html', '/r/selfhosted/'));
 
