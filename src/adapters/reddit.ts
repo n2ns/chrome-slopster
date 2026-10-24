@@ -9,8 +9,9 @@ const EDITOR_SELECTOR = '[contenteditable="true"][role="textbox"]';
 const AD_SELECTOR = 'shreddit-ad-post, shreddit-comments-page-ad';
 const MAX_COMMENTS = 5;
 
+/** Post ID on a post page: /r/<subreddit>/comments/<id>/ or, for profile posts, /user/<name>/comments/<id>/. */
 function postId(doc: Document): string | null {
-  return /^\/r\/[^/]+\/comments\/([^/]+)/.exec(doc.location?.pathname ?? '')?.[1] ?? null;
+  return /^\/(?:r|user)\/[^/]+\/comments\/([^/]+)/.exec(doc.location?.pathname ?? '')?.[1] ?? null;
 }
 
 function absoluteUrl(doc: Document, path: string | null): string {
