@@ -1,9 +1,12 @@
 {
   "extName": {
+    "message": "Slopster: Translate Posts & Draft AI Replies on Reddit, X & Facebook"
+  },
+  "actionTitle": {
     "message": "Slopster"
   },
   "extDescription": {
-    "message": "Translate posts and draft replies and new posts on Reddit, X, and Facebook. You review and send everything."
+    "message": "Translate for free, no sign-up. Draft replies in your own voice with your own AI key, then edit and post them yourself."
   },
   "sidepanelTitle": {
     "message": "Slopster"

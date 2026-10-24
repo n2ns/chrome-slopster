@@ -1,9 +1,12 @@
 {
   "extName": {
+    "message": "Slopster: traduce y redacta respuestas con IA en Reddit, X y Facebook"
+  },
+  "actionTitle": {
     "message": "Slopster"
   },
   "extDescription": {
-    "message": "Traduce publicaciones y redacta respuestas y publicaciones nuevas en Reddit, X y Facebook. Tú revisas y envías todo."
+    "message": "Traduce gratis y sin registro. Redacta respuestas con tu propio estilo y tu clave de IA, y publícalas tú después de editarlas."
   },
   "sidepanelTitle": {
     "message": "Slopster"

@@ -20,6 +20,13 @@ describe('locales', () => {
     expect(Object.keys(loadMessages(locale)).sort()).toEqual(englishKeys);
   });
 
+  // Chrome Web Store limits: the name is the store title, the description is the store summary.
+  it.each(locales)('%s keeps the extension name within 75 and the description within 132 characters', (locale) => {
+    const messages = loadMessages(locale);
+    expect(messages.extName!.message.length).toBeLessThanOrEqual(75);
+    expect(messages.extDescription!.message.length).toBeLessThanOrEqual(132);
+  });
+
   it.each(locales)('%s has no empty messages', (locale) => {
     for (const [key, { message }] of Object.entries(loadMessages(locale))) {
       expect(message.trim(), `${locale}.${key}`).not.toBe('');

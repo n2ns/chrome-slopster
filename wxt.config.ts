@@ -22,7 +22,8 @@ export default defineConfig({
       'https://api.anthropic.com/*',
     ],
     action: {
-      default_title: '__MSG_extName__',
+      // The toolbar tooltip shows the brand only; the long name is for the store and chrome://extensions.
+      default_title: '__MSG_actionTitle__',
     },
   },
 });
