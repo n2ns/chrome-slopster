@@ -161,3 +161,7 @@ Report problems or suggest ideas on [GitHub Issues](https://github.com/n2ns/chro
 Slopster is made by [N2NS Lab](https://n2ns.com).
 
 Developers: see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
