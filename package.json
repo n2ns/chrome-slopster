@@ -2,7 +2,7 @@
   "name": "chrome-slopster",
   "description": "Translate posts and draft replies and new posts on Reddit, X, and Facebook. You review and send everything.",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",
