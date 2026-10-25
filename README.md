@@ -106,7 +106,8 @@ The open view is highlighted. Click its button again, or the Slopster title, to 
 
 - **Your language**: pages are translated into this language, and every draft includes a copy in it. By default it follows your browser.
 - **Translate posts automatically**.
-- **Translation color**: the color of translations shown on pages, from presets or a custom color.
+- **Translation background** and **Translation text color**: how translations look on pages, from presets or a custom color. The text color follows the page unless you pick one.
+- **Hide the original text while its translation is shown**: show only the translation of a post or comment; hiding the translation brings the original back.
 - **Font size** of the side panel: small, medium, or large.
 - **Ad blocking**: hide ads on Reddit, X, and Facebook, each turned on separately.
 
