@@ -64,7 +64,7 @@ YOUR DATA
 • Text is sent only to the translation or AI service you chose, and only when you ask for it or turn on automatic translation.
 • Slopster has no server, no account, and no tracking.
 
-Also: optional ad hiding on each site, your choice of translation color, and Slopster itself in English, Spanish, or Chinese. Works on the desktop versions of reddit.com, x.com, and facebook.com.
+Also: optional ad hiding on each site, your own text and background colors for translations, the option to hide the original while its translation is shown, and Slopster itself in English, Spanish, or Chinese. Works on the desktop versions of reddit.com, x.com, and facebook.com.
 
 Please don't use it for spam or mass posting, and follow each community's rules.
 ```
@@ -101,7 +101,7 @@ TUS DATOS
 • El texto solo se envía al servicio de traducción o de IA que elegiste, y solo cuando lo pides o activas la traducción automática.
 • Slopster no tiene servidor, ni cuentas, ni rastreo.
 
-Además: ocultación opcional de anuncios en cada sitio, el color de traducción que prefieras y Slopster en español, inglés o chino. Funciona en las versiones de escritorio de reddit.com, x.com y facebook.com.
+Además: ocultación opcional de anuncios en cada sitio, los colores de texto y fondo que prefieras para las traducciones, la opción de ocultar el original mientras se muestra su traducción y Slopster en español, inglés o chino. Funciona en las versiones de escritorio de reddit.com, x.com y facebook.com.
 
 No lo uses para spam ni para publicar en masa, y respeta las reglas de cada comunidad.
 ```
@@ -138,7 +138,7 @@ Slopster 陪你在 Reddit、X 和 Facebook 上先看懂讨论，再用你自己�
 • 文字只发给你选择的翻译或 AI 服务，而且只在你点击或开启自动翻译时才发送。
 • Slopster 没有服务器、没有账号体系，也不追踪你。
 
-另外：可按网站隐藏广告，可自选译文颜色，界面支持中文、英文和西班牙文。适用于 reddit.com、x.com 和 facebook.com 的电脑版网页。
+另外：可按网站隐藏广告，可自选译文的文字颜色和背景色，可在显示译文时隐藏原文，界面支持中文、英文和西班牙文。适用于 reddit.com、x.com 和 facebook.com 的电脑版网页。
 
 请不要用它发垃圾信息或批量发帖，并遵守各社区的规则。
 ```

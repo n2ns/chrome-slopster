@@ -7,7 +7,7 @@ Slopster runs entirely in your browser. It has no server of its own, collects no
 | Data | Storage | Leaves this device? |
 |---|---|---|
 | Persona profiles (name, identity, tone, reply language, banned words, custom rules) | `chrome.storage.sync` | Yes, through Chrome Sync, to your other devices signed in to the same Chrome profile |
-| Active persona, settings (engines, models, language, auto-translate, AI fallback, font size, translation color), ad-blocking toggles | `chrome.storage.sync` | Yes, through Chrome Sync |
+| Active persona, settings (engines, models, language, auto-translate, AI fallback, font size, translation background and text colors, hide original), ad-blocking toggles | `chrome.storage.sync` | Yes, through Chrome Sync |
 | API keys for OpenAI, DeepSeek, Gemini, and Claude | `chrome.storage.local` | **No.** Keys stay on this device and are never synced |
 | A local backup of your persona profiles (used if synced data becomes unreadable) | `chrome.storage.local` | No |
 | The post or comment you selected for a reply, per tab | `chrome.storage.session` | No. Cleared when the browser closes, the tab closes, or the page moves to another conversation |

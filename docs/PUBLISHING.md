@@ -66,7 +66,7 @@ Certify the three Limited Use statements in the form.
 
 - `npm run check` passes, and `npm run zip` produces `.output/chrome-slopster-<version>-chrome.zip`.
 - `unzip -l` shows only the runtime files: `manifest.json`, `background.js`, `sidepanel.html`, `chunks/`, `assets/`, `content-scripts/`, `icon/`, `_locales/`.
-- Load `.output/chrome-mv3` unpacked and check by hand: translate on Reddit, X, and Facebook; draft and fill a reply and a new post on each (fill only, never send); personas; AI settings (engine, key, model); settings (language, auto-translate, translation color, font size, ad blocking); English, Spanish, and Chinese UI.
+- Load `.output/chrome-mv3` unpacked and check by hand: translate on Reddit, X, and Facebook; draft and fill a reply and a new post on each (fill only, never send); personas; AI settings (engine, key, model); settings (language, auto-translate, translation background and text colors, hide original, font size, ad blocking); English, Spanish, and Chinese UI.
 - Store screenshots still match the UI; regenerate with `npm run assets:store` if not.
 - The listing text in [STORE-LISTING.md](STORE-LISTING.md) still matches the features; after changing it, paste the detailed description into the dashboard for every language.
 - `CHANGELOG.md` has the release, and the tag equals `v` + `package.json` version.
