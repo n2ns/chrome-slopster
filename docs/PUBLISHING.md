@@ -23,7 +23,7 @@ How Slopster is released to the Chrome Web Store. The setup mirrors the sister p
 
 1. **First upload by hand.** The Web Store API can only update an existing item. Build the zip with `npm run zip`, create a new item in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) under the N2NS account, upload the zip, fill in the listing from [STORE-LISTING.md](STORE-LISTING.md) and the privacy and distribution tabs from the notes below, and submit. The item ID shown in the dashboard is the `EXTENSION_ID`.
 2. **Privacy policy URL.** The store needs a public URL. The repository is public, so the listing uses `https://github.com/n2ns/chrome-slopster/blob/main/PRIVACY.md` (as WideMark does).
-3. **GitHub environment and secrets.** The `chrome-web-store` environment holds `EXTENSION_ID`. Store credentials are n2ns organization secrets shared with chrome-wtfaa and chrome-widemark: `CWS_PUBLISHER_ID`, `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL`, and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (service account `<service account>` in GCP project `<gcp project>`, which must be added to the publisher in the Developer Dashboard).
+3. **GitHub environment and secrets.** The `chrome-web-store` environment holds `EXTENSION_ID`. Store credentials are n2ns organization secrets shared with chrome-wtfaa and chrome-widemark: `CWS_PUBLISHER_ID`, `CWS_SERVICE_ACCOUNT_CLIENT_EMAIL`, and `CWS_SERVICE_ACCOUNT_PRIVATE_KEY` (the service account must be added to the publisher in the Developer Dashboard).
 4. **Store assets.** Screenshots and promo tiles are in [`store-assets/`](../store-assets/) (`npm run assets:store` regenerates them).
 
 ## Store listing
