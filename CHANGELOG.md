@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-10-25
+
+### Added
+- Translation text color: translations on pages can use a color you pick (presets or custom); by default they keep the page's text color.
+- Hide the original text while its translation is shown, so a translated post or comment shows only the translation.
+
+### Changed
+- The translation color setting is now labelled "Translation background", which is what it sets; saved colors are kept.
+
+### Fixed
+- The color preview in the settings showed the side panel's translate box hint; it now shows its own sample text in the chosen colors.
+
 ## [0.2.0] - 2026-10-25
 
 ### Added
