@@ -15,4 +15,18 @@ describe('toolbar accent color', () => {
     expect(toolbar.host.style.getPropertyValue('--slopster-accent')).toBe('#2e9d5b');
     document.body.innerHTML = '';
   });
+
+  it('colors the translation text from the host text variable, keeping the page color when none is set', () => {
+    const unit = document.createElement('p');
+    document.body.append(unit);
+    const toolbar = createToolbar(unit, 'Translate');
+    const css = toolbar.host.shadowRoot!.querySelector('style')!.textContent!;
+    expect(css).toContain('color: var(--slopster-text, inherit)');
+
+    toolbar.setTextColor('#123456');
+    expect(toolbar.host.style.getPropertyValue('--slopster-text')).toBe('#123456');
+    toolbar.setTextColor('');
+    expect(toolbar.host.style.getPropertyValue('--slopster-text')).toBe('');
+    document.body.innerHTML = '';
+  });
 });

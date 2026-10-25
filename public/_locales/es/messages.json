@@ -384,10 +384,22 @@
     "message": "Ocultar"
   },
   "translationColor": {
-    "message": "Color de la traducción"
+    "message": "Fondo de la traducción"
   },
   "translationColorCustom": {
     "message": "Color personalizado"
+  },
+  "translationTextColor": {
+    "message": "Color del texto traducido"
+  },
+  "translationTextColorDefault": {
+    "message": "Igual que la página"
+  },
+  "translationColorPreview": {
+    "message": "Así se ven las traducciones en la página."
+  },
+  "hideOriginal": {
+    "message": "Ocultar el texto original mientras se muestra su traducción"
   },
   "colorBlue": {
     "message": "Azul"

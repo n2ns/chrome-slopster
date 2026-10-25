@@ -384,10 +384,22 @@
     "message": "隐藏"
   },
   "translationColor": {
-    "message": "译文颜色"
+    "message": "译文背景色"
   },
   "translationColorCustom": {
     "message": "自定义颜色"
+  },
+  "translationTextColor": {
+    "message": "译文文字颜色"
+  },
+  "translationTextColorDefault": {
+    "message": "跟随网页"
+  },
+  "translationColorPreview": {
+    "message": "网页上的译文会显示成这样。"
+  },
+  "hideOriginal": {
+    "message": "显示译文时隐藏原文"
   },
   "colorBlue": {
     "message": "蓝色"
