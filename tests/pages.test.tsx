@@ -39,6 +39,12 @@ function setValue(element: HTMLTextAreaElement | HTMLInputElement, value: string
   element.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+/** The two color groups in the general settings: translation background and translation text. */
+const BACKGROUND = '[aria-labelledby="translation-color-label"]';
+const TEXT = '[aria-labelledby="translation-text-color-label"]';
+const textSwatch = (label: string) => container.querySelector<HTMLButtonElement>(`${TEXT} button[aria-label="${label}"]`)!;
+const preview = () => container.querySelector<HTMLElement>('.color-preview')!;
+
 describe('pages', () => {
   beforeEach(() => {
     fakeBrowser.reset();
@@ -137,15 +143,88 @@ describe('pages', () => {
     const text = container.textContent ?? '';
     expect(text.indexOf('autoTranslate')).toBeLessThan(text.indexOf('translationColor'));
     expect(text.indexOf('translationColor')).toBeLessThan(text.indexOf('fontSize'));
-    const swatches = [...container.querySelectorAll<HTMLButtonElement>('.color-swatches button')];
+    const swatches = [...container.querySelectorAll<HTMLButtonElement>(`${BACKGROUND} button`)];
     expect(swatches.map((button) => button.getAttribute('aria-label'))).toEqual(TRANSLATION_COLOR_PRESETS.map((preset) => preset.label));
     expect(swatches.map((button) => button.title)).toEqual(TRANSLATION_COLOR_PRESETS.map((preset) => preset.label));
     expect(container.querySelector('input[type="color"]')!.getAttribute('aria-label')).toBe('translationColorCustom');
   });
 
+  it('previews translations with their own sample text, not the translate box placeholder', async () => {
+    await render(<GeneralSettingsView />);
+    expect(container.querySelector('.color-preview')!.textContent).toBe('translationColorPreview');
+  });
+
+  it('offers a translation text color that follows the page by default', async () => {
+    await render(<GeneralSettingsView />);
+    const text = container.textContent ?? '';
+    expect(text.indexOf('translationColor')).toBeLessThan(text.indexOf('translationTextColor'));
+    expect(text.indexOf('translationTextColor')).toBeLessThan(text.indexOf('fontSize'));
+    const swatches = [...container.querySelectorAll<HTMLButtonElement>(`${TEXT} button`)];
+    expect(swatches.map((button) => button.getAttribute('aria-label'))).toEqual(['translationTextColorDefault', ...TRANSLATION_COLOR_PRESETS.map((preset) => preset.label)]);
+    expect(textSwatch('translationTextColorDefault').getAttribute('aria-pressed')).toBe('true');
+    expect(preview().style.getPropertyValue('--preview-text')).toBe('');
+  });
+
+  it('saves the translation text color from a preset, and back to the page color', async () => {
+    await render(<GeneralSettingsView />);
+    await act(async () => textSwatch('colorRed').click());
+    await settle();
+    expect((await getSettings()).translationTextColor).toBe('#e5484d');
+    expect((await getSettings()).translationColor).toBe('#5b8def');
+    expect(textSwatch('colorRed').getAttribute('aria-pressed')).toBe('true');
+    expect(textSwatch('translationTextColorDefault').getAttribute('aria-pressed')).toBe('false');
+    expect(preview().style.getPropertyValue('--preview-text')).toBe('#e5484d');
+
+    await act(async () => textSwatch('translationTextColorDefault').click());
+    await settle();
+    expect((await getSettings()).translationTextColor).toBe('');
+    expect(preview().style.getPropertyValue('--preview-text')).toBe('');
+  });
+
+  it('saves a custom translation text color on change', async () => {
+    await render(<GeneralSettingsView />);
+    const input = container.querySelector<HTMLInputElement>(`${TEXT} input[type="color"]`)!;
+    await act(async () => setValue(input, '#123456'));
+    await settle();
+    expect(preview().style.getPropertyValue('--preview-text')).toBe('#123456');
+    expect((await getSettings()).translationTextColor).toBe('');
+    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })));
+    await settle();
+    expect((await getSettings()).translationTextColor).toBe('#123456');
+    expect(input.closest('.swatch')!.classList.contains('selected')).toBe(true);
+  });
+
+  it('offers hiding the original below the color settings, saved when toggled', async () => {
+    await render(<GeneralSettingsView />);
+    const text = container.textContent ?? '';
+    expect(text.indexOf('translationTextColor')).toBeLessThan(text.indexOf('hideOriginal'));
+    expect(text.indexOf('hideOriginal')).toBeLessThan(text.indexOf('fontSize'));
+    const box = [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find((input) => input.closest('label')!.textContent === 'hideOriginal')!;
+    expect(box.checked).toBe(false);
+    await act(async () => box.click());
+    await settle();
+    expect((await getSettings()).hideOriginal).toBe(true);
+    expect(box.checked).toBe(true);
+  });
+
+  it('starts the text color picker on a preset while the page color is selected, so any other color can be picked', async () => {
+    // A native color input fires no change when the picked value equals its current one; the starting
+    // value must be one that a preset swatch already offers.
+    await render(<GeneralSettingsView />);
+    const input = container.querySelector<HTMLInputElement>(`${TEXT} input[type="color"]`)!;
+    expect(TRANSLATION_COLOR_PRESETS.map((preset) => preset.color as string)).toContain(input.value);
+  });
+
+  it('an invalid stored translation text color shows the page color', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationTextColor: 'red' });
+    await render(<GeneralSettingsView />);
+    expect(textSwatch('translationTextColorDefault').getAttribute('aria-pressed')).toBe('true');
+    expect(preview().style.getPropertyValue('--preview-text')).toBe('');
+  });
+
   it('clicking a translation color preset saves it and marks it selected', async () => {
     await render(<GeneralSettingsView />);
-    const swatch = (label: string) => container.querySelector<HTMLButtonElement>(`.color-swatches button[aria-label="${label}"]`)!;
+    const swatch = (label: string) => container.querySelector<HTMLButtonElement>(`${BACKGROUND} button[aria-label="${label}"]`)!;
     expect(swatch('colorBlue').getAttribute('aria-pressed')).toBe('true');
     expect(swatch('colorGreen').getAttribute('aria-pressed')).toBe('false');
     await act(async () => swatch('colorGreen').click());
@@ -171,7 +250,7 @@ describe('pages', () => {
     await saveSettings({ translationColor: '#123456' });
     await render(<GeneralSettingsView />);
     const custom = () => container.querySelector<HTMLInputElement>('input[type="color"]')!;
-    const pressed = () => [...container.querySelectorAll('.color-swatches button[aria-pressed="true"]')].map((button) => button.getAttribute('aria-label'));
+    const pressed = () => [...container.querySelectorAll(`${BACKGROUND} button[aria-pressed="true"]`)].map((button) => button.getAttribute('aria-label'));
     expect(pressed()).toEqual([]);
     expect(custom().value).toBe('#123456');
     expect(custom().closest('.swatch')!.classList.contains('selected')).toBe(true);

@@ -8,12 +8,14 @@ import { t } from '@/src/i18n';
 import { registerHandlers, sendToBackground, type ContentMessages } from '@/src/messaging/protocol';
 import { adBlockItem, getSettings, settingsItem } from '@/src/storage/items';
 import { getAdBlock } from '@/src/storage/settings';
-import { normalizeTranslationColor } from '@/src/storage/types';
+import { normalizeTranslationColor, normalizeTranslationTextColor, type Settings } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
 import { createToolbar, type Toolbar } from './toolbar';
 
 const SCAN_DELAY_MS = 250;
 const AD_ATTRIBUTE = 'data-sra-hidden-ad';
+/** Marks a unit whose original text is hidden because its translation is shown and the operator chose to hide originals. */
+const ORIGINAL_ATTRIBUTE = 'data-sra-original-hidden';
 
 /** Innermost reply target that contains `unit`: walk up from the unit, O(depth). */
 function ownerTarget(unit: HTMLElement, targets: Set<HTMLElement>): HTMLElement | undefined {
@@ -31,6 +33,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   const observed = new Set<HTMLElement>();
   /** Toolbars currently on the page, so a color change can restyle them. */
   const liveToolbars = new Set<Toolbar>();
+  /** Units whose translation is shown, so the hide-original setting can apply to them live. */
+  const shownUnits = new Set<HTMLElement>();
   /** Page key at the time the operator selected a target here; a different key clears the stored target. */
   let selectedPageKey: string | null = null;
   let hasSelection = false;
@@ -39,15 +43,24 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   let autoTranslate = false;
   let blockAds = false;
   let accent = normalizeTranslationColor(undefined);
+  let textColor = normalizeTranslationTextColor(undefined);
+  let hideOriginal = false;
   let scanTimer: number | undefined;
 
   const adStyle = doc.createElement('style');
-  adStyle.textContent = `[${AD_ATTRIBUTE}] { display: none !important; }`;
+  adStyle.textContent = `[${AD_ATTRIBUTE}], [${ORIGINAL_ATTRIBUTE}] { display: none !important; }`;
   (doc.head ?? doc.documentElement).append(adStyle);
+
+  /** Hide the unit's original text only while its translation is shown and the setting is on. */
+  function applyOriginal(unit: HTMLElement): void {
+    unit.toggleAttribute(ORIGINAL_ATTRIBUTE, hideOriginal && shownUnits.has(unit));
+  }
 
   async function translateUnit(unit: HTMLElement, toolbar: Toolbar): Promise<void> {
     if (!ctx.isValid) return;
     if (toolbar.isOutputVisible() && translated.has(unit)) {
+      shownUnits.delete(unit);
+      applyOriginal(unit);
       toolbar.setOutput(null);
       toolbar.translateButton.textContent = t('contentShowTranslation');
       return;
@@ -61,6 +74,11 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       const result = await sendToBackground('translate', { text });
       toolbar.setOutput(result.truncated ? `${result.text}\n\n${t('translationTruncated')}` : result.text);
       toolbar.translateButton.textContent = t('contentHideTranslation');
+      // Hide the original only if this toolbar still shows the translation (the page may have replaced it meanwhile).
+      if (toolbars.get(unit) === toolbar && toolbar.host.isConnected) {
+        shownUnits.add(unit);
+        applyOriginal(unit);
+      }
     } catch (error) {
       translated.delete(unit);
       toolbar.setOutput(errorMessage(error), true);
@@ -117,6 +135,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     // Forget nodes the page removed (SPA navigation, collapsed threads).
     for (const [target, button] of replyButtons) if (!target.isConnected || !button.isConnected) replyButtons.delete(target);
     for (const toolbar of liveToolbars) if (!toolbar.host.isConnected) liveToolbars.delete(toolbar);
+    for (const unit of shownUnits) if (!unit.isConnected) shownUnits.delete(unit);
     for (const unit of observed) {
       if (!unit.isConnected) {
         visibility.unobserve(unit);
@@ -135,8 +154,12 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     for (const unit of units) {
       const existing = toolbars.get(unit);
       if (!existing || !existing.host.isConnected) {
+        // A new toolbar starts without a translation, so the original must be visible again.
+        shownUnits.delete(unit);
+        applyOriginal(unit);
         const created = createToolbar(unit, t('contentTranslate'));
         created.setAccent(accent);
+        created.setTextColor(textColor);
         liveToolbars.add(created);
         created.translateButton.addEventListener('click', (event) => {
           event.preventDefault();
@@ -159,9 +182,16 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     applyAds();
   }
 
-  function applyAccent(value: unknown): void {
-    accent = normalizeTranslationColor(value);
-    for (const toolbar of liveToolbars) toolbar.setAccent(accent);
+  /** Apply the translation display settings (colors, hide original) to everything on the page. */
+  function applyDisplay(settings: Partial<Settings> | null | undefined): void {
+    accent = normalizeTranslationColor(settings?.translationColor);
+    textColor = normalizeTranslationTextColor(settings?.translationTextColor);
+    hideOriginal = settings?.hideOriginal === true;
+    for (const toolbar of liveToolbars) {
+      toolbar.setAccent(accent);
+      toolbar.setTextColor(textColor);
+    }
+    for (const unit of shownUnits) applyOriginal(unit);
   }
 
   function clearStoredTarget(): void {
@@ -213,7 +243,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
 
   void getSettings().then((settings) => {
     autoTranslate = settings.autoTranslate;
-    applyAccent(settings.translationColor);
+    applyDisplay(settings);
   });
   void getAdBlock().then((adBlock) => {
     blockAds = adBlock[adapter.id];
@@ -221,7 +251,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   });
   const unwatchSettings = settingsItem.watch((settings) => {
     autoTranslate = Boolean(settings?.autoTranslate);
-    applyAccent(settings?.translationColor);
+    applyDisplay(settings);
   });
   const unwatchAds = adBlockItem.watch((adBlock) => {
     blockAds = Boolean(adBlock?.[adapter.id]);

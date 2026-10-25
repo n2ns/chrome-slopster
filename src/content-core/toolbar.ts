@@ -9,9 +9,10 @@ button:hover { opacity: 1; }
 button:disabled { cursor: default; opacity: .45; }
 button[aria-pressed="true"] { opacity: 1; font-weight: 600; }
 .note { opacity: .7; }
-/* The accent comes from --slopster-accent on the host (see setAccent); the fallback is the default preset. */
-.output { white-space: pre-wrap; margin-top: 4px; padding: 6px 8px; border-left: 3px solid; border-left-color: var(--slopster-accent, #5b8def); border-radius: 4px; background: color-mix(in srgb, var(--slopster-accent, #5b8def) 10%, transparent); font-size: 14px; line-height: 1.5; }
-.output.error { border-left-color: #d9534f; background: rgba(217, 83, 79, .08); }
+/* The background accent comes from --slopster-accent on the host (see setAccent), the default preset as fallback;
+   the text color from --slopster-text (see setTextColor), the page's color when unset. */
+.output { color: var(--slopster-text, inherit); white-space: pre-wrap; margin-top: 4px; padding: 6px 8px; border-left: 3px solid; border-left-color: var(--slopster-accent, #5b8def); border-radius: 4px; background: color-mix(in srgb, var(--slopster-accent, #5b8def) 10%, transparent); font-size: 14px; line-height: 1.5; }
+.output.error { color: inherit; border-left-color: #d9534f; background: rgba(217, 83, 79, .08); }
 `;
 
 export interface Toolbar {
@@ -22,8 +23,10 @@ export interface Toolbar {
   /** Show text below the buttons, or hide the output when text is null. */
   setOutput(text: string | null, isError?: boolean): void;
   isOutputVisible(): boolean;
-  /** Set the accent color (#rrggbb) of the translation output. */
+  /** Set the background accent color (#rrggbb) of the translation output. */
   setAccent(color: string): void;
+  /** Set the text color (#rrggbb) of the translation output; '' keeps the page's text color. */
+  setTextColor(color: string): void;
 }
 
 export const TOOLBAR_ATTRIBUTE = 'data-sra-toolbar';
@@ -72,6 +75,10 @@ export function createToolbar(unit: HTMLElement, translateLabel: string): Toolba
     },
     setAccent(color) {
       host.style.setProperty('--slopster-accent', color);
+    },
+    setTextColor(color) {
+      if (color) host.style.setProperty('--slopster-text', color);
+      else host.style.removeProperty('--slopster-text');
     },
   };
 }

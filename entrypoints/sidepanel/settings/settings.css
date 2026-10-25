@@ -304,7 +304,7 @@
   padding: 0;
 }
 
-/* Translation color: a wrapping row of round swatches, then a preview styled like the on-page translation. */
+/* Translation colors: wrapping rows of round swatches (background, then text), then a preview styled like the on-page translation. */
 
 .color-swatches {
   display: flex;
@@ -363,6 +363,18 @@
   background: var(--swatch-color);
 }
 
+/* "Same as the page": a neutral swatch in the panel's own text color. */
+.settings .color-swatches .swatch.default,
+.settings .color-swatches .swatch.default:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.settings .color-swatches .swatch.default svg {
+  filter: none;
+}
+
 .settings .color-swatches .swatch.custom input {
   position: absolute;
   inset: 0;
@@ -381,6 +393,7 @@
   border-left: 3px solid var(--preview-color);
   border-radius: 4px;
   background: color-mix(in srgb, var(--preview-color) 10%, transparent);
+  color: var(--preview-text, inherit);
   font-size: var(--text-sm);
   line-height: 1.5;
 }

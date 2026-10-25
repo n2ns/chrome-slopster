@@ -107,6 +107,75 @@ describe('content core on a Reddit post page', () => {
     await vi.waitFor(() => expect(host.shadowRoot!.querySelector<HTMLElement>('.output')!.hidden).toBe(false));
   });
 
+  it('hides the original while its translation is shown, when the setting is on', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await flush();
+    registerHandlers<BackgroundMessages>({ translate: async () => ({ text: 'translated', truncated: false }) });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    const unit = host.previousElementSibling!;
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(host.shadowRoot!.querySelector('.output')!.textContent).toBe('translated'));
+    expect(unit.hasAttribute('data-sra-original-hidden')).toBe(true);
+
+    // Hiding the translation shows the original again.
+    toolbarButton(host, 'translate')!.click();
+    await flush();
+    expect(unit.hasAttribute('data-sra-original-hidden')).toBe(false);
+
+    // Showing it again hides the original; turning the setting off restores it live.
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(unit.hasAttribute('data-sra-original-hidden')).toBe(true));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: false });
+    await vi.waitFor(() => expect(unit.hasAttribute('data-sra-original-hidden')).toBe(false));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await vi.waitFor(() => expect(unit.hasAttribute('data-sra-original-hidden')).toBe(true));
+  });
+
+  it('shows the original again when the page drops the toolbar that held its translation', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await flush();
+    registerHandlers<BackgroundMessages>({ translate: async () => ({ text: 'translated', truncated: false }) });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    const unit = host.previousElementSibling!;
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(unit.hasAttribute('data-sra-original-hidden')).toBe(true));
+    host.remove();
+    await vi.waitFor(() => expect(ownToolbar(comment('t1_pfccwzm'))).toBeDefined());
+    expect(unit.hasAttribute('data-sra-original-hidden')).toBe(false);
+  });
+
+  it('keeps the original visible when the page drops the toolbar while its translation is still loading', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await flush();
+    let answer!: (value: { text: string; truncated: boolean }) => void;
+    registerHandlers<BackgroundMessages>({ translate: () => new Promise((resolve) => (answer = resolve)) });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    const unit = host.previousElementSibling!;
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(answer).toBeDefined());
+    host.remove();
+    await vi.waitFor(() => expect(ownToolbar(comment('t1_pfccwzm'))).toBeDefined());
+    answer({ text: 'translated', truncated: false });
+    await flush();
+    await flush();
+    expect(unit.hasAttribute('data-sra-original-hidden')).toBe(false);
+  });
+
+  it('keeps the original visible when translation fails, even with hide original on', async () => {
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await flush();
+    registerHandlers<BackgroundMessages>({
+      translate: async () => {
+        throw new Error('boom');
+      },
+    });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    const unit = host.previousElementSibling!;
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(host.shadowRoot!.querySelector('.output')!.classList.contains('error')).toBe(true));
+    expect(unit.hasAttribute('data-sra-original-hidden')).toBe(false);
+  });
+
   it('shows a localized error when translation fails', async () => {
     registerHandlers<BackgroundMessages>({
       translate: async () => {
@@ -278,6 +347,17 @@ describe('content core translation color', () => {
     await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationColor: '#f08c00' });
     await vi.waitFor(() => expect(new Set(accents())).toEqual(new Set(['#f08c00'])));
     expect(accents()).toHaveLength(count);
+  });
+
+  it('gives toolbars the stored text color, live, and none for the page color or an invalid value', async () => {
+    const textColors = () => [...document.querySelectorAll<HTMLElement>('[data-sra-toolbar]')].map((host) => host.style.getPropertyValue('--slopster-text'));
+    await start();
+    await vi.waitFor(() => expect(accents().length).toBeGreaterThan(0));
+    expect(new Set(textColors())).toEqual(new Set(['']));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationTextColor: '#123abc' });
+    await vi.waitFor(() => expect(new Set(textColors())).toEqual(new Set(['#123abc'])));
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, translationTextColor: 'red; color: url(x)' });
+    await vi.waitFor(() => expect(new Set(textColors())).toEqual(new Set([''])));
   });
 
   it('falls back to the default color for a missing or invalid value', async () => {
