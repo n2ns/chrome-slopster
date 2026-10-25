@@ -223,7 +223,6 @@ During development, Claude runs the tests automatically, instead of relying on m
 
 **Layer 3 environment**:
 - Uses this machine's shared test Chrome (shared by all projects, not part of this project): `~/.local/bin/chrome-test` launches Chrome on Windows with the separate data directory `%LOCALAPPDATA%\ChromeTest\UserData`, with `--remote-debugging-port=9222 --enable-unsafe-extension-debugging`.
-- The chrome-devtools MCP launch command is `~/.local/bin/chrome-devtools-mcp-test`: it first ensures the test Chrome is running, then connects via `--browserUrl http://127.0.0.1:9222` (relies on WSL mirrored networking).
 - The extension is loaded directly from `\\wsl.localhost\<distro>\<repo path>\.output\chrome-mv3`. Verified on 2026-10-12: CDP `Extensions.loadUnpacked` can load an extension from a `\\wsl.localhost` path, so no sync to Windows is needed.
 - The operator logs in to the test accounts once in this profile by hand; the login state persists in the profile directory.
 
