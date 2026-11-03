@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enabling automatic translation also processes content already visible on the page.
 - X draft counts use weighted characters, emoji sequences, and shortened URL lengths.
 - Concurrent settings, ad-blocking, and API-key saves preserve independent changes.
+- X reply drafting no longer falls back to a visible comment when the main post is unmounted, and ancestor context excludes the selected post and its descendants.
+- Selecting the same reply target again switches the side panel back from new-post mode.
+- Long persona configurations no longer remove the target content from generation prompts.
+- Repairing trailing commas in model output preserves commas inside draft text.
+- Provider requests abort after 25 seconds, including response-body reads, so stalled requests release translation queue slots and can enter the existing retry or fallback flow.
+- Failed persona resets show an explicit failure notice instead of only the earlier loading error.
 
 ## [0.2.1] - 2026-10-25
 

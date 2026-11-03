@@ -31,7 +31,7 @@ export async function selectReplyTarget(
   } catch {
     opening = Promise.resolve(false);
   }
-  await replyTargetItem(tabId).setValue(thread);
+  await replyTargetItem(tabId).setValue({ ...thread, selectionId: crypto.randomUUID() });
   return { sidePanelOpened: await opening };
 }
 

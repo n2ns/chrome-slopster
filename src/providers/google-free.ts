@@ -52,7 +52,7 @@ export async function translateGoogleFree(text: string, targetLanguage: string, 
       const body = new URLSearchParams({ q: text });
       return parseResponse(await fetchJson(url, { method: 'POST', body, signal }, LABEL));
     } catch (error) {
-      if (attempt >= attempts || !isRetryable(error)) throw error;
+      if (signal?.aborted || attempt >= attempts || !isRetryable(error)) throw error;
       const jitter = baseDelayMs > 0 ? Math.random() * 200 : 0;
       const delay = baseDelayMs * 2 ** (attempt - 1) + jitter;
       await new Promise((resolve) => setTimeout(resolve, delay));

@@ -29,11 +29,34 @@ function extractJsonObject(text: string): string {
   return '';
 }
 
+/** Remove trailing structural commas without changing quoted JSON values. */
+function removeTrailingCommas(text: string): string {
+  let result = '';
+  let inString = false;
+  let escaped = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index]!;
+    if (escaped) {
+      escaped = false;
+    } else if (char === '\\' && inString) {
+      escaped = true;
+    } else if (char === '"') {
+      inString = !inString;
+    } else if (char === ',' && !inString) {
+      let next = index + 1;
+      while (next < text.length && /\s/.test(text[next]!)) next += 1;
+      if (text[next] === '}' || text[next] === ']') continue;
+    }
+    result += char;
+  }
+  return result;
+}
+
 function tryParseObject(candidate: string): Record<string, unknown> | null {
   const text = candidate.trim();
   if (!text) return null;
   // Models occasionally leave trailing commas, which JSON.parse rejects.
-  for (const attempt of [text, text.replace(/,(\s*[}\]])/g, '$1')]) {
+  for (const attempt of [text, removeTrailingCommas(text)]) {
     try {
       const parsed: unknown = JSON.parse(attempt);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as Record<string, unknown>;

@@ -344,6 +344,9 @@
   "personasResetConfirm": {
     "message": "The saved personas cannot be read. Replace them with a fresh default persona? This cannot be undone."
   },
+  "personasResetFailed": {
+    "message": "Could not reset personas."
+  },
   "contentTranslate": {
     "message": "Translate"
   },

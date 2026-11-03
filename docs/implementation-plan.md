@@ -130,11 +130,11 @@ All messages are defined in `src/messaging/protocol.ts` as typed request/respons
 | Direction | Message | Purpose |
 |---|---|---|
 | content → bg | `translate {text, targetLanguage?}` | Translate a piece of text; the response carries `truncated` when the source exceeded the engine's length cap |
-| content → bg | `selectReplyTarget {thread}` | A reply button on the page was clicked: write the reply target to `session` and open the side panel |
+| content → bg | `selectReplyTarget {thread}` | A reply button on the page was clicked: write the reply target and a fresh selection ID to `session` and open the side panel; every explicit selection switches the panel to reply mode, even for the same target |
 | content → bg | `clearReplyTarget {}` | The selected target left the page, or the content script started on a new document: forget the tab's reply target. URL changes alone do not clear it, because X opens its reply dialog at `/compose/post` |
 | sidepanel → bg | `generate {mode, thread, persona, intent, operatorLanguage}` | Generate a reply or post; the side panel sends the full persona so the background does not read persona storage |
 | sidepanel → bg | `translate` | Translate text pasted into the side panel's translation box |
-| sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page |
+| sidepanel → content | `getThreadContext` | When no reply target is selected, read the main post on the current page; return null if it is unavailable, never substitute a comment |
 | sidepanel → content | `insertText {text, thread}` | Fill the reply box of the target the draft was generated for (matched by `thread.url`); not-found when it is not on the page |
 | sidepanel → content | `getPostTarget` | Where a new post would go while the page's new-post form is open; null otherwise |
 | sidepanel → content | `insertPost {title?, body, target}` | Fill the open new-post form with a draft generated for `target`; not-found when the form is closed or the page no longer matches `target.url`. Never publishes |
@@ -152,7 +152,7 @@ Risk: `chrome.sidePanel.open()` must be called within a user gesture. Whether th
 | `sync` | `adBlock` | `{ reddit: false, x: false, facebook: false }` |
 | `local` | `apiKeys` | `{ openai, deepseek, gemini, claude }`, **stored on this device only** |
 | `session` | `googleFreeCooldownAt` | Start of the Google free translation cooldown |
-| `session` | `replyTarget:<tabId>` | Reply target selected on the page |
+| `session` | `replyTarget:<tabId>` | Reply target selected on the page, with a unique selection ID for each explicit selection |
 
 Persona profile:
 
@@ -189,10 +189,10 @@ Parsing must be lenient about field types ("boolean" fields may be strings, text
 
 ## 5. Module Notes
 
-- **providers**: OpenAI and DeepSeek share an OpenAI-compatible implementation; Gemini is implemented separately, with the API key in the `x-goog-api-key` request header rather than the URL; Claude uses the Messages API and, when called directly from the browser, needs the `anthropic-dangerous-direct-browser-access: true` request header. All four share the same system prompt.
+- **providers**: OpenAI and DeepSeek share an OpenAI-compatible implementation; Gemini is implemented separately, with the API key in the `x-goog-api-key` request header rather than the URL; Claude uses the Messages API and, when called directly from the browser, needs the `anthropic-dangerous-direct-browser-access: true` request header. All four share the same system prompt. Each HTTP attempt has a 25-second deadline covering the request and complete response body, enforced by aborting the request. A timeout before a usable success response becomes a network error; a known non-success HTTP status is preserved even if its error body stalls. Google retries retain their separate attempt limits and backoff, so the deadline is not a total translation-operation limit.
 - **models/registry.ts**: two tiers per vendor (flagship + budget). Model IDs are verified against each vendor's official docs at implementation time, never written from memory; retired IDs go into the alias table.
 - **translation**: concurrency cap of 3, with random staggering between tasks; Google free translation cools down for 5 minutes after a 429; optional fallback to AI; the truncation notice is appended after the translation and never concatenated into the source text.
-- **prompt**: platform rules live in one file per platform (Reddit / X / Facebook) and are always placed near the top of the prompt, outside the reach of length-budget truncation; anti-AI-voice rules govern tone only and are controlled by the persona's `antiAiVoice`; length-budget truncation preserves the trailing JSON format description; for X, the 280-character limit is written into the prompt and the length is checked again after generation.
+- **prompt**: platform rules live in one file per platform (Reddit / X / Facebook) and are always placed near the top of the prompt, outside the reach of length-budget truncation; anti-AI-voice rules govern tone only and are controlled by the persona's `antiAiVoice`. The budget preserves the target content before trimming persona details, ancestors, and reference comments, and keeps the trailing JSON format description. Lenient output parsing repairs structural trailing commas without changing string contents. For X, the 280-character limit is written into the prompt and the length is checked again after generation.
 - **content-core**: throttled page scanning with MutationObserver; translate and reply buttons live in a small toolbar inserted after each content unit, inside its own open shadow root to isolate styles (`src/content-core/toolbar.ts`).
 - **i18n**: all UI text goes through i18n, with no hard-coded Chinese or English in components; the same applies to error messages.
 

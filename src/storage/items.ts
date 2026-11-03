@@ -29,13 +29,16 @@ export const googleFreeCooldownAtItem = storage.defineItem<number>('session:goog
   fallback: 0,
 });
 
+/** Each explicit selection has its own ID, even when the thread is unchanged. */
+export type SelectedReplyTarget = ThreadContext & { selectionId?: string };
+
 /**
  * Reply target a page's reply button selected in one tab. Written by the
  * background (content scripts cannot access session storage), read by the side
  * panel. Cleared when the tab navigates or closes.
  */
 export function replyTargetItem(tabId: number) {
-  return storage.defineItem<ThreadContext | null>(`session:replyTarget:${tabId}`, { fallback: null });
+  return storage.defineItem<SelectedReplyTarget | null>(`session:replyTarget:${tabId}`, { fallback: null });
 }
 
 /**

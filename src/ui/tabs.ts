@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ThreadContext } from '@/src/adapters/types';
-import { replyTargetItem } from '@/src/storage/items';
+import { replyTargetItem, type SelectedReplyTarget } from '@/src/storage/items';
 
 export interface ActiveTab {
   tabId: number | undefined;
@@ -44,8 +43,8 @@ export function useActiveTab(): ActiveTab {
 }
 
 /** The reply target a page's reply button stored for a tab, kept up to date. */
-export function useReplyTarget(tabId: number | undefined): ThreadContext | null {
-  const [target, setTarget] = useState<{ tabId: number; thread: ThreadContext | null }>();
+export function useReplyTarget(tabId: number | undefined): SelectedReplyTarget | null {
+  const [target, setTarget] = useState<{ tabId: number; thread: SelectedReplyTarget | null }>();
 
   useEffect(() => {
     if (tabId === undefined) return;

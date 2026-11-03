@@ -137,6 +137,50 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('JSON shape:');
     expect(prompt.trimEnd().endsWith('}')).toBe(true);
   });
+
+  it.each(PLATFORMS)('%s: preserves the reply target when persona fields fill their limits', (platform) => {
+    const body = 'Target content. '.repeat(375).trim();
+    const target = thread(platform, { body, parentChain: ['Ancestor '.repeat(1000)], comments: ['Other reply '.repeat(1000)] });
+    const { prompt } = buildGenerationPrompt(request({
+      thread: target,
+      intent: 'i'.repeat(1500),
+      persona: {
+        ...persona,
+        identity: 'Known operator background. '.repeat(60).slice(0, 1500),
+        tone: 't'.repeat(600),
+        bannedWords: Array.from({ length: 100 }, (_, index) => String(index).padEnd(60, 'b')),
+        customRules: Array.from({ length: 30 }, (_, index) => String(index).padEnd(300, 'r')),
+      },
+    }));
+    expect(prompt.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
+    expect(prompt).toContain(`- URL: ${target.url}`);
+    expect(prompt).toContain('- Author: someone');
+    expect(prompt).toContain('- Title: Which backup tool?');
+    expect(prompt).toContain(body);
+    expect(prompt).toContain('Known operator background.');
+    for (const rule of [...PLATFORM_RULES[platform], ...ANTI_AI_VOICE_RULES]) expect(prompt).toContain(rule);
+    expect(prompt).toContain('[Context truncated to fit the prompt budget.]');
+    expect(prompt).toContain('JSON shape:');
+    expect(prompt.trimEnd().endsWith('}')).toBe(true);
+  });
+
+  it('preserves the new-post destination when a long persona exhausts the budget', () => {
+    const target = thread('reddit', { community: 'r/selfhosted', url: 'https://www.reddit.com/r/selfhosted/submit' });
+    const { prompt } = buildGenerationPrompt(request({
+      mode: 'post',
+      thread: target,
+      persona: {
+        ...persona,
+        bannedWords: Array.from({ length: 100 }, () => 'b'.repeat(500)),
+        customRules: Array.from({ length: 30 }, () => 'r'.repeat(500)),
+      },
+    }));
+    expect(prompt.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
+    expect(prompt).toContain('- Community: r/selfhosted');
+    expect(prompt).toContain(`- URL: ${target.url}`);
+    expect(prompt).not.toContain('- Content being replied to:');
+    expect(prompt).not.toContain('- Ancestor content');
+  });
 });
 
 describe('parseGenerationOutput', () => {
@@ -170,6 +214,16 @@ describe('parseGenerationOutput', () => {
 
   it('tolerates trailing commas', () => {
     expect(parseGenerationOutput('{"reply": "hi", "should_reply": true,}')?.reply).toBe('hi');
+  });
+
+  it('repairs structural trailing commas without changing strings or their escapes', () => {
+    const reply = String.raw`Use [a,] and {b,} literally; "quoted,]" and C:\tmp\ before \",}.`;
+    const raw = `${JSON.stringify({ ...full, reply }).slice(0, -1)},"extra":[{"value":1,},],}`;
+    expect(parseGenerationOutput(raw)).toMatchObject({
+      reply,
+      replyNative: full.reply_native,
+      shouldReply: true,
+    });
   });
 
   it.each([false, 'false', 'False', 'no', 0, '0', '否'])('treats %j as should_reply = false', (value) => {

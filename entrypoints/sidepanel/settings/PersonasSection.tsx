@@ -18,7 +18,7 @@ function lines(text: string): string[] {
 export function PersonasSection() {
   const { value, error: loadError, reload } = usePersonaState();
   const [selectedId, setSelectedId] = useState<string>();
-  const [error, setError] = useState<unknown>();
+  const [error, setError] = useState<{ cause: unknown; duringReset: boolean }>();
 
   // Run a storage action, show its error inline, and refresh the list afterwards.
   // `keepError` leaves an earlier error on screen, e.g. a failed delete followed by a save.
@@ -28,13 +28,14 @@ export function PersonasSection() {
     try {
       await action();
     } catch (failure) {
-      setError(failure);
+      setError({ cause: failure, duringReset: action === resetPersonas });
       ok = false;
     }
     reload();
     return ok;
   }
 
+  const shownError = error?.cause ?? loadError;
   if (!value) {
     return (
       <section>
@@ -42,10 +43,11 @@ export function PersonasSection() {
           <UsersRound className="icon" size={18} aria-hidden />
           {t('personasHeading')}
         </h2>
-        {loadError ? (
+        {shownError !== undefined ? (
           <p className="error">
             <CircleAlert className="icon" size={16} aria-hidden />
-            {errorMessage(loadError)}
+            {error?.duringReset && `${t('personasResetFailed')} `}
+            {errorMessage(shownError)}
           </p>
         ) : (
           <p className="hint">{t('loading')}</p>
@@ -115,10 +117,11 @@ export function PersonasSection() {
           />
         )}
       </div>
-      {(error ?? loadError) !== undefined && (
+      {shownError !== undefined && (
         <p className="error">
           <CircleAlert className="icon" size={16} aria-hidden />
-          {errorMessage(error ?? loadError)}
+          {error?.duringReset && `${t('personasResetFailed')} `}
+          {errorMessage(shownError)}
         </p>
       )}
     </section>

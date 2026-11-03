@@ -229,7 +229,8 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   registerHandlers<ContentMessages>({
     getThreadContext: async () => {
       const [first] = adapter.findReplyTargets(doc);
-      return { thread: first ? adapter.extractThread(first) : null };
+      const thread = first ? adapter.extractThread(first) : null;
+      return { thread: thread?.kind === 'post' ? thread : null };
     },
     getPostTarget: async () => ({ target: adapter.postTarget(doc) }),
     insertPost: async ({ title, body, target }) => {

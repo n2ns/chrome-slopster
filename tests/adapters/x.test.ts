@@ -50,6 +50,20 @@ describe('x adapter on a status page', () => {
     expect(thread.url).toContain('/Triumph_talez/status/');
   });
 
+  it('uses only earlier ancestors when drafting a reply to a tweet above the focal one', () => {
+    document.body.innerHTML = `<main data-testid="primaryColumn">
+      <article data-testid="tweet" tabindex="0"><div data-testid="tweetText">Root post</div></article>
+      <article data-testid="tweet" tabindex="0"><div data-testid="tweetText">Parent reply</div></article>
+      <article data-testid="tweet" tabindex="-1"><div data-testid="tweetText">Focal reply</div></article>
+      <article data-testid="tweet" tabindex="0"><div data-testid="tweetText">Child reply</div></article>
+    </main>`;
+    const threads = tweets().map((tweet) => xAdapter.extractThread(tweet));
+    expect(threads[0]!.parentChain).toEqual([]);
+    expect(threads[1]!.parentChain).toEqual(['Root post']);
+    expect(threads[2]!.parentChain).toEqual(['Parent reply', 'Root post']);
+    expect(threads[3]!.parentChain).toEqual(['Focal reply', 'Parent reply', 'Root post']);
+  });
+
   it('uses the inline composer for the focal tweet only', () => {
     const [focal, reply] = [tweets()[0]!, tweets()[1]!];
     expect(xAdapter.findComposer(focal)?.getAttribute('data-testid')).toBe('tweetTextarea_0');

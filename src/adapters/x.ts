@@ -80,6 +80,7 @@ function threadOf(tweet: HTMLElement): ThreadContext {
   const tweets = conversation(doc);
   const focal = focalTweet(doc);
   const focalIndex = focal ? tweets.indexOf(focal) : -1;
+  const targetIndex = tweets.indexOf(tweet);
   const text = (item: Element) => tweetText(item.querySelector(TEXT));
   // Tweets above the focal one are the thread it answers, oldest first on the page.
   const ancestorsOfFocal = focalIndex > 0 ? tweets.slice(0, focalIndex).map(text).filter(Boolean).reverse() : [];
@@ -90,7 +91,9 @@ function threadOf(tweet: HTMLElement): ThreadContext {
     url: absoluteUrl(doc, statusPath(tweet)),
     author: handleOf(tweet) ? `@${handleOf(tweet)}` : undefined,
     body: text(tweet),
-    parentChain: isFocal ? ancestorsOfFocal : [focal ? text(focal) : '', ...ancestorsOfFocal].filter(Boolean),
+    parentChain: targetIndex <= focalIndex
+      ? tweets.slice(0, targetIndex).map(text).filter(Boolean).reverse()
+      : [focal ? text(focal) : '', ...ancestorsOfFocal].filter(Boolean),
     comments: isFocal ? tweets.slice(focalIndex + 1).map(text).filter(Boolean).slice(0, MAX_COMMENTS) : [],
   };
 }

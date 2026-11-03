@@ -344,6 +344,9 @@
   "personasResetConfirm": {
     "message": "No se pueden leer los perfiles guardados. ¿Reemplazarlos por un perfil predeterminado nuevo? No se puede deshacer."
   },
+  "personasResetFailed": {
+    "message": "No se pudieron restablecer los perfiles."
+  },
   "contentTranslate": {
     "message": "Traducir"
   },

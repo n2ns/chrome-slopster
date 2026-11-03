@@ -535,6 +535,39 @@ describe('pages', () => {
     expect(container.querySelector('.persona-editor .status')).toBeNull();
   });
 
+  it('shows a failed persona reset separately from the initial load error, then recovers on retry', async () => {
+    await fakeBrowser.storage.sync.set({ personas__chunks: 1, personas__c0: 'invalid JSON' });
+    await render(<PersonasSettingsView />);
+    expect(container.querySelector('.error')!.textContent).toBe('errorStorage');
+    const reset = () => [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent?.includes('personasReset'))!;
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const write = vi.spyOn(fakeBrowser.storage.sync, 'set').mockRejectedValueOnce(new Error('MAX_WRITE_OPERATIONS_PER_MINUTE quota exceeded'));
+    await act(async () => reset().click());
+    await settle();
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('.error')!.textContent).toContain('personasResetFailed');
+    expect(container.querySelector('.error')!.textContent).toContain('errorStorage');
+    expect(container.querySelector('.persona-editor')).toBeNull();
+
+    await act(async () => reset().click());
+    await settle();
+    expect(container.querySelector('.persona-editor')).not.toBeNull();
+    expect(container.querySelector('.error')).toBeNull();
+    expect((await listPersonas()).map((persona) => persona.id)).toEqual([DEFAULT_PERSONA_ID]);
+  });
+
+  it('does not write personas when the reset confirmation is cancelled', async () => {
+    await fakeBrowser.storage.sync.set({ personas__chunks: 1, personas__c0: 'invalid JSON' });
+    await render(<PersonasSettingsView />);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const write = vi.spyOn(fakeBrowser.storage.sync, 'set');
+    const reset = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent?.includes('personasReset'))!;
+    await act(async () => reset.click());
+    await settle();
+    expect(write).not.toHaveBeenCalled();
+    expect(container.querySelector('.error')!.textContent).toBe('errorStorage');
+  });
+
   it('deleting a persona right after editing it shows no not-found error', async () => {
     await act(async () => void (await createPersona({ ...defaultPersonaFields(), name: 'Doomed' })));
     await render(<PersonasSettingsView />);

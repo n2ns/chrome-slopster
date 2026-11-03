@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { redditAdapter } from '@/src/adapters/reddit';
+import { facebookAdapter } from '@/src/adapters/facebook';
+import { xAdapter } from '@/src/adapters/x';
 import { runContentScript } from '@/src/content-core';
 import { registerHandlers, sendToTab, type BackgroundMessages } from '@/src/messaging/protocol';
 import { adBlockItem, settingsItem } from '@/src/storage/items';
@@ -52,6 +54,54 @@ describe('content core startup', () => {
     ctx.invalidate();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+});
+
+describe('content core default reply target', () => {
+  let ctx: ReturnType<typeof fakeContext>;
+
+  beforeEach(() => {
+    fakeBrowser.reset();
+    mockI18n();
+    vi.stubGlobal('IntersectionObserver', NoopIntersectionObserver);
+    vi.spyOn(fakeBrowser.tabs, 'sendMessage').mockImplementation(((_tabId: number, message: unknown) => fakeBrowser.runtime.sendMessage(message)) as never);
+    registerHandlers<BackgroundMessages>({ clearReplyTarget: async () => ({}) });
+    ctx = fakeContext();
+  });
+  afterEach(() => {
+    ctx.invalidate();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    document.body.innerHTML = '';
+  });
+
+  it.each([
+    [redditAdapter, 'reddit/post-page.html', '/r/selfhosted/comments/1x3m5xo/why_selfhost/'],
+    [xAdapter, 'x/status.html', '/DNetwork_4/status/2109314061410120106'],
+    [facebookAdapter, 'facebook/post-dialog.html', '/AnhTraiVuotNganChongGai/posts/example'],
+  ] as const)('returns the main post from %s', async (adapter, fixture, path) => {
+    window.history.replaceState(null, '', path);
+    document.body.innerHTML = readFileSync(join(import.meta.dirname, 'fixtures', fixture), 'utf8');
+    runContentScript(adapter, ctx as unknown as ContentScriptContext);
+    const { thread } = await sendToTab(1, 'getThreadContext', {});
+    expect(thread).toMatchObject({ kind: 'post', platform: adapter.id });
+    expect(thread!.body).toBeTruthy();
+  });
+
+  it('does not replace an unmounted X main post with a visible comment', async () => {
+    window.history.replaceState(null, '', '/DNetwork_4/status/2109314061410120106');
+    document.body.innerHTML = readFileSync(join(import.meta.dirname, 'fixtures', 'x/status.html'), 'utf8');
+    runContentScript(xAdapter, ctx as unknown as ContentScriptContext);
+    const { thread: main } = await sendToTab(1, 'getThreadContext', {});
+    expect(main?.kind).toBe('post');
+    const cell = document.querySelector('article[tabindex="-1"]')!.closest('[data-testid="cellInnerDiv"]')!;
+    const parent = cell.parentElement!;
+    const next = cell.nextSibling;
+    cell.remove();
+    expect(xAdapter.findReplyTargets(document).length).toBeGreaterThan(0);
+    await expect(sendToTab(1, 'getThreadContext', {})).resolves.toEqual({ thread: null });
+    parent.insertBefore(cell, next);
+    await expect(sendToTab(1, 'getThreadContext', {})).resolves.toEqual({ thread: main });
   });
 });
 

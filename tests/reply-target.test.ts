@@ -28,14 +28,26 @@ describe('selectReplyTarget', () => {
     const open = vi.spyOn(fakeBrowser.sidePanel, 'open').mockResolvedValue(undefined as never);
     await expect(selectReplyTarget({ thread }, sender(5))).resolves.toEqual({ sidePanelOpened: true });
     expect(open).toHaveBeenCalledWith({ tabId: 5 });
-    expect(await replyTargetItem(5).getValue()).toEqual(thread);
+    expect(await replyTargetItem(5).getValue()).toMatchObject({ ...thread, selectionId: expect.any(String) });
     expect(await replyTargetItem(6).getValue()).toBeNull();
   });
 
   it('still stores the target when the side panel cannot open', async () => {
     vi.spyOn(fakeBrowser.sidePanel, 'open').mockRejectedValue(new Error('requires a user gesture'));
     await expect(selectReplyTarget({ thread }, sender(5))).resolves.toEqual({ sidePanelOpened: false });
-    expect(await replyTargetItem(5).getValue()).toEqual(thread);
+    expect(await replyTargetItem(5).getValue()).toMatchObject({ ...thread, selectionId: expect.any(String) });
+  });
+
+  it('records a distinct selection when the same target is clicked again', async () => {
+    vi.spyOn(fakeBrowser.sidePanel, 'open').mockResolvedValue(undefined as never);
+    await selectReplyTarget({ thread }, sender(5));
+    const first = await replyTargetItem(5).getValue();
+    await selectReplyTarget({ thread }, sender(5));
+    const second = await replyTargetItem(5).getValue();
+
+    expect(first).toMatchObject({ ...thread, selectionId: expect.any(String) });
+    expect(second).toMatchObject({ ...thread, selectionId: expect.any(String) });
+    expect(second).not.toEqual(first);
   });
 
   it('rejects a message that did not come from a tab', async () => {

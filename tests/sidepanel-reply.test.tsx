@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import SidepanelApp from '@/entrypoints/sidepanel/App';
 import type { InsertResult, ThreadContext } from '@/src/adapters/types';
+import { selectReplyTarget } from '@/src/background/reply-target';
 import { registerHandlers, type BackgroundMessages } from '@/src/messaging/protocol';
 import type { GenerationRequest, GenerationResult } from '@/src/prompt/types';
 import { replyTargetItem, settingsItem } from '@/src/storage/items';
@@ -212,6 +213,34 @@ describe('side panel reply flow', () => {
     await settle();
     await click('replyFill');
     expect(fills.map((thread) => thread.url)).toEqual([comment.url]);
+  });
+
+  it('returns to replying when the same target is selected again, preserving the edited draft', async () => {
+    const sender = (id: number) => ({ tab: { id } as Browser.tabs.Tab });
+    await selectReplyTarget({ thread: comment }, sender(TAB_ID));
+    useGenerate(parsedResult);
+    const fills: { text: string; thread: ThreadContext }[] = [];
+    contentReplies.insertText = (text, thread) => {
+      fills.push({ text, thread });
+      return { ok: true };
+    };
+    await render();
+    await click('generate');
+    await act(async () => setValue(container.querySelector<HTMLTextAreaElement>('#reply-draft')!, 'Edited reply'));
+    await click('modePost');
+
+    await act(async () => void (await settingsItem.setValue({ ...DEFAULT_SETTINGS, fontSize: 'large' })));
+    await act(async () => void (await selectReplyTarget({ thread: comment }, sender(TAB_ID + 1))));
+    await settle();
+    expect(button('modePost').getAttribute('aria-pressed')).toBe('true');
+
+    await act(async () => void (await selectReplyTarget({ thread: comment }, sender(TAB_ID))));
+    await settle();
+    expect(button('modeReply').getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector<HTMLElement>('#reply-flow')!.hidden).toBe(false);
+    expect(container.querySelector<HTMLTextAreaElement>('#reply-draft')!.value).toBe('Edited reply');
+    await click('replyFill');
+    expect(fills).toMatchObject([{ text: 'Edited reply', thread: comment }]);
   });
 
   it('keeps the draft when the tab URL changes (X opens its reply dialog at /compose/post)', async () => {
