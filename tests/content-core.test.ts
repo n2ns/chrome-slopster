@@ -55,6 +55,85 @@ describe('content core startup', () => {
   });
 });
 
+describe('content core on slotted Reddit content', () => {
+  let ctx: ReturnType<typeof fakeContext>;
+
+  beforeEach(() => {
+    fakeBrowser.reset();
+    mockI18n();
+    registerHandlers<BackgroundMessages>({ clearReplyTarget: async () => ({}) });
+    vi.stubGlobal('IntersectionObserver', NoopIntersectionObserver);
+    window.history.replaceState(null, '', '/r/example/comments/123/title/');
+    document.body.innerHTML = `<shreddit-post permalink="/r/example/comments/123/title/">
+      <h2 slot="title">Title</h2>
+      <shreddit-post-text-body slot="text-body"><a slot="text-body"><p>Body</p></a></shreddit-post-text-body>
+    </shreddit-post>`;
+    document.querySelector('shreddit-post')!.attachShadow({ mode: 'open' }).innerHTML = '<slot name="title"></slot><slot name="text-body"></slot>';
+    document.querySelector('shreddit-post-text-body')!.attachShadow({ mode: 'open' }).innerHTML = '<slot name="text-body"></slot>';
+    ctx = fakeContext();
+  });
+
+  afterEach(() => {
+    ctx.invalidate();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    document.body.innerHTML = '';
+  });
+
+  it('keeps one slotted toolbar per title and body after repeated page mutations', async () => {
+    runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
+    expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-sra-toolbar][slot="text-body"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-sra-toolbar][slot="title"]')).toHaveLength(1);
+    for (let index = 0; index < 3; index += 1) {
+      document.body.append(document.createElement('span'));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(2);
+    }
+    const body = document.querySelector<HTMLElement>('shreddit-post-text-body')!;
+    const host = body.nextElementSibling!;
+    expect(toolbarButton(host, 'reply')).not.toBeNull();
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, hideOriginal: true });
+    await flush();
+    registerHandlers<BackgroundMessages>({ translate: async () => ({ text: 'Translated body', truncated: false }) });
+    toolbarButton(host, 'translate')!.click();
+    await vi.waitFor(() => expect(body.hasAttribute('data-sra-original-hidden')).toBe(true));
+    expect(host.hasAttribute('data-sra-original-hidden')).toBe(false);
+    expect(host.shadowRoot!.querySelector('.output')!.textContent).toBe('Translated body');
+  });
+
+  it('translates already-visible units when automatic translation is enabled, without translating them twice', async () => {
+    const visible = document.querySelector<HTMLElement>('shreddit-post-text-body')!;
+    class InitialIntersectionObserver {
+      observed = new Set<Element>();
+      constructor(private callback: IntersectionObserverCallback) {}
+      observe(target: Element) {
+        if (this.observed.has(target)) return;
+        this.observed.add(target);
+        queueMicrotask(() => {
+          if (this.observed.has(target)) this.callback([{ target, isIntersecting: target === visible } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+        });
+      }
+      unobserve(target: Element) { this.observed.delete(target); }
+      disconnect() { this.observed.clear(); }
+    }
+    vi.stubGlobal('IntersectionObserver', InitialIntersectionObserver);
+    const translate = vi.fn(async ({ text }: { text: string }) => ({ text: `Translated ${text}`, truncated: false }));
+    registerHandlers<BackgroundMessages>({ translate });
+    runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
+    await flush();
+    expect(translate).not.toHaveBeenCalled();
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: true });
+    await vi.waitFor(() => expect(translate).toHaveBeenCalledTimes(1));
+    expect(translate.mock.calls[0]![0]).toEqual({ text: 'Body' });
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: false });
+    await flush();
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: true });
+    await flush();
+    expect(translate).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('content core on a Reddit post page', () => {
   let ctx: ReturnType<typeof fakeContext>;
 

@@ -46,5 +46,5 @@ Run a single test file: `npx vitest run tests/locales.test.ts`
 A shared Windows test Chrome (separate data directory, debugging port 9222) is used for all real-browser checks:
 
 - `chrome-test` starts it if it is not running; the chrome-devtools MCP server connects to it automatically.
-- Load the build straight from WSL: `\\wsl.localhost\<distro>\<repo path>\.output\chrome-mv3` (CDP `Extensions.loadUnpacked`, or the MCP `install_extension` tool). No sync to Windows is needed.
+- Local Windows and WSL builds sync to `D:\_Dev\_Artifacts\chrome\chrome-slopster-dist`; load that directory in Windows Chrome. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#loading-a-build-in-chrome) for reload steps and platform requirements.
 - Real-site testing uses test accounts only, at low frequency; pause on login pages, CAPTCHAs, or risk-control prompts and hand over to the operator.

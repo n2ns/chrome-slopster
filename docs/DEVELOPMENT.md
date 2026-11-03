@@ -29,7 +29,9 @@ Run a single test file: `npx vitest run tests/locales.test.ts`
 
 ## Loading a build in Chrome
 
-Build with `npm run build` (or unzip a release zip), open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose `.output/chrome-mv3` (or the unzipped folder).
+Build with `npm run build`, open `chrome://extensions`, turn on **Developer mode**, and click **Load unpacked**. Local Windows and WSL builds also sync the unpacked extension to `D:\_Dev\_Artifacts\chrome\chrome-slopster-dist` (`/mnt/d/_Dev/_Artifacts/chrome/chrome-slopster-dist` in WSL); load that directory in Windows Chrome. Each successful build replaces this project's generated directory, removing stale bundles. The parent `D:\_Dev\_Artifacts\chrome` directory must already exist. CI and other platforms skip the Windows copy and keep the normal `.output/chrome-mv3` output.
+
+After rebuilding, click **Reload** on this extension's card in `chrome://extensions`, then refresh the site tab. Keep the store version disabled while testing the local copy to avoid duplicate content scripts. On other platforms, load `.output/chrome-mv3`; for a downloaded release, load its unzipped folder.
 
 ## Project layout
 

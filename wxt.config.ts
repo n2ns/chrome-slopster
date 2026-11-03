@@ -1,8 +1,14 @@
 import { defineConfig } from 'wxt';
+import { syncWindowsBuild } from './scripts/sync-windows-build';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  hooks: {
+    async 'build:done'(wxt) {
+      if (wxt.config.browser === 'chrome') await syncWindowsBuild(wxt.config.outDir);
+    },
+  },
   manifest: {
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',

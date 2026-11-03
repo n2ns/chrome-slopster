@@ -223,7 +223,7 @@ During development, Claude runs the tests automatically, instead of relying on m
 
 **Layer 3 environment**:
 - Uses this machine's shared test Chrome (shared by all projects, not part of this project): `~/.local/bin/chrome-test` launches Chrome on Windows with the separate data directory `%LOCALAPPDATA%\ChromeTest\UserData`, with `--remote-debugging-port=9222 --enable-unsafe-extension-debugging`.
-- The extension is loaded directly from `\\wsl.localhost\<distro>\<repo path>\.output\chrome-mv3`. Verified on 2026-10-12: CDP `Extensions.loadUnpacked` can load an extension from a `\\wsl.localhost` path, so no sync to Windows is needed.
+- Local Windows and WSL builds sync to `D:\_Dev\_Artifacts\chrome\chrome-slopster-dist` for loading in Windows Chrome. See [DEVELOPMENT.md](DEVELOPMENT.md#loading-a-build-in-chrome) for reload steps and platform requirements.
 - The operator logs in to the test accounts once in this profile by hand; the login state persists in the profile directory.
 
 **Layer 3 hard rules**:

@@ -26,6 +26,18 @@ describe('reddit adapter on a post page', () => {
     expect(slots.filter((slot) => slot === 'comment')).toHaveLength(document.querySelectorAll('shreddit-comment').length);
   });
 
+  it('treats nested feed body slots as one unit and excludes injected toolbars', () => {
+    document.body.innerHTML = `<shreddit-post>
+      <h2 slot="title">Title</h2>
+      <shreddit-post-text-body slot="text-body"><a slot="text-body"><p>Body</p></a></shreddit-post-text-body>
+      <div data-sra-toolbar slot="text-body"></div>
+      <div data-sra-toolbar slot="title"></div>
+    </shreddit-post>`;
+    const units = redditAdapter.findTranslatableUnits(document);
+    expect(units.map((unit) => unit.tagName.toLowerCase())).toEqual(['h2', 'shreddit-post-text-body']);
+    expect(units.map((unit) => redditAdapter.extractText(unit))).toEqual(['Title', 'Body']);
+  });
+
   it('extracts comment text paragraph by paragraph', () => {
     const body = [...comment('t1_pfccwzm').querySelectorAll('[slot="comment"]')].find((el) => el.closest('shreddit-comment') === comment('t1_pfccwzm'))!;
     const text = redditAdapter.extractText(body as HTMLElement);

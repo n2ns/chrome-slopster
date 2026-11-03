@@ -116,6 +116,19 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     }
   });
 
+  function applyAutoTranslate(enabled: boolean): void {
+    const wasEnabled = autoTranslate;
+    autoTranslate = enabled;
+    if (enabled && !wasEnabled) {
+      // A visible unit has already delivered its initial intersection while disabled.
+      for (const unit of observed) {
+        if (translated.has(unit)) continue;
+        visibility.unobserve(unit);
+        visibility.observe(unit);
+      }
+    }
+  }
+
   function applyAds(): void {
     if (blockAds) {
       for (const ad of adapter.findAds(doc)) ad.setAttribute(AD_ATTRIBUTE, '');
@@ -242,7 +255,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   });
 
   void getSettings().then((settings) => {
-    autoTranslate = settings.autoTranslate;
+    applyAutoTranslate(settings.autoTranslate);
     applyDisplay(settings);
   });
   void getAdBlock().then((adBlock) => {
@@ -250,7 +263,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     applyAds();
   });
   const unwatchSettings = settingsItem.watch((settings) => {
-    autoTranslate = Boolean(settings?.autoTranslate);
+    applyAutoTranslate(Boolean(settings?.autoTranslate));
     applyDisplay(settings);
   });
   const unwatchAds = adBlockItem.watch((adBlock) => {

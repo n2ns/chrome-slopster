@@ -3,6 +3,7 @@
 
 import { CircleCheck, ClipboardPaste, Copy, LoaderCircle, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
+import parseTweet from 'twitter-text/dist/esm/parseTweet';
 import { t, type MessageKey } from '@/src/i18n';
 import { X_MAX_CHARS } from '@/src/prompt/platforms/x';
 import type { GenerationMode, GenerationResult, ParsedGeneration } from '@/src/prompt/types';
@@ -68,8 +69,7 @@ interface ParsedProps {
 
 function ParsedResult({ mode, parsed, platform, draft, onDraftChange, children }: ParsedProps) {
   const text = MODE_TEXT[mode];
-  // Code points, so emoji count once; X's own weighting may differ slightly.
-  const length = [...draft].length;
+  const length = platform === 'x' ? parseTweet(draft).weightedLength : 0;
   const overLimit = platform === 'x' && length > X_MAX_CHARS;
   return (
     <>

@@ -102,7 +102,9 @@ export const redditAdapter: PlatformAdapter = {
   matches: ['https://www.reddit.com/*', 'https://reddit.com/*'],
 
   findTranslatableUnits(root) {
-    return [...root.querySelectorAll<HTMLElement>(UNIT_SELECTOR)];
+    return [...root.querySelectorAll<HTMLElement>(UNIT_SELECTOR)].filter(
+      (unit) => !unit.closest('[data-sra-toolbar]') && !(unit.slot === 'text-body' && unit.parentElement?.closest('shreddit-post [slot="text-body"]')),
+    );
   },
 
   extractText(unit) {
