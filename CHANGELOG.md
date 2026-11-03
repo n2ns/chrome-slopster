@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-03
+
 ### Added
 - Local Windows and WSL Chrome builds automatically sync to `D:\_Dev\_Artifacts\chrome\chrome-slopster-dist` for unpacked browser loading.
 
