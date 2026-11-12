@@ -18,11 +18,11 @@ describe('reddit adapter on a post page', () => {
     document.body.innerHTML = '';
   });
 
-  it('finds the title, the body, and every comment body as translatable units', () => {
+  it('finds the post body (not its title) and every comment body as translatable units', () => {
     const units = redditAdapter.findTranslatableUnits(document);
     const slots = units.map((unit) => unit.getAttribute('slot'));
-    expect(slots).toContain('title');
-    expect(slots).toContain('text-body');
+    expect(slots).not.toContain('title');
+    expect(slots.filter((slot) => slot === 'text-body')).toHaveLength(1);
     expect(slots.filter((slot) => slot === 'comment')).toHaveLength(document.querySelectorAll('shreddit-comment').length);
   });
 
@@ -34,8 +34,14 @@ describe('reddit adapter on a post page', () => {
       <div data-sra-toolbar slot="title"></div>
     </shreddit-post>`;
     const units = redditAdapter.findTranslatableUnits(document);
-    expect(units.map((unit) => unit.tagName.toLowerCase())).toEqual(['h2', 'shreddit-post-text-body']);
-    expect(units.map((unit) => redditAdapter.extractText(unit))).toEqual(['Title', 'Body']);
+    expect(units.map((unit) => unit.tagName.toLowerCase())).toEqual(['shreddit-post-text-body']);
+    expect(units.map((unit) => redditAdapter.extractText(unit))).toEqual(['Title\n\nBody']);
+  });
+
+  it('keeps the title as the unit of a post without a text body', () => {
+    document.body.innerHTML = `<shreddit-post><h2 slot="title">Link post</h2></shreddit-post>`;
+    const units = redditAdapter.findTranslatableUnits(document);
+    expect(units.map((unit) => redditAdapter.extractText(unit))).toEqual(['Link post']);
   });
 
   it('extracts comment text paragraph by paragraph', () => {

@@ -1,30 +1,34 @@
-/* Shared base styles for the side panel and its settings view, light and dark. */
+/* Shared base styles for the side panel and its settings view, light and dark (following the browser, or set by the theme setting). */
 
 :root {
+  /* Each color is light-dark(light, dark); color-scheme picks one, and also styles native controls. */
   color-scheme: light dark;
-  --bg: #f3f5f8;
-  --surface: #ffffff;
-  --surface-2: #f7f8fb;
-  --field: #ffffff;
-  --text: #111827;
-  --muted: #5f6b7a;
-  --border: #dde2ea;
-  --border-strong: #c5ccd8;
-  --button-bg: #ffffff;
-  --button-border: #c5ccd8;
-  --button-hover: #f3f5f8;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-soft: #eaf1fe;
-  --accent-text: #ffffff;
-  --danger: #d33b3b;
-  --danger-soft: #fdeeee;
-  --success: #1f8a4c;
-  --success-soft: #e8f6ee;
-  --warning: #b45309;
-  --warning-soft: #fef5e7;
-  --focus: rgba(37, 99, 235, 0.35);
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --bg: light-dark(#f3f5f8, #111317);
+  --surface: light-dark(#ffffff, #1a1d23);
+  --surface-2: light-dark(#f7f8fb, #20242b);
+  --field: light-dark(#ffffff, #14171c);
+  --text: light-dark(#111827, #e8eaee);
+  --muted: light-dark(#5f6b7a, #9aa4b2);
+  --border: light-dark(#dde2ea, #2d323b);
+  --border-strong: light-dark(#c5ccd8, #464d59);
+  --button-bg: light-dark(#ffffff, #272c35);
+  --button-border: light-dark(#c5ccd8, #59616f);
+  --button-hover: light-dark(#f3f5f8, #313742);
+  --accent: light-dark(#2563eb, #60a5fa);
+  --accent-hover: light-dark(#1d4ed8, #93c5fd);
+  --accent-soft: light-dark(#eaf1fe, rgba(96, 165, 250, 0.14));
+  --accent-text: light-dark(#ffffff, #0b1220);
+  --danger: light-dark(#d33b3b, #f07878);
+  --danger-soft: light-dark(#fdeeee, rgba(240, 120, 120, 0.12));
+  --success: light-dark(#1f8a4c, #5fd08d);
+  --success-soft: light-dark(#e8f6ee, rgba(95, 208, 141, 0.12));
+  --warning: light-dark(#b45309, #f2b45c);
+  --warning-soft: light-dark(#fef5e7, rgba(242, 180, 92, 0.12));
+  --focus: light-dark(rgba(37, 99, 235, 0.35), rgba(96, 165, 250, 0.4));
+  /* light-dark() takes colors only, so the shadow switches through its layer colors. */
+  --shadow-1: light-dark(rgba(16, 24, 40, 0.05), rgba(0, 0, 0, 0.3));
+  --shadow-2: light-dark(rgba(16, 24, 40, 0.06), transparent);
+  --shadow: 0 1px 2px var(--shadow-1), 0 1px 3px var(--shadow-2);
   --radius: 10px;
   --radius-sm: 7px;
   /* Text sizes, relative to the root size picked by the font size setting. */
@@ -37,6 +41,15 @@
   line-height: 1.55;
 }
 
+/* Set from the theme setting; 'auto' (or no setting yet) keeps `light dark`, which follows the browser. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 /* Set from the font size setting (small / medium / large); medium is the default. */
 :root[data-font-size='small'] {
   font-size: 14px;
@@ -44,34 +57,6 @@
 
 :root[data-font-size='large'] {
   font-size: 17px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #111317;
-    --surface: #1a1d23;
-    --surface-2: #20242b;
-    --field: #14171c;
-    --text: #e8eaee;
-    --muted: #9aa4b2;
-    --border: #2d323b;
-    --border-strong: #464d59;
-    --button-bg: #272c35;
-    --button-border: #59616f;
-    --button-hover: #313742;
-    --accent: #60a5fa;
-    --accent-hover: #93c5fd;
-    --accent-soft: rgba(96, 165, 250, 0.14);
-    --accent-text: #0b1220;
-    --danger: #f07878;
-    --danger-soft: rgba(240, 120, 120, 0.12);
-    --success: #5fd08d;
-    --success-soft: rgba(95, 208, 141, 0.12);
-    --warning: #f2b45c;
-    --warning-soft: rgba(242, 180, 92, 0.12);
-    --focus: rgba(96, 165, 250, 0.4);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
 }
 
 * {

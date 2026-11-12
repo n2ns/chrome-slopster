@@ -133,6 +133,18 @@ describe('facebook adapter on a group post with replies', () => {
     expect(facebookAdapter.findComposer(targets()[index - 1]!)).toBeNull();
     expect(facebookAdapter.findComposer(targets()[0]!)?.getAttribute('aria-label')).toBe('输入回答…');
   });
+
+  it("does not take a click on Slopster's own toolbar in a comment as opening that comment's reply box", () => {
+    load(GROUP_PATH, 'group-post-dialog.html');
+    detach = facebookAdapter.attach?.(document);
+    const parent = targets()[replyIndex() - 1]!;
+    const toolbar = document.createElement('div');
+    toolbar.setAttribute('data-sra-toolbar', '');
+    parent.querySelector('[role="button"]')!.parentElement!.append(toolbar);
+    toolbar.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    box().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(facebookAdapter.findComposer(parent)).toBeNull();
+  });
 });
 
 describe('facebook post URLs', () => {

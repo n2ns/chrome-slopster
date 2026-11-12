@@ -146,6 +146,18 @@
   "fontSizeLarge": {
     "message": "Large"
   },
+  "theme": {
+    "message": "Theme"
+  },
+  "themeAuto": {
+    "message": "Follow browser"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
   "adBlockHeading": {
     "message": "Ad blocking"
   },

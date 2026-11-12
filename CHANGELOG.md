@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Side panel theme in the general settings: follow the browser (the default), light, or dark.
+
+### Changed
+- The AI engine list in the AI settings is in alphabetical order (Claude, DeepSeek, Gemini, OpenAI).
+
+### Fixed
+- A Reddit post with a text body shows one Translate button, after the body, instead of one under the title and another under the body; it translates the title and the body together.
+- X no longer treats the media viewer (`/<user>/status/<id>/photo/…`) as a conversation page: opening a photo from the home timeline no longer adds Draft reply buttons to the timeline, and opening one over a conversation keeps the selected reply target.
+- X full pages under `/i/` (such as bookmarks or history) no longer keep the previous conversation's key; only `/i/` routes shown in a modal do.
+- When a selected reply target is dropped because the page moved to another conversation or was restored from the back/forward cache, the page no longer keeps showing the selection.
+- Automatic translation translates a post or comment again when the site re-renders it and removes its translation.
+- Clicking Slopster's own Translate or Draft reply button in a Facebook comment is no longer taken as opening that comment's reply box.
+
 ## [0.2.2] - 2026-11-03
 
 ### Added

@@ -38,7 +38,7 @@ chrome-slopster/
 ├─ entrypoints/
 │  ├─ background.ts                # Message routing, translation queue, provider calls, opening the side panel
 │  ├─ sidepanel/                   # React: drafting, translation, filling
-│  │  └─ settings/                 # React: personas, AI settings (engine, API key, model, translation) and general settings (language, auto-translate, translation background and text colors, hide original, font size, ad toggles), shown inside the side panel
+│  │  └─ settings/                 # React: personas, AI settings (engine, API key, model, translation) and general settings (language, auto-translate, translation background and text colors, hide original, theme, font size, ad toggles), shown inside the side panel
 │  ├─ reddit.content.ts            # Composition only: core + Reddit adapter
 │  ├─ x.content.ts
 │  └─ facebook.content.ts
@@ -148,7 +148,7 @@ Risk: `chrome.sidePanel.open()` must be called within a user gesture. Whether th
 |---|---|---|
 | `sync` | `personas` (chunked) | Array of persona profiles |
 | `sync` | `activePersonaId` | Current persona |
-| `sync` | `settings` | Translation engine, AI engine, models, target language, auto-translate, AI fallback, font size, etc.; no secrets |
+| `sync` | `settings` | Translation engine, AI engine, models, target language, auto-translate, AI fallback, theme, font size, etc.; no secrets |
 | `sync` | `adBlock` | `{ reddit: false, x: false, facebook: false }` |
 | `local` | `apiKeys` | `{ openai, deepseek, gemini, claude }`, **stored on this device only** |
 | `session` | `googleFreeCooldownAt` | Start of the Google free translation cooldown |

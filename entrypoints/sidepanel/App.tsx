@@ -5,6 +5,7 @@ import { sendToBackground } from '@/src/messaging/protocol';
 import { ErrorNotice } from '@/src/ui/ErrorNotice';
 import { useSettings } from '@/src/ui/hooks';
 import { SettingsNavContext, type SettingsView } from '@/src/ui/settings-nav';
+import { applyTheme } from '@/src/ui/theme';
 import { ReplySection } from './ReplySection';
 import { AiSettingsView } from './settings/AiSettingsView';
 import { GeneralSettingsView } from './settings/GeneralSettingsView';
@@ -24,11 +25,17 @@ export default function App() {
   const [opened, setOpened] = useState<ReadonlySet<SettingsView>>(new Set());
   const { value: settings } = useSettings();
   const fontSize = settings?.fontSize;
+  const theme = settings?.theme;
 
   // The font size setting scales the whole panel (sizes are in rem).
   useEffect(() => {
     if (fontSize) document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
+
+  // The theme setting picks the panel's color scheme (see styles.css).
+  useEffect(() => {
+    if (theme) applyTheme(theme);
+  }, [theme]);
 
   function switchView(next: View) {
     setView(next);

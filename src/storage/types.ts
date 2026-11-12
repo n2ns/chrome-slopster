@@ -40,6 +40,8 @@ export interface Settings {
   /** Fall back to the selected AI engine when Google free translation fails or is cooling down. */
   aiFallback: boolean;
   fontSize: 'small' | 'medium' | 'large';
+  /** Side panel color theme; 'auto' follows the browser's light or dark mode. */
+  theme: 'auto' | 'light' | 'dark';
   /**
    * Background color of translations shown on pages (left border and tinted background), as #rrggbb:
    * one of TRANSLATION_COLOR_PRESETS or a custom color. The key predates the text color and is kept so saved values stay.
@@ -83,6 +85,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoTranslate: false,
   aiFallback: false,
   fontSize: 'medium',
+  theme: 'auto',
   translationColor: TRANSLATION_COLOR_PRESETS[0].color,
   translationTextColor: '',
   hideOriginal: false,

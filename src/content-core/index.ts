@@ -10,6 +10,7 @@ import { adBlockItem, getSettings, settingsItem } from '@/src/storage/items';
 import { getAdBlock } from '@/src/storage/settings';
 import { normalizeTranslationColor, normalizeTranslationTextColor, type Settings } from '@/src/storage/types';
 import { errorMessage } from '@/src/ui/errors';
+import { createSelection } from './selection';
 import { createToolbar, type Toolbar } from './toolbar';
 
 const SCAN_DELAY_MS = 250;
@@ -25,21 +26,24 @@ function ownerTarget(unit: HTMLElement, targets: Set<HTMLElement>): HTMLElement 
   return undefined;
 }
 
+/** One translatable unit on the page and its toolbar. A replaced toolbar gets a fresh record. */
+interface UnitState {
+  toolbar: Toolbar;
+  /** A translation was requested (and has not failed), so automatic translation skips the unit. */
+  translated: boolean;
+  /** The translation is shown, so the hide-original setting applies to the unit. */
+  shown: boolean;
+  /** Waiting for its first intersection, which automatic translation acts on. */
+  observing: boolean;
+}
+
 export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptContext): void {
   const doc = document;
-  const toolbars = new WeakMap<HTMLElement, Toolbar>();
-  const translated = new WeakSet<HTMLElement>();
-  const replyButtons = new Map<HTMLElement, HTMLButtonElement>();
-  const observed = new Set<HTMLElement>();
-  /** Toolbars currently on the page, so a color change can restyle them. */
-  const liveToolbars = new Set<Toolbar>();
-  /** Units whose translation is shown, so the hide-original setting can apply to them live. */
-  const shownUnits = new Set<HTMLElement>();
-  /** Page key at the time the operator selected a target here; a different key clears the stored target. */
-  let selectedPageKey: string | null = null;
-  let hasSelection = false;
-  /** Toolbar of the selected target, whose note reports the selection. */
-  let selectedToolbar: Toolbar | null = null;
+  /** Each unit's record; kept while the page detaches a unit, so the unit keeps its toolbar if it comes back. */
+  const units = new WeakMap<HTMLElement, UnitState>();
+  /** Units on the page, for settings that apply to all of them. */
+  const live = new Set<HTMLElement>();
+  const selection = createSelection(adapter, doc, () => ctx.isValid, clearStoredTarget);
   let autoTranslate = false;
   let blockAds = false;
   let accent = normalizeTranslationColor(undefined);
@@ -52,22 +56,23 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   (doc.head ?? doc.documentElement).append(adStyle);
 
   /** Hide the unit's original text only while its translation is shown and the setting is on. */
-  function applyOriginal(unit: HTMLElement): void {
-    unit.toggleAttribute(ORIGINAL_ATTRIBUTE, hideOriginal && shownUnits.has(unit));
+  function applyOriginal(unit: HTMLElement, state: UnitState | undefined): void {
+    unit.toggleAttribute(ORIGINAL_ATTRIBUTE, hideOriginal && state?.shown === true);
   }
 
-  async function translateUnit(unit: HTMLElement, toolbar: Toolbar): Promise<void> {
+  async function translateUnit(unit: HTMLElement, state: UnitState): Promise<void> {
     if (!ctx.isValid) return;
-    if (toolbar.isOutputVisible() && translated.has(unit)) {
-      shownUnits.delete(unit);
-      applyOriginal(unit);
+    const { toolbar } = state;
+    if (toolbar.isOutputVisible() && state.translated) {
+      state.shown = false;
+      applyOriginal(unit, state);
       toolbar.setOutput(null);
       toolbar.translateButton.textContent = t('contentShowTranslation');
       return;
     }
     const text = adapter.extractText(unit);
     if (!text) return;
-    translated.add(unit);
+    state.translated = true;
     toolbar.translateButton.disabled = true;
     toolbar.translateButton.textContent = t('contentTranslating');
     try {
@@ -75,33 +80,16 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       toolbar.setOutput(result.truncated ? `${result.text}\n\n${t('translationTruncated')}` : result.text);
       toolbar.translateButton.textContent = t('contentHideTranslation');
       // Hide the original only if this toolbar still shows the translation (the page may have replaced it meanwhile).
-      if (toolbars.get(unit) === toolbar && toolbar.host.isConnected) {
-        shownUnits.add(unit);
-        applyOriginal(unit);
+      if (units.get(unit) === state && toolbar.host.isConnected) {
+        state.shown = true;
+        applyOriginal(unit, state);
       }
     } catch (error) {
-      translated.delete(unit);
+      state.translated = false;
       toolbar.setOutput(errorMessage(error), true);
       toolbar.translateButton.textContent = t('contentTranslate');
     } finally {
       toolbar.translateButton.disabled = false;
-    }
-  }
-
-  async function selectTarget(target: HTMLElement, toolbar: Toolbar): Promise<void> {
-    if (!ctx.isValid) return;
-    hasSelection = true;
-    selectedPageKey = adapter.pageKey(doc);
-    for (const [owner, button] of replyButtons) button.setAttribute('aria-pressed', String(owner === target));
-    selectedToolbar?.setNote('');
-    selectedToolbar = toolbar;
-    toolbar.setNote('');
-    // The selection may have been cleared or moved while the background stored it; report only on the current one.
-    try {
-      const { sidePanelOpened } = await sendToBackground('selectReplyTarget', { thread: adapter.extractThread(target) });
-      if (selectedToolbar === toolbar) toolbar.setNote(sidePanelOpened ? t('contentReplySelected') : t('contentOpenSidePanel'));
-    } catch (error) {
-      if (selectedToolbar === toolbar) toolbar.setNote(errorMessage(error));
     }
   }
 
@@ -110,9 +98,10 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       if (!entry.isIntersecting || !autoTranslate) continue;
       const unit = entry.target as HTMLElement;
       visibility.unobserve(unit);
-      observed.delete(unit);
-      const toolbar = toolbars.get(unit);
-      if (toolbar && !translated.has(unit)) void translateUnit(unit, toolbar);
+      const state = units.get(unit);
+      if (!state) continue;
+      state.observing = false;
+      if (!state.translated) void translateUnit(unit, state);
     }
   });
 
@@ -121,8 +110,9 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     autoTranslate = enabled;
     if (enabled && !wasEnabled) {
       // A visible unit has already delivered its initial intersection while disabled.
-      for (const unit of observed) {
-        if (translated.has(unit)) continue;
+      for (const unit of live) {
+        const state = units.get(unit);
+        if (!state?.observing || state.translated) continue;
         visibility.unobserve(unit);
         visibility.observe(unit);
       }
@@ -137,61 +127,56 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     }
   }
 
+  function addToolbar(unit: HTMLElement): UnitState {
+    const toolbar = createToolbar(unit, t('contentTranslate'));
+    toolbar.setAccent(accent);
+    toolbar.setTextColor(textColor);
+    const state: UnitState = { toolbar, translated: false, shown: false, observing: true };
+    toolbar.translateButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      void translateUnit(unit, state);
+    });
+    units.set(unit, state);
+    // A new toolbar starts without a translation, so the original must be visible again.
+    applyOriginal(unit, state);
+    visibility.observe(unit);
+    return state;
+  }
+
   function scan(): void {
     scanTimer = undefined;
     if (!ctx.isValid) return;
-    if (hasSelection && adapter.pageKey(doc) !== selectedPageKey) {
-      // The page now shows another conversation (SPA navigation), so the stored target no longer applies.
-      hasSelection = false;
-      clearStoredTarget();
-    }
-    // Forget nodes the page removed (SPA navigation, collapsed threads).
-    for (const [target, button] of replyButtons) if (!target.isConnected || !button.isConnected) replyButtons.delete(target);
-    for (const toolbar of liveToolbars) if (!toolbar.host.isConnected) liveToolbars.delete(toolbar);
-    for (const unit of shownUnits) if (!unit.isConnected) shownUnits.delete(unit);
-    for (const unit of observed) {
+    // The page may now show another conversation (SPA navigation).
+    selection.followPage();
+    // Forget nodes the page removed (SPA navigation, collapsed threads, re-rendered toolbars).
+    selection.prune();
+    for (const unit of live) {
+      const state = units.get(unit)!;
       if (!unit.isConnected) {
+        // Detached: no longer waits for automatic translation, but keeps its record and toolbar.
         visibility.unobserve(unit);
-        observed.delete(unit);
+        state.observing = false;
+        live.delete(unit);
+      } else if (!state.toolbar.host.isConnected) {
+        // The page removed the toolbar but kept the unit: show the original until a new toolbar replaces it.
+        visibility.unobserve(unit);
+        units.delete(unit);
+        live.delete(unit);
+        applyOriginal(unit, undefined);
       }
     }
     const targets = new Set(adapter.findReplyTargets(doc));
-    const placed = new Set<HTMLElement>();
     // The last unit owned by a target gets its reply button (e.g. the post body rather than its title).
-    const units = adapter.findTranslatableUnits(doc);
-    const lastUnitOf = new Map<HTMLElement, HTMLElement>();
-    for (const unit of units) {
+    const lastUnitOf = new Map<HTMLElement, UnitState>();
+    for (const unit of adapter.findTranslatableUnits(doc)) {
+      const existing = units.get(unit);
+      const state = existing?.toolbar.host.isConnected ? existing : addToolbar(unit);
+      live.add(unit);
       const owner = ownerTarget(unit, targets);
-      if (owner) lastUnitOf.set(owner, unit);
+      if (owner) lastUnitOf.set(owner, state);
     }
-    for (const unit of units) {
-      const existing = toolbars.get(unit);
-      if (!existing || !existing.host.isConnected) {
-        // A new toolbar starts without a translation, so the original must be visible again.
-        shownUnits.delete(unit);
-        applyOriginal(unit);
-        const created = createToolbar(unit, t('contentTranslate'));
-        created.setAccent(accent);
-        created.setTextColor(textColor);
-        liveToolbars.add(created);
-        created.translateButton.addEventListener('click', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          void translateUnit(unit, created);
-        });
-        toolbars.set(unit, created);
-        visibility.observe(unit);
-        observed.add(unit);
-      }
-      placed.add(unit);
-    }
-    for (const [target, unit] of lastUnitOf) {
-      if (replyButtons.has(target) && replyButtons.get(target)!.isConnected) continue;
-      const toolbar = toolbars.get(unit);
-      if (!toolbar || !placed.has(unit)) continue;
-      const button = toolbar.addReplyButton(t('contentDraftReply'), () => void selectTarget(target, toolbar));
-      replyButtons.set(target, button);
-    }
+    for (const [target, state] of lastUnitOf) selection.addButton(target, state.toolbar);
     applyAds();
   }
 
@@ -200,11 +185,12 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
     accent = normalizeTranslationColor(settings?.translationColor);
     textColor = normalizeTranslationTextColor(settings?.translationTextColor);
     hideOriginal = settings?.hideOriginal === true;
-    for (const toolbar of liveToolbars) {
-      toolbar.setAccent(accent);
-      toolbar.setTextColor(textColor);
+    for (const unit of live) {
+      const state = units.get(unit)!;
+      state.toolbar.setAccent(accent);
+      state.toolbar.setTextColor(textColor);
+      applyOriginal(unit, state);
     }
-    for (const unit of shownUnits) applyOriginal(unit);
   }
 
   function clearStoredTarget(): void {
@@ -246,11 +232,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
       return composer ? adapter.insertText(composer, text) : { ok: false, reason: 'not-found' };
     },
     replyTargetCleared: async () => {
-      hasSelection = false;
-      selectedPageKey = null;
-      for (const button of replyButtons.values()) button.setAttribute('aria-pressed', 'false');
-      selectedToolbar?.setNote('');
-      selectedToolbar = null;
+      selection.reset();
       return {};
     },
   });
@@ -281,7 +263,7 @@ export function runContentScript(adapter: PlatformAdapter, ctx: ContentScriptCon
   ctx.addEventListener(window, 'wxt:locationchange', scheduleScan);
   ctx.addEventListener(window, 'pageshow', (event) => {
     if ((event as PageTransitionEvent).persisted) {
-      hasSelection = false;
+      selection.reset();
       clearStoredTarget();
     }
   });

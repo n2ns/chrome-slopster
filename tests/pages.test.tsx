@@ -70,6 +70,12 @@ describe('pages', () => {
     expect(container.querySelectorAll('input[type="password"]')).toHaveLength(1);
   });
 
+  it('lists the AI engines in alphabetical order', async () => {
+    await render(<AiSettingsView />);
+    const options = [...container.querySelectorAll<HTMLOptionElement>('#ai-engine option')].map((option) => option.value);
+    expect(options).toEqual(['claude', 'deepseek', 'gemini', 'openai']);
+  });
+
   it('AI settings show the selected engine API key between the engine and the model', async () => {
     await render(<AiSettingsView />);
     const keyIds = () => [...container.querySelectorAll('input[id^="key-"]')].map((input) => input.id);
@@ -136,6 +142,19 @@ describe('pages', () => {
       expect(text).toContain(key);
     }
     expect(text).not.toContain('apiKeysHeading');
+  });
+
+  it('general settings offer the theme (browser, light, dark) and save it on change', async () => {
+    await render(<GeneralSettingsView />);
+    const select = container.querySelector<HTMLSelectElement>('#theme')!;
+    expect([...select.options].map((option) => option.value)).toEqual(['auto', 'light', 'dark']);
+    expect(select.value).toBe('auto');
+    await act(async () => {
+      select.value = 'light';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settle();
+    expect((await getSettings()).theme).toBe('light');
   });
 
   it('general settings place the translation color between auto-translate and font size, with named presets', async () => {
@@ -762,6 +781,14 @@ describe('pages', () => {
     await act(async () => void (await saveSettings({ fontSize: 'large' })));
     await settle();
     expect(document.documentElement.dataset.fontSize).toBe('large');
+  });
+
+  it('side panel applies the theme setting, following the browser by default', async () => {
+    await render(<SidepanelApp />);
+    expect(document.documentElement.dataset.theme).toBe('auto');
+    await act(async () => void (await saveSettings({ theme: 'dark' })));
+    await settle();
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('side panel keeps unsaved settings edits when going back and returning', async () => {

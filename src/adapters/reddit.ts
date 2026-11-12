@@ -103,12 +103,18 @@ export const redditAdapter: PlatformAdapter = {
 
   findTranslatableUnits(root) {
     return [...root.querySelectorAll<HTMLElement>(UNIT_SELECTOR)].filter(
-      (unit) => !unit.closest('[data-sra-toolbar]') && !(unit.slot === 'text-body' && unit.parentElement?.closest('shreddit-post [slot="text-body"]')),
+      (unit) =>
+        !unit.closest('[data-sra-toolbar]') &&
+        !(unit.slot === 'text-body' && unit.parentElement?.closest('shreddit-post [slot="text-body"]')) &&
+        // A post with a text body gets one toolbar, after the body; that unit translates the title too.
+        !(unit.slot === 'title' && unit.closest('shreddit-post')?.querySelector('[slot="text-body"]')),
     );
   },
 
   extractText(unit) {
-    return blockText(unit);
+    const post = unit.slot === 'text-body' ? unit.closest('shreddit-post') : null;
+    const title = post?.querySelector('[slot="title"]');
+    return [title ? blockText(title) : '', blockText(unit)].filter(Boolean).join('\n\n');
   },
 
   findReplyTargets(root) {

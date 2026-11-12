@@ -130,15 +130,14 @@ describe('content core on slotted Reddit content', () => {
     document.body.innerHTML = '';
   });
 
-  it('keeps one slotted toolbar per title and body after repeated page mutations', async () => {
+  it('keeps one slotted toolbar per post, after its body, through repeated page mutations', async () => {
     runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
-    expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-sra-toolbar][slot="text-body"]')).toHaveLength(1);
-    expect(document.querySelectorAll('[data-sra-toolbar][slot="title"]')).toHaveLength(1);
     for (let index = 0; index < 3; index += 1) {
       document.body.append(document.createElement('span'));
       await new Promise((resolve) => setTimeout(resolve, 300));
-      expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(2);
+      expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(1);
     }
     const body = document.querySelector<HTMLElement>('shreddit-post-text-body')!;
     const host = body.nextElementSibling!;
@@ -150,6 +149,27 @@ describe('content core on slotted Reddit content', () => {
     await vi.waitFor(() => expect(body.hasAttribute('data-sra-original-hidden')).toBe(true));
     expect(host.hasAttribute('data-sra-original-hidden')).toBe(false);
     expect(host.shadowRoot!.querySelector('.output')!.textContent).toBe('Translated body');
+  });
+
+  it('translates a unit again automatically when the page replaced its toolbar', async () => {
+    class VisibleIntersectionObserver {
+      constructor(private callback: IntersectionObserverCallback) {}
+      observe(target: Element) {
+        queueMicrotask(() => this.callback([{ target, isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver));
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', VisibleIntersectionObserver);
+    await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: true });
+    const translate = vi.fn(async ({ text }: { text: string }) => ({ text: `Translated ${text}`, truncated: false }));
+    registerHandlers<BackgroundMessages>({ translate });
+    runContentScript(redditAdapter, ctx as unknown as ContentScriptContext);
+    await vi.waitFor(() => expect(translate).toHaveBeenCalledTimes(1));
+    const body = document.querySelector<HTMLElement>('shreddit-post-text-body')!;
+    body.nextElementSibling!.remove();
+    await vi.waitFor(() => expect(translate).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(body.nextElementSibling!.shadowRoot!.querySelector('.output')!.textContent).toBe('Translated Title\n\nBody'));
   });
 
   it('translates already-visible units when automatic translation is enabled, without translating them twice', async () => {
@@ -175,7 +195,7 @@ describe('content core on slotted Reddit content', () => {
     expect(translate).not.toHaveBeenCalled();
     await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: true });
     await vi.waitFor(() => expect(translate).toHaveBeenCalledTimes(1));
-    expect(translate.mock.calls[0]![0]).toEqual({ text: 'Body' });
+    expect(translate.mock.calls[0]![0]).toEqual({ text: 'Title\n\nBody' });
     await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: false });
     await flush();
     await settingsItem.setValue({ ...DEFAULT_SETTINGS, autoTranslate: true });
@@ -206,18 +226,30 @@ describe('content core on a Reddit post page', () => {
     document.body.innerHTML = '';
   });
 
-  it('adds one toolbar per unit and a reply button per target, on the post body rather than its title', () => {
+  it('adds one toolbar per unit and a reply button per target, with a single toolbar on the post', () => {
     const units = redditAdapter.findTranslatableUnits(document);
     expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(units.length);
     const replyHosts = [...document.querySelectorAll('[data-sra-toolbar]')].filter((host) => toolbarButton(host, 'reply'));
     expect(replyHosts).toHaveLength(redditAdapter.findReplyTargets(document).length);
-    const titleHost = document.querySelector('shreddit-post [slot="title"]')!.nextElementSibling!;
-    expect(toolbarButton(titleHost, 'reply')).toBeNull();
+    const postHosts = [...document.querySelectorAll('[data-sra-toolbar]')].filter((host) => !host.closest('shreddit-comment'));
+    expect(postHosts).toHaveLength(1);
   });
 
   it('does not add duplicate toolbars when the page changes', async () => {
     const before = document.querySelectorAll('[data-sra-toolbar]').length;
     document.body.append(document.createElement('div'));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(before);
+  });
+
+  it('keeps one toolbar on a comment the page detaches and inserts again', async () => {
+    const target = comment('t1_pfccwzm');
+    const parent = target.parentElement!;
+    const next = target.nextSibling;
+    const before = document.querySelectorAll('[data-sra-toolbar]').length;
+    target.remove();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    parent.insertBefore(target, next);
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(document.querySelectorAll('[data-sra-toolbar]')).toHaveLength(before);
   });
@@ -396,6 +428,22 @@ describe('content core on a Reddit post page', () => {
     window.history.pushState(null, '', '/r/selfhosted/comments/zzz999/other_post/');
     document.body.append(document.createElement('div'));
     await vi.waitFor(() => expect(clearReplyTarget).toHaveBeenCalledTimes(1));
+    // Elements the page kept no longer show the dropped selection.
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    expect(toolbarButton(host, 'reply')!.getAttribute('aria-pressed')).toBe('false');
+    expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('');
+  });
+
+  it('drops the shown selection when the page is restored from the back/forward cache', async () => {
+    registerHandlers<BackgroundMessages>({ selectReplyTarget: async () => ({ sidePanelOpened: true }), clearReplyTarget: async () => ({}) });
+    const host = ownToolbar(comment('t1_pfccwzm'));
+    toolbarButton(host, 'reply')!.click();
+    await vi.waitFor(() => expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('contentReplySelected'));
+    const restored = new Event('pageshow');
+    Object.defineProperty(restored, 'persisted', { value: true });
+    window.dispatchEvent(restored);
+    expect(toolbarButton(host, 'reply')!.getAttribute('aria-pressed')).toBe('false');
+    expect(host.shadowRoot!.querySelector('.note')!.textContent).toBe('');
   });
 
   it('keeps the tab target when the selected element is only unmounted (virtualized lists)', async () => {

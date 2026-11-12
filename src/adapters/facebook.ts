@@ -219,8 +219,6 @@ function postDialog(doc: Document): Element | null {
   return [...doc.querySelectorAll('[role="dialog"]')].reverse().find((dialog) => [...dialog.querySelectorAll(ARTICLE)].some(isPost)) ?? null;
 }
 
-let lastPageKey: string | null = null;
-
 function computePageKey(doc: Document): string | null {
   const url = new URL(doc.location?.href || 'https://www.facebook.com/');
   const segments = url.pathname.split('/').filter(Boolean);
@@ -268,115 +266,124 @@ function communityName(doc: Document): string | undefined {
   return collapse(match?.[1]) || undefined;
 }
 
-export const facebookAdapter: PlatformAdapter = {
-  id: 'facebook',
-  matches: ['https://www.facebook.com/*'],
+/** A fresh Facebook adapter; it remembers the page behind a post dialog, so each page needs its own. */
+export function createFacebookAdapter(): PlatformAdapter {
+  /** Key of the page behind a post dialog. */
+  let lastPageKey: string | null = null;
 
-  findTranslatableUnits(root) {
-    const posts = [...root.querySelectorAll(ARTICLE)].filter(isPost);
-    const units: HTMLElement[] = [];
-    for (const post of posts) {
-      const message = [...post.querySelectorAll<HTMLElement>(MESSAGE)].find((candidate) => candidate.closest(ARTICLE) === post);
-      if (message) units.push(message);
-      for (const comment of commentsOf(post)) units.push(...commentBodies(comment).slice(0, 1));
-    }
-    return units;
-  },
+  return {
+    id: 'facebook',
+    matches: ['https://www.facebook.com/*'],
 
-  extractText(unit) {
-    const article = unit.closest(ARTICLE);
-    // A comment unit is its first text block; translate the whole comment.
-    return article && isComment(article) ? commentText(article) : fbText(unit);
-  },
+    findTranslatableUnits(root) {
+      const posts = [...root.querySelectorAll(ARTICLE)].filter(isPost);
+      const units: HTMLElement[] = [];
+      for (const post of posts) {
+        const message = [...post.querySelectorAll<HTMLElement>(MESSAGE)].find((candidate) => candidate.closest(ARTICLE) === post);
+        if (message) units.push(message);
+        for (const comment of commentsOf(post)) units.push(...commentBodies(comment).slice(0, 1));
+      }
+      return units;
+    },
 
-  findReplyTargets(root) {
-    const doc = root instanceof Document ? root : (root as Node).ownerDocument;
-    const posts = [...root.querySelectorAll<HTMLElement>(ARTICLE)].filter(isPost);
-    const dialog = doc ? postDialog(doc) : null;
-    // A post opened in a dialog comes first, so getThreadContext answers with it.
-    posts.sort((a, b) => Number(!!dialog?.contains(b)) - Number(!!dialog?.contains(a)));
-    return posts.flatMap((post) => [post, ...(commentsOf(post) as HTMLElement[])]);
-  },
+    extractText(unit) {
+      const article = unit.closest(ARTICLE);
+      // A comment unit is its first text block; translate the whole comment.
+      return article && isComment(article) ? commentText(article) : fbText(unit);
+    },
 
-  extractThread(target) {
-    return threadOf(target);
-  },
+    findReplyTargets(root) {
+      const doc = root instanceof Document ? root : (root as Node).ownerDocument;
+      const posts = [...root.querySelectorAll<HTMLElement>(ARTICLE)].filter(isPost);
+      const dialog = doc ? postDialog(doc) : null;
+      // A post opened in a dialog comes first, so getThreadContext answers with it.
+      posts.sort((a, b) => Number(!!dialog?.contains(b)) - Number(!!dialog?.contains(a)));
+      return posts.flatMap((post) => [post, ...(commentsOf(post) as HTMLElement[])]);
+    },
 
-  findComposer(target) {
-    if (!target) return null;
-    const post = isPost(target) ? target : postOf(target);
-    if (!post) return null;
-    if (target === post) return mainEditor(post);
-    const head = threadHead(target, post);
-    if (!head) return null;
-    const thread = threadComments(head, post);
-    const inThread = threadEditors(head, post);
-    const learned = inThread.find((editor) => boxAddressee.get(editor) === target);
-    if (learned) return learned;
-    // Without a click to go by, fall back to the name Facebook puts in the box, if it is unambiguous.
-    return inThread.find((editor) => !boxAddressee.has(editor) && addressedByName(editor, target, thread)) ?? null;
-  },
+    extractThread(target) {
+      return threadOf(target);
+    },
 
-  attach(doc) {
-    let lastClick: { comment: Element; at: number } | null = null;
-    const onClick = (event: Event) => {
-      const element = event.target instanceof Element ? event.target : null;
-      const article = element?.closest(ARTICLE);
-      lastClick = article && isComment(article) ? { comment: article, at: Date.now() } : null;
-    };
-    const onFocus = (event: Event) => {
-      const editor = event.target instanceof Element ? event.target.closest(EDITOR) : null;
-      if (!editor || !lastClick || Date.now() - lastClick.at > REPLY_FOCUS_WINDOW_MS) return;
-      const post = postOf(lastClick.comment);
-      const head = post && threadHead(lastClick.comment, post);
-      if (post && head && threadEditors(head, post).includes(editor as HTMLElement)) boxAddressee.set(editor, lastClick.comment);
-    };
-    doc.addEventListener('click', onClick, true);
-    doc.addEventListener('focusin', onFocus, true);
-    return () => {
-      doc.removeEventListener('click', onClick, true);
-      doc.removeEventListener('focusin', onFocus, true);
-    };
-  },
+    findComposer(target) {
+      if (!target) return null;
+      const post = isPost(target) ? target : postOf(target);
+      if (!post) return null;
+      if (target === post) return mainEditor(post);
+      const head = threadHead(target, post);
+      if (!head) return null;
+      const thread = threadComments(head, post);
+      const inThread = threadEditors(head, post);
+      const learned = inThread.find((editor) => boxAddressee.get(editor) === target);
+      if (learned) return learned;
+      // Without a click to go by, fall back to the name Facebook puts in the box, if it is unambiguous.
+      return inThread.find((editor) => !boxAddressee.has(editor) && addressedByName(editor, target, thread)) ?? null;
+    },
 
-  insertText(composer, text) {
-    // In a comment box a line break can act like Enter and post the comment, so the draft goes in as one line.
-    return insertIntoRichEditor(composer, text, { singleLine: true });
-  },
+    attach(doc) {
+      let lastClick: { comment: Element; at: number } | null = null;
+      const onClick = (event: Event) => {
+        const element = event.target instanceof Element ? event.target : null;
+        const article = element?.closest(ARTICLE);
+        // Slopster's own toolbar (Translate, Draft reply) does not open a reply box.
+        lastClick = article && isComment(article) && !element?.closest('[data-sra-toolbar]') ? { comment: article, at: Date.now() } : null;
+      };
+      const onFocus = (event: Event) => {
+        const editor = event.target instanceof Element ? event.target.closest(EDITOR) : null;
+        if (!editor || !lastClick || Date.now() - lastClick.at > REPLY_FOCUS_WINDOW_MS) return;
+        const post = postOf(lastClick.comment);
+        const head = post && threadHead(lastClick.comment, post);
+        if (post && head && threadEditors(head, post).includes(editor as HTMLElement)) boxAddressee.set(editor, lastClick.comment);
+      };
+      doc.addEventListener('click', onClick, true);
+      doc.addEventListener('focusin', onFocus, true);
+      return () => {
+        doc.removeEventListener('click', onClick, true);
+        doc.removeEventListener('focusin', onFocus, true);
+      };
+    },
 
-  pageKey(doc) {
-    // A post dialog over the page keeps the page's key, like X's reply dialog.
-    if (postDialog(doc) && lastPageKey !== null) return lastPageKey;
-    lastPageKey = computePageKey(doc);
-    return lastPageKey;
-  },
+    insertText(composer, text) {
+      // In a comment box a line break can act like Enter and post the comment, so the draft goes in as one line.
+      return insertIntoRichEditor(composer, text, { singleLine: true });
+    },
 
-  postTarget(doc) {
-    if (!postComposer(doc)) return null;
-    return {
-      kind: 'post',
-      platform: 'facebook',
-      url: `${doc.location?.origin ?? ''}${doc.location?.pathname ?? ''}`,
-      community: communityName(doc),
-      body: '',
-      parentChain: [],
-      comments: [],
-    };
-  },
+    pageKey(doc) {
+      // A post dialog over the page keeps the page's key, like X's reply dialog.
+      if (postDialog(doc) && lastPageKey !== null) return lastPageKey;
+      lastPageKey = computePageKey(doc);
+      return lastPageKey;
+    },
 
-  findPostComposer(doc) {
-    return postComposer(doc);
-  },
+    postTarget(doc) {
+      if (!postComposer(doc)) return null;
+      return {
+        kind: 'post',
+        platform: 'facebook',
+        url: `${doc.location?.origin ?? ''}${doc.location?.pathname ?? ''}`,
+        community: communityName(doc),
+        body: '',
+        parentChain: [],
+        comments: [],
+      };
+    },
 
-  insertPost(composer, draft) {
-    // Unlike comment boxes, Enter in the Create post editor adds a line; publishing needs the Post button.
-    return insertIntoRichEditor(composer.body, draft.body);
-  },
+    findPostComposer(doc) {
+      return postComposer(doc);
+    },
 
-  findAds(root) {
-    // Sponsored posts link to Facebook's ad explanation. Not yet observed on a real page.
-    return [...root.querySelectorAll<HTMLElement>(ARTICLE)].filter((article) => isPost(article) && !!article.querySelector('a[href*="/ads/about"]'));
-  },
+    insertPost(composer, draft) {
+      // Unlike comment boxes, Enter in the Create post editor adds a line; publishing needs the Post button.
+      return insertIntoRichEditor(composer.body, draft.body);
+    },
 
-  constraints: {},
-};
+    findAds(root) {
+      // Sponsored posts link to Facebook's ad explanation. Not yet observed on a real page.
+      return [...root.querySelectorAll<HTMLElement>(ARTICLE)].filter((article) => isPost(article) && !!article.querySelector('a[href*="/ads/about"]'));
+    },
+
+    constraints: {},
+  };
+}
+
+export const facebookAdapter = createFacebookAdapter();

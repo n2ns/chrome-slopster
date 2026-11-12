@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { xAdapter } from '@/src/adapters/x';
+import type { PlatformAdapter } from '@/src/adapters/types';
+import { createXAdapter, xAdapter } from '@/src/adapters/x';
 
 const FIXTURES = join(import.meta.dirname, '..', 'fixtures', 'x');
 const STATUS_PATH = '/DNetwork_4/status/2109314061410120106';
@@ -72,6 +73,45 @@ describe('x adapter on a status page', () => {
 
   it('caps replies at 280 characters', () => {
     expect(xAdapter.constraints.maxReplyLength).toBe(280);
+  });
+});
+
+describe('x adapter page keys across overlay routes', () => {
+  const MODAL = '<div role="dialog" aria-modal="true"></div>';
+  // A fresh adapter per test: the key it remembers behind overlays must not leak between tests.
+  let adapter: PlatformAdapter;
+  beforeEach(() => {
+    adapter = createXAdapter();
+  });
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('keeps the status key while the media viewer of another tweet is open over the conversation', () => {
+    load(STATUS_PATH, 'status.html');
+    expect(adapter.pageKey(document)).toBe('2109314061410120106');
+    document.body.insertAdjacentHTML('beforeend', MODAL);
+    window.history.replaceState(null, '', '/someone/status/42/photo/1');
+    expect(adapter.pageKey(document)).toBe('2109314061410120106');
+    window.history.replaceState(null, '', STATUS_PATH);
+    expect(adapter.pageKey(document)).toBe('2109314061410120106');
+  });
+
+  it('offers no reply targets while the media viewer is open over a timeline', () => {
+    load('/home', 'status.html');
+    expect(adapter.pageKey(document)).toBeNull();
+    document.body.insertAdjacentHTML('beforeend', MODAL);
+    window.history.replaceState(null, '', '/someone/status/42/photo/1');
+    expect(adapter.pageKey(document)).toBeNull();
+    expect(adapter.findReplyTargets(document)).toEqual([]);
+  });
+
+  it('drops the status key on full pages under /i/ such as history or bookmarks', () => {
+    load(STATUS_PATH, 'status.html');
+    expect(adapter.pageKey(document)).toBe('2109314061410120106');
+    window.history.replaceState(null, '', '/i/history');
+    expect(adapter.pageKey(document)).toBeNull();
+    expect(adapter.findReplyTargets(document)).toEqual([]);
   });
 });
 

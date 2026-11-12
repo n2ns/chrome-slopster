@@ -14,6 +14,12 @@ const FONT_SIZES: Record<Settings['fontSize'], MessageKey> = {
   large: 'fontSizeLarge',
 };
 
+const THEMES: Record<Settings['theme'], MessageKey> = {
+  auto: 'themeAuto',
+  light: 'themeLight',
+  dark: 'themeDark',
+};
+
 export function GeneralSection() {
   const { value: settings, error: loadError, setValue } = useSettings();
   const [error, setError] = useState<unknown>();
@@ -87,6 +93,15 @@ export function GeneralSection() {
             <input type="checkbox" checked={settings.hideOriginal} onChange={(event) => save({ hideOriginal: event.target.checked })} />
             <span>{t('hideOriginal')}</span>
           </label>
+
+          <label htmlFor="theme">{t('theme')}</label>
+          <select id="theme" value={settings.theme} onChange={(event) => save({ theme: event.target.value as Settings['theme'] })}>
+            {(Object.keys(THEMES) as Settings['theme'][]).map((theme) => (
+              <option key={theme} value={theme}>
+                {t(THEMES[theme])}
+              </option>
+            ))}
+          </select>
 
           <label htmlFor="font-size">{t('fontSize')}</label>
           <select

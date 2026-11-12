@@ -146,6 +146,18 @@
   "fontSizeLarge": {
     "message": "大"
   },
+  "theme": {
+    "message": "主题"
+  },
+  "themeAuto": {
+    "message": "跟随浏览器"
+  },
+  "themeLight": {
+    "message": "亮色"
+  },
+  "themeDark": {
+    "message": "暗色"
+  },
   "adBlockHeading": {
     "message": "广告屏蔽"
   },

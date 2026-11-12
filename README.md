@@ -97,7 +97,7 @@ The open view is highlighted. Click its button again, or the Slopster title, to 
 
 **AI settings.**
 
-- **AI engine**: OpenAI, DeepSeek, Gemini, or Claude. It is used for all drafting, and for translation if you pick it there.
+- **AI engine**: Claude, DeepSeek, Gemini, or OpenAI. It is used for all drafting, and for translation if you pick it there.
 - **API key**: the key for the selected engine. It is stored on this device only.
 - **Model**: each engine offers a stronger model and a cheaper, faster one.
 - **Translation engine**: free Google Translate, or the AI engine you selected. With Google, you can also let the AI engine take over when Google translation fails.
@@ -108,6 +108,7 @@ The open view is highlighted. Click its button again, or the Slopster title, to 
 - **Translate posts automatically**.
 - **Translation background** and **Translation text color**: how translations look on pages, from presets or a custom color. The text color follows the page unless you pick one.
 - **Hide the original text while its translation is shown**: show only the translation of a post or comment; hiding the translation brings the original back.
+- **Theme** of the side panel: follow the browser (default), light, or dark.
 - **Font size** of the side panel: small, medium, or large.
 - **Ad blocking**: hide ads on Reddit, X, and Facebook, each turned on separately.
 

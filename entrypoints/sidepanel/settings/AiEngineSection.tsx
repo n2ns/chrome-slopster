@@ -38,7 +38,7 @@ export function AiEngineSection() {
             value={settings.aiEngine}
             onChange={(event) => isAiEngine(event.target.value) && save({ aiEngine: event.target.value })}
           >
-            {AI_ENGINES.map((engine) => (
+            {[...AI_ENGINES].sort((a, b) => engineLabel(a).localeCompare(engineLabel(b))).map((engine) => (
               <option key={engine} value={engine}>
                 {engineLabel(engine)}
               </option>
