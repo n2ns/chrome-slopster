@@ -2,6 +2,11 @@
 
 Slopster is a Chrome extension that helps you read and join conversations on **Reddit**, **X**, and **Facebook**, even in languages you do not speak.
 
+[![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/mmgmeicjkmabnhjedpinlnpddagpoend?label=chrome%20web%20store)](https://chromewebstore.google.com/detail/slopster/mmgmeicjkmabnhjedpinlnpddagpoend)
+[![Chrome Web Store users](https://img.shields.io/chrome-web-store/users/mmgmeicjkmabnhjedpinlnpddagpoend)](https://chromewebstore.google.com/detail/slopster/mmgmeicjkmabnhjedpinlnpddagpoend)
+[![CI](https://img.shields.io/github/actions/workflow/status/n2ns/chrome-slopster/ci.yml?branch=main&label=CI)](https://github.com/n2ns/chrome-slopster/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/n2ns/chrome-slopster)](https://github.com/n2ns/chrome-slopster/blob/main/LICENSE)
+
 - **Translate** posts and comments right on the page, with one click or automatically as you scroll.
 - **Draft replies** to a post or a comment in the voice of a persona you set up, using the AI engine you choose (OpenAI, DeepSeek, Gemini, or Claude). Each draft comes with a copy in your own language, so you know exactly what it says.
 - **Draft new posts** for a subreddit, your X timeline, or a Facebook group or page.
