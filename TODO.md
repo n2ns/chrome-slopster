@@ -10,7 +10,6 @@ Open work after the first full pass (all phases done and checked on the real sit
 
 ## Decisions pending
 
-- [ ] **Verify 0.2.3 store approval.** Version 0.2.3 was submitted for review on 2026-11-12. Confirm approval and the public store version before pushing the next tag (see [docs/PUBLISHING.md](docs/PUBLISHING.md#status)).
 - [ ] **New store title and summary.** The manifest name is now "Slopster: Translate Posts & Draft AI Replies on Reddit, X & Facebook" (localized), with a new summary; both ship in 0.2.0, submitted for review on 2026-10-25. The Spanish and Chinese detailed descriptions in [docs/STORE-LISTING.md](docs/STORE-LISTING.md) can be pasted into the dashboard now.
 - [ ] License. The repository has none yet.
 
