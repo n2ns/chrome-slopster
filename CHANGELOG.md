@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-12
+
 ### Added
 - Side panel theme in the general settings: follow the browser (the default), light, or dark.
 

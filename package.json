@@ -3,7 +3,7 @@
   "description": "Translate posts and draft replies and new posts on Reddit, X, and Facebook. You review and send everything.",
   "private": true,
   "license": "Apache-2.0",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "scripts": {
     "dev": "wxt",
